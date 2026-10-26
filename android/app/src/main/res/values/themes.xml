@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">@color/gold</item>
+        <item name="android:statusBarColor">@color/garnet</item>
+        <item name="android:navigationBarColor">@color/garnet</item>
+        <item name="android:windowBackground">@color/cream</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="PrimaryButton" parent="android:style/Widget.Material.Button">
+        <item name="android:backgroundTint">@color/gold</item>
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:minHeight">48dp</item>
+    </style>
+
+    <style name="SecondaryButton" parent="android:style/Widget.Material.Button">
+        <item name="android:backgroundTint">@color/line</item>
+        <item name="android:textColor">@color/garnet</item>
+        <item name="android:minHeight">46dp</item>
+    </style>
+
+    <style name="NavButton" parent="android:style/Widget.Material.Button">
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:minHeight">54dp</item>
+    </style>
+
+    <style name="SectionTitle">
+        <item name="android:textColor">@color/garnet</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="SectionDescription">
+        <item name="android:textColor">@color/muted</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="FieldLabel">
+        <item name="android:textColor">@color/ink</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+</resources>
