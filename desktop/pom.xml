@@ -103,11 +103,6 @@
               <goal>check</goal>
             </goals>
             <configuration>
-              <excludes>
-                <exclude>com/runnersz/reto2/desktop/App.class</exclude>
-                <exclude>com/runnersz/reto2/desktop/Launcher.class</exclude>
-                <exclude>com/runnersz/reto2/desktop/controller/**</exclude>
-              </excludes>
               <rules>
                 <rule>
                   <element>BUNDLE</element>
