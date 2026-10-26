@@ -5,6 +5,7 @@ import com.runnersz.reto2.desktop.service.BackendException;
 import com.runnersz.reto2.desktop.service.BackendService;
 import java.io.File;
 import java.nio.file.Path;
+import java.nio.file.InvalidPathException;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -159,11 +160,13 @@ public class AesController {
             UiAlerts.error(window(), "Contraseña vacía", "La contraseña no puede estar vacía.");
             return;
         }
-        if (Path.of(input).toAbsolutePath().normalize().equals(Path.of(output).toAbsolutePath().normalize())) {
-            UiAlerts.error(
-                    window(),
-                    "Ruta no válida",
-                    "La salida debe ser distinta del fichero de entrada.");
+        try {
+            if (Path.of(input).toAbsolutePath().normalize().equals(Path.of(output).toAbsolutePath().normalize())) {
+                UiAlerts.error(window(), "Ruta no válida", "La salida debe ser distinta del fichero de entrada.");
+                return;
+            }
+        } catch (InvalidPathException exception) {
+            UiAlerts.error(window(), "Ruta no válida", "Revisa las rutas de entrada y salida.");
             return;
         }
 

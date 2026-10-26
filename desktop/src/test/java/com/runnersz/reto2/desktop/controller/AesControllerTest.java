@@ -93,4 +93,18 @@ class AesControllerTest {
         });
         assertTrue(dialogs.get() >= initial + 4);
     }
+    @Test void rejectsMalformedPathsWithoutCrashing() throws Exception {
+        org.junit.jupiter.api.Assumptions.assumeTrue(System.getProperty("os.name").startsWith("Windows"));
+        StubBackend backend = new StubBackend();
+        AesController controller = prepared(backend);
+        int previous = dialogs.get();
+        fx(() -> {
+            field(controller, "inputField", TextField.class).setText("<bad-path>");
+            field(controller, "encryptButton", Button.class).fire();
+            assertFalse(field(controller, "encryptButton", Button.class).isDisabled());
+            return null;
+        });
+        assertTrue(dialogs.get() > previous);
+        assertFalse(backend.background);
+    }
 }
