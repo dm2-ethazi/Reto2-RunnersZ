@@ -1,36 +1,36 @@
 # Propiedad de ficheros (protocolo C.3 de docs/WORKFLOW.md).
-# Cada ruta la revisa su dueño. Nota: @GH_ALAIN debe sustituirse por el
+# Cada ruta la revisa su dueño. Nota: @alain8123 debe sustituirse por el
 # usuario real de Alain en GitHub (PENDIENTE-HUMANO hasta confirmarlo).
 
 # Alain (A): servidor, escritorio, CI y documentacion transversal
-/backend/                         @jairoben @GH_ALAIN
-/desktop/                         @jairoben @GH_ALAIN
-/scripts/                         @jairoben @GH_ALAIN
-/.github/workflows/backend.yml    @jairoben @GH_ALAIN
-/.github/workflows/desktop.yml    @jairoben @GH_ALAIN
-/.github/workflows/docker.yml     @jairoben @GH_ALAIN
-/.pre-commit-config.yaml          @jairoben @GH_ALAIN
-/.actrc                           @jairoben @GH_ALAIN
-/.github/CODEOWNERS               @jairoben @GH_ALAIN
-/.github/ISSUE_TEMPLATE/          @jairoben @GH_ALAIN
-/.github/pull_request_template.md @jairoben @GH_ALAIN
-/.gitignore                       @jairoben @GH_ALAIN
-/.gitattributes                   @jairoben @GH_ALAIN
-/README.md                        @jairoben @GH_ALAIN
-/docs/WORKFLOW.md                 @jairoben @GH_ALAIN
-/docs/api-contract.md             @jairoben @GH_ALAIN
-/docs/openapi.json                @jairoben @GH_ALAIN
-/docs/formato-enc-v2.md           @jairoben @GH_ALAIN
-/docs/vectors/                    @jairoben @GH_ALAIN
-/docs/decisiones.md               @jairoben @GH_ALAIN
-/docs/auditoria-v1-a-v2.md        @jairoben @GH_ALAIN
-/docs/planificacion/indice-issues.md            @jairoben @GH_ALAIN
-/docs/plan-de-pruebas/README.md                 @jairoben @GH_ALAIN
-/docs/plan-de-pruebas/servidor-escritorio.md    @jairoben @GH_ALAIN
-/docs/evidencias/                 @jairoben @GH_ALAIN
-/docs/manual-instalacion-servidor.md            @jairoben @GH_ALAIN
-/docs/manual-uso-escritorio.md                  @jairoben @GH_ALAIN
-/docs/demo.md                     @jairoben @GH_ALAIN
+/backend/                         @jairoben @alain8123
+/desktop/                         @jairoben @alain8123
+/scripts/                         @jairoben @alain8123
+/.github/workflows/backend.yml    @jairoben @alain8123
+/.github/workflows/desktop.yml    @jairoben @alain8123
+/.github/workflows/docker.yml     @jairoben @alain8123
+/.pre-commit-config.yaml          @jairoben @alain8123
+/.actrc                           @jairoben @alain8123
+/.github/CODEOWNERS               @jairoben @alain8123
+/.github/ISSUE_TEMPLATE/          @jairoben @alain8123
+/.github/pull_request_template.md @jairoben @alain8123
+/.gitignore                       @jairoben @alain8123
+/.gitattributes                   @jairoben @alain8123
+/README.md                        @jairoben @alain8123
+/docs/WORKFLOW.md                 @jairoben @alain8123
+/docs/api-contract.md             @jairoben @alain8123
+/docs/openapi.json                @jairoben @alain8123
+/docs/formato-enc-v2.md           @jairoben @alain8123
+/docs/vectors/                    @jairoben @alain8123
+/docs/decisiones.md               @jairoben @alain8123
+/docs/auditoria-v1-a-v2.md        @jairoben @alain8123
+/docs/planificacion/indice-issues.md            @jairoben @alain8123
+/docs/plan-de-pruebas/README.md                 @jairoben @alain8123
+/docs/plan-de-pruebas/servidor-escritorio.md    @jairoben @alain8123
+/docs/evidencias/                 @jairoben @alain8123
+/docs/manual-instalacion-servidor.md            @jairoben @alain8123
+/docs/manual-uso-escritorio.md                  @jairoben @alain8123
+/docs/demo.md                     @jairoben @alain8123
 
 # Jairo (J): Android, Unity y su documentacion
 /android/                         @jairoben
@@ -47,5 +47,5 @@
 /docs/entregables/                 @jairoben
 
 # Solo el humano (cambios de contrato = decision de ambos)
-/docs/contrato/                   @jairoben @GH_ALAIN
-/docs/prompts/                    @jairoben @GH_ALAIN
+/docs/contrato/                   @jairoben @alain8123
+/docs/prompts/                    @jairoben @alain8123

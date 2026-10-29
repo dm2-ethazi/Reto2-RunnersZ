@@ -140,9 +140,52 @@ def test_numero_no_positivo_rechazado():
 
 
 def test_linked_pr_en_verde(monkeypatch):
-    prs = [{"number": 7, "title": "[I-01] workflow", "headRefName": "feature/i01-workflow",
+    prs = [{"number": 7, "title": "[I-01] workflow", "headRefName": "feature/i01-workflow", "body": "Refs #1",
             "statusCheckRollup": [{"conclusion": "success"}]}]
     monkeypatch.setattr(subprocess, "run",
                         lambda *a, **k: _fake_proc(json.dumps(prs)))
     num, ci = board._linked_pr(1, dry_run=False)
     assert num == "7" and ci == "CI verde"
+
+@pytest.mark.parametrize("check,expected", [
+    ({"conclusion": "SUCCESS"}, "CI verde"),
+    ({"conclusion": "FAILURE"}, "CI rojo"),
+    ({"conclusion": "CANCELLED"}, "CI rojo"),
+    ({"status": "IN_PROGRESS"}, "CI en curso"),
+    ({"state": "SUCCESS"}, "CI verde"),
+    ({"state": "PENDING"}, "CI en curso"),
+])
+def test_actual_checks_and_issue_mapping(monkeypatch, check, expected):
+    prs = [{"number": 23, "title": "[I-01] base",
+            "body": "Refs #4", "statusCheckRollup": [check]}]
+    monkeypatch.setattr(board, "run_gh", lambda *a, **k: json.dumps(prs))
+    assert board._linked_pr(4, False) == ("23", expected)
+    assert board._linked_pr(40, False) == ("-", "-")
+
+
+def test_multiple_prs_are_not_hidden(monkeypatch):
+    prs = [{"number": n, "body": "Refs #4", "statusCheckRollup": []}
+           for n in [23, 24]]
+    monkeypatch.setattr(board, "run_gh", lambda *a, **k: json.dumps(prs))
+    assert board._linked_pr(4, False) == ("23, 24", "sin checks")
+
+
+@pytest.mark.parametrize("assignees,dry_run,assign", [
+    ([], False, True), ([], True, True), (["alain8123"], False, False),
+])
+def test_assign_only_if_missing(monkeypatch, assignees, dry_run, assign):
+    calls = []
+    monkeypatch.setattr(board, "_find_item",
+                        lambda n: {"id": "item", "assignees": assignees})
+    monkeypatch.setattr(board, "_project_field_map", lambda **k: {"Status": "field"})
+    monkeypatch.setattr(board, "_project_id", lambda **k: "project")
+    def fake(args, **kwargs):
+        calls.append((args, kwargs))
+        return json.dumps(FIELDS_JSON)
+    monkeypatch.setattr(board, "run_gh", fake)
+    board._set_status(4, "En curso", dry_run)
+    assignments = [(a, k) for a, k in calls if a[:2] == ["issue", "edit"]]
+    assert bool(assignments) == assign
+    if assignments:
+        assert assignments[0][0][-2:] == ["--add-assignee", "@me"]
+        assert assignments[0][1]["dry_run"] == dry_run

@@ -43,3 +43,6 @@ referencia. El trabajo de integración vive en la rama `prototype/runnersz`.
 
 - **Alain** (`@alain8123`): servidor, cliente JavaFX, CI/hooks y documentación de servidor/escritorio.
 - **Jairo** (`@jairoben`): Android, Unity y arranque del repositorio.
+
+La PR de arranque #23 se dirige a develop; Project 14 es el tablero efectivo.
+No se acredita CI de módulos aún vacíos. Véase DJ0 en docs/WORKFLOW.md.

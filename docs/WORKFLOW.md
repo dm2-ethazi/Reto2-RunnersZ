@@ -265,3 +265,12 @@ Móvil físico (instalar el APK, TalkBack, capturas reales), activar la licencia
 secretos de CI, activar workflows del Project y editar sus opciones si la CLI no puede,
 cambiar settings/rulesets, hacer público el repo, publicar releases/wiki, firmar el contrato.
 Cuando toque, el agente deja las instrucciones exactas (≤ 5 líneas) y sigue con otra tarea.
+
+## Excepción de arranque DJ0 (PR #23, revisión de Alain)
+
+El tablero efectivo es Project 14 de dm2-ethazi; sustituye a Project 6.
+La rama de arranque es prototype/runnersz y su PR se dirige a develop.
+integration/reto2 conserva solo el histórico v1; no se restaura.
+Backend y Desktop están vacíos en este arranque. I-01 entrega estructura,
+documentación y herramientas; los builds y CI de módulos se incorporan
+con sus tareas técnicas. No se acredita CI verde sin ejecutarlo.

@@ -172,28 +172,41 @@ def _find_item(number: int) -> dict[str, Any] | None:
 
 
 def _linked_pr(number: int, dry_run: bool) -> tuple[str, str]:
-    """Busca la PR cuyo título o rama referencia al issue; devuelve (nº, estado CI)."""
     raw = run_gh(
-        ["pr", "list", "--state", "all", "--search", f"{number} in:title",
-         "--json", "number,title,headRefName,statusCheckRollup"],
+        ["pr", "list", "--state", "all", "--limit", "100",
+         "--json", "number,title,body,headRefName,statusCheckRollup,closingIssuesReferences"],
         dry_run=dry_run,
     )
     if not raw:
         return ("-", "-")
-    prs = json.loads(raw)
-    for pr in prs:
-        if f"#{number}" in pr["title"] or f"i{number:02d}" in pr["headRefName"].lower():
-            checks = pr.get("statusCheckRollup") or []
-            if not checks:
-                ci = "sin checks"
-            elif all(c.get("conclusion") == "success" for c in checks):
-                ci = "CI verde"
-            elif any(c.get("conclusion") in ("failure", "cancelled") for c in checks):
-                ci = "CI rojo"
-            else:
-                ci = "CI en curso"
-            return (str(pr["number"]), ci)
-    return ("-", "-")
+    matches = []
+    for pr in json.loads(raw):
+        linked = any(issue.get("number") == number
+                     for issue in pr.get("closingIssuesReferences", []))
+        reference = re.search(rf"(?<![\w/])#{number}(?!\d)",
+                              pr.get("body", "") + " " + pr.get("title", ""))
+        if linked or reference:
+            matches.append(pr)
+    if not matches:
+        return ("-", "-")
+    states = []
+    for pr in matches:
+        checks = pr.get("statusCheckRollup") or []
+        if not checks:
+            states.append("sin checks")
+            continue
+        values = [(check.get("conclusion") or check.get("state") or
+                   check.get("status") or "").upper() for check in checks]
+        if any(value in {"FAILURE", "ERROR", "CANCELLED", "TIMED_OUT",
+                         "ACTION_REQUIRED", "STARTUP_FAILURE"} for value in values):
+            states.append("CI rojo")
+        elif all(value == "SUCCESS" for value in values):
+            states.append("CI verde")
+        else:
+            states.append("CI en curso")
+    priority = ["CI rojo", "CI en curso", "sin checks", "CI verde"]
+    return (", ".join(str(pr["number"]) for pr in matches),
+            next(state for state in priority if state in states))
 
 
 def cmd_status(args: argparse.Namespace) -> None:
@@ -229,6 +242,9 @@ def _set_status(number: int, target: str, dry_run: bool) -> None:
         item = _find_item(number) if not dry_run else None
         if item is None and not dry_run:
             raise GhError(f"No se pudo añadir el issue #{number} al proyecto.")
+    if item is not None and not _assignees(item):
+        run_gh(["issue", "edit", str(number), "--add-assignee", "@me"],
+               dry_run=dry_run)
     fields = _project_field_map(dry_run=dry_run)
     status_id = fields.get(STATUS_FIELD)
     proj_id = _project_id(dry_run=dry_run)
