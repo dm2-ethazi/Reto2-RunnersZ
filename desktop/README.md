@@ -1,0 +1,2 @@
+# Cliente desktop v2
+Cliente JavaFX 21 en capas: model, service y controller. Todas las operaciones criptográficas se realizan en la API del servidor. Configura URL y token antes de usarlo. Compilación: mvn verify. El JAR sombreado se genera en target/.
