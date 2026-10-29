@@ -1,76 +1,67 @@
-# Unity - RunnersZ 6.3
+# RunnersZ — Unity
 
-## Identificacion y autoria
+## Autoría y alcance
 
-- Apartado: Unity, trabajo asignado a Jairo.
-- Rama: feature/unity-v2.
-- Responsable: Jairo.
-- Revision: Alain.
-- Contrato: Contrato_Tecnico_RunnersZ_v2.docx.
-- Alcance: juego 2D, logica pura testeable y guia de escena.
-- Estado: En revision. No es Hecho hasta tener CI verde, revision aprobada y
-  evidencias de Unity 6.3.
+- Author / responsable: Jairo (@jairoben).
+- Revisor previsto: Alain; no implica revisión aprobada.
+- Rama: feature/unity-v2. PR: #40.
+- Referencia principal: Contrato_Tecnico_RunnersZ_v2.docx.
+- Minijuego 2D autónomo en Unity 6.3; no consume la API del servidor.
 
-## Requisitos del contrato
+## Contenido real
 
-- Crear manualmente un proyecto 2D con Unity 6.3, version 6000.3.x.
-- Enemigo con Rigidbody2D y Collider2D que avanza hacia la puerta.
-- Puerta con Collider2D configurado como trigger.
-- OnTriggerEnter2D en la puerta produce derrota.
-- Mostrar un texto cifrado con Caesar.
-- Recibir una respuesta, validarla y mostrar victoria si es correcta.
-- Mantener estados en curso, victoria y derrota.
-- Permitir reinicio de partida.
-- Separar la logica C# de la escena y hacerla testeable.
-- Incorporar dificultad, rondas, pistas, vidas y puntuacion conforme al alcance
-  de Jairo y a los criterios del contrato.
+| Carpeta o componente | Responsabilidad |
+| --- | --- |
+| Assets/Scripts/Logic/ | César, normalización, respuestas, estados, dificultad y rondas. |
+| HintScore, PhraseBank | Apoyo para pistas, puntuación y frases. |
+| GameSession | Estados EnCurso, Victoria y Derrota; puntuación y reinicio lógico. |
+| DoorLives | Contador de vidas y reinicio. |
+| Assets/Scripts/Game/EnemyHopper.cs | Desplaza el enemigo a intervalos mediante Rigidbody2D. |
+| Assets/Scripts/Game/Door.cs | Detecta enemigos, resta vidas, desactiva el objeto y emite Hit. |
+| Assets/Scripts/Editor/SceneBuilder.cs | Menú RunnersZ/Build Game Scene para una escena inicial. |
+| Logic/*Tests.cs | Casos de lógica sujetos a configuración del Test Framework. |
 
-## Estructura
+## Flujo de juego previsto
 
-- Assets/Scripts/Logic/: Caesar, validacion, estados, rondas, dificultad,
-  pistas, puntuacion y banco de frases.
-- Assets/Scripts/Game/: enemigo, puerta y configuracion de fisica.
-- Assets/Scripts/Editor/SceneBuilder.cs: apoyo para construir la escena.
-- Assets/Scripts/Logic/*Tests.cs: pruebas de logica pura.
-- README.md: esta guia de implementacion y validacion.
+Mostrar un mensaje César, aceptar respuesta y validarla mientras el enemigo
+avanza. La respuesta correcta debe conducir a victoria y el evento de puerta
+debe conectarse al criterio de derrota del contrato. Reiniciar restablece la
+sesión y la escena. Dificultad, rondas, pistas y puntuación deben enlazarse al HUD.
 
-La carpeta contiene codigo y guia. La escena, los prefabs y los recursos
-generados por el editor deben crearse y revisarse en Unity 6.3.
+Esto describe el objetivo. Door actualmente descuenta vidas y emite un evento;
+no invoca directamente GameSession.Lose. La unión escena-lógica sigue pendiente.
 
-## Puesta en marcha
+## Preparación del editor
 
-1. Instalar Unity Hub y Unity 6.3 (6000.3.x).
-2. Crear un proyecto 2D en esta carpeta, conservando el contenido versionado.
-3. Instalar Test Framework, Code Coverage y TextMeshPro desde Package Manager.
-4. Crear la escena con enemigo, puerta trigger, camara y HUD.
-5. Configurar Rigidbody2D y Collider2D del enemigo.
-6. Configurar Collider2D trigger y OnTriggerEnter2D de la puerta.
-7. Conectar texto cifrado, entrada, boton validar, estados y reinicio.
-8. Ejecutar EditMode y PlayMode.
-9. Revisar cobertura y documentar evidencias antes de generar el entregable.
+1. Instalar Unity Hub y Unity 6.3 (6000.3.x) con licencia válida.
+2. Crear el proyecto 2D conservando Assets/Scripts del repositorio.
+3. Configurar Test Framework y Code Coverage; preparar los recursos de texto
+   que requiera la interfaz elegida.
+4. Crear Assets/Scenes y registrar los tags Enemy y Door antes del generador.
+5. Revisar SceneBuilder antes de ejecutar RunnersZ/Build Game Scene.
+6. Configurar cámara, posiciones, sprites, colliders, HUD y controles.
+7. Conectar EnemyHopper, eventos de Door, validación, sesión y reinicio.
 
-La licencia de Unity y el editor son requisitos del entorno de desarrollo. No se
-guardan licencias, credenciales ni artefactos privados en el repositorio.
+SceneBuilder solo crea objetos iniciales. No construye un juego terminado:
+faltan conexiones de componentes, disposición visual y pruebas en el editor.
+No se han comprobado compilación ni resolución de paquetes en Unity.
 
-## Criterios de aceptacion
+## Pruebas y aceptación
 
-- El enemigo avanza hacia la puerta en estado En curso.
-- El contacto con la puerta cambia a Derrota.
-- Una respuesta Caesar correcta cambia a Victoria.
-- Una respuesta incorrecta conserva la partida y muestra un error.
-- Reiniciar devuelve la partida al estado inicial.
-- Cambio de dificultad y ronda altera los parametros previstos.
-- Pistas y puntuacion se actualizan sin romper la validacion.
-- La logica se puede probar sin depender de GameObjects.
-- La escena funciona en PlayMode y los resultados quedan documentados.
+- EditMode: César, normalización, validación, vidas, estados, puntuación y rondas.
+- PlayMode: movimiento, trigger, conexión de derrota, victoria y reinicio.
+- Confirmar que no se admiten acciones de juego tras finalizar la sesión.
+- Comprobar interfaz, dificultades y progresión en la plataforma de entrega.
+- Medir cobertura conforme al contrato; registrar logs, versión y evidencias.
 
-## Validacion pendiente
+## Estado y entregables
 
-La ejecucion de EditMode, PlayMode, Code Coverage, creacion de escena y
-generacion de APK requieren Unity 6.3 y licencia. Hasta disponer de ese entorno
-deben aparecer como PENDIENTE-HUMANO, nunca como pruebas pasadas.
+No hay ejecución verificada de Unity 6.3, EditMode, PlayMode, cobertura ni build.
+Escena, prefabs, configuración de proyecto y UI requieren trabajo en el editor.
+La licencia no se guarda en Git. Solo tras pruebas y revisión se puede considerar
+terminado el apartado. No se declara ningún APK ni ejecutable generado.
 
-## Documentacion relacionada
+## Documentación
 
-- docs/manual-uso-unity.md
-- docs/evidencias/android-unity.md
+El README de unity/ contiene esta misma guía. Consulta también el manual Unity
+de docs/. Esta documentación distingue código disponible de integración pendiente.
