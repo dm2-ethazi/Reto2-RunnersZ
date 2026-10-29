@@ -20,8 +20,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
+import unicodedata
 from typing import Any
 
 OWNER = "dm2-ethazi"
@@ -116,8 +118,42 @@ def _issue_number(item: dict[str, Any]) -> int | None:
     return content.get("number")
 
 
+def _backlog_id(item: dict[str, Any]) -> str:
+    """Identificador interno I-NN, extraído del título («[I-07] …»)."""
+    title = item.get("title") or (item.get("content") or {}).get("title", "")
+    m = re.search(r"\[(I-\d{2})\]", title)
+    return m.group(1) if m else "?"
+
+
+def _assignees(item: dict[str, Any]) -> list[str]:
+    """Logins asignados (gh devuelve strings en la raíz y dicts en content)."""
+    raw = item.get("assignees")
+    if raw is None:
+        raw = (item.get("content") or {}).get("assignees", [])
+    out = []
+    for a in raw:
+        out.append(a.get("login", "") if isinstance(a, dict) else str(a))
+    return [a for a in out if a]
+
+
+def _norm(s: str) -> str:
+    """Normaliza para comparar sin acentos ni mayúsculas («Área» == «area»)."""
+    s = unicodedata.normalize("NFKD", s or "")
+    return "".join(c for c in s if not unicodedata.combining(c)).lower()
+
+
 def _field_value(item: dict[str, Any], field: str) -> str:
-    for f in item.get("fields", []):
+    """Valor de un campo de la tarjeta.
+
+    `gh project item-list` expone los campos como claves superiores en
+    minúscula («horas», «prioridad», «sprint», «área», «status»), no como
+    array `fields`; se comprueba primero ahí y se cae al formato anidado.
+    """
+    want = _norm(field)
+    for key, value in item.items():
+        if _norm(str(key)) == want and value is not None and not isinstance(value, (dict, list)):
+            return str(value)
+    for f in item.get("fields") or []:
         if f.get("name") == field:
             if "text" in f:
                 return f["text"] or ""
@@ -174,13 +210,11 @@ def cmd_status(args: argparse.Namespace) -> None:
         print(f"\n== {col} ({len(by_col.get(col, []))}) ==")
         for item in sorted(by_col.get(col, []), key=lambda i: _issue_number(i) or 0):
             n = _issue_number(item)
-            title = (item.get("content") or {}).get("title", "")
-            resp = ", ".join(
-                a.get("login", "") for a in (item.get("content") or {}).get("assignees", [])
-            ) or "sin asignar"
+            title = item.get("title") or (item.get("content") or {}).get("title", "")
+            resp = ", ".join(_assignees(item)) or "sin asignar"
             horas = _field_value(item, "Horas") or "?"
             pr, ci = _linked_pr(n, args.dry_run) if n else ("-", "-")
-            iid = f"I-{n:02d}" if n else "?"
+            iid = _backlog_id(item)
             print(f"  #{n} {iid} | {title[:48]:48} | {resp:10} | {horas:>3} h | PR {pr} | {ci}")
 
 

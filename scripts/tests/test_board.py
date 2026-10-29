@@ -71,6 +71,38 @@ def test_field_value_text_y_number():
     assert board._field_value(item, "Sprint") == ""
 
 
+def test_field_value_claves_superiores_formato_gh():
+    """gh project item-list expone los campos como claves superiores en minúscula."""
+    item = {"id": "PVTI_x", "title": "[I-01] Repositorio",
+            "status": "En curso", "horas": 3, "prioridad": "A",
+            "sprint": "1", "área": "infra", "assignees": ["alain8123"]}
+    assert board._field_value(item, "Horas") == "3"
+    assert board._field_value(item, "Prioridad") == "A"
+    assert board._field_value(item, "Sprint") == "1"
+    # «Área» con tilde se encuentra pidiendo «Area» o «Área»
+    assert board._field_value(item, "Área") == "infra"
+    assert board._field_value(item, "Area") == "infra"
+    assert board._field_value(item, "Status") == "En curso"
+    assert board._field_value(item, "Inexistente") == ""
+
+
+def test_field_value_prefiere_clave_superior():
+    item = {"horas": 7, "fields": [{"name": "Horas", "number": 9}]}
+    assert board._field_value(item, "Horas") == "7"
+
+
+def test_backlog_id_desde_titulo():
+    item = {"title": "[I-07] Android: descifrar imagen por la API"}
+    assert board._backlog_id(item) == "I-07"
+    assert board._backlog_id({"title": "Sin identificador"}) == "?"
+
+
+def test_assignees_acepta_strings_y_dicts():
+    assert board._assignees({"assignees": ["jairoben"]}) == ["jairoben"]
+    assert board._assignees({"content": {"assignees": [{"login": "alain8123"}]}}) == ["alain8123"]
+    assert board._assignees({}) == []
+
+
 def test_option_map_sin_status_devuelve_vacio():
     assert board._option_map(json.dumps({"fields": []}), "Status") == {}
 
