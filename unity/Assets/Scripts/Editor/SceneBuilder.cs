@@ -1,0 +1,4 @@
+#if UNITY_EDITOR
+using UnityEditor;using UnityEngine;
+namespace RunnersZ.Editor { public static class SceneBuilder { [MenuItem("RunnersZ/Build Game Scene")] public static void Build(){var scene=UnityEditor.SceneManagement.EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects);var enemy=new GameObject("Enemy");enemy.tag="Enemy";enemy.AddComponent<Rigidbody2D>().bodyType=RigidbodyType2D.Kinematic;enemy.AddComponent<BoxCollider2D>();var door=new GameObject("Door");door.tag="Door";var collider=door.AddComponent<BoxCollider2D>();collider.isTrigger=true;door.AddComponent<RunnersZ.Game.Door>();UnityEditor.SceneManagement.EditorSceneManager.SaveScene(scene,"Assets/Scenes/Game.unity");}}}
+#endif
