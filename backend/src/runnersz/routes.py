@@ -2,15 +2,32 @@
 
 Autor: Alain. Versión: 2.0."""
 import os, tempfile
+import secrets
 from pathlib import Path
-from fastapi import APIRouter, File, Form, Header, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import Response, JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel
 from .crypto import CryptoError, encrypt_file, decrypt_file
 from .text import vigenere, caesar
 router = APIRouter()
 TOKEN = os.getenv('RZ_API_TOKEN', '')
 LIMIT = int(os.getenv('RZ_MAX_UPLOAD_MIB', '100')) * 1048576
+
+
+bearer_scheme = HTTPBearer(auto_error=False)
+
+def authorization_header(credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme)) -> str | None:
+    """Extrae Bearer y declara la autenticación en OpenAPI.
+
+    Args:
+        credentials: Credenciales enviadas por el cliente, si existen.
+    Returns:
+        Cabecera normalizada o None; auth conserva el error 401 contractual.
+    """
+    if credentials is None:
+        return None
+    return f"Bearer {credentials.credentials}"
 
 class Text(BaseModel):
     """Datos de entrada de los endpoints textuales."""
@@ -26,7 +43,8 @@ Args:
     a: Cabecera Bearer recibida.
 Raises:
     ValueError: Si falta el token o es incorrecto."""
-    if not TOKEN or a != f'Bearer {TOKEN}':
+    # §3.4: se comparan bytes para admitir UTF-8 en tiempo constante.
+    if not TOKEN or a is None or not secrets.compare_digest(a.encode('utf-8'), f'Bearer {TOKEN}'.encode('utf-8')):
         raise ValueError('UNAUTHORIZED')
 
 def fail(code, status):
@@ -45,7 +63,7 @@ def health():
     return {'status': 'ok', 'version': '2.0.0'}
 
 @router.get('/api/v1/auth/check', status_code=204)
-def check(authorization: str | None=Header(None)):
+def check(authorization: str | None=Depends(authorization_header)):
     """Comprueba el token.
 
 Args:
@@ -76,7 +94,7 @@ Nota:
     return (p, None)
 
 @router.post('/api/v1/text/vigenere')
-def vig(x: Text, authorization: str | None=Header(None)):
+def vig(x: Text, authorization: str | None=Depends(authorization_header)):
     """Atiende la transformación Vigenère (§6.1).
 
 Args:
@@ -91,7 +109,7 @@ Returns:
         return fail(str(e), 401 if str(e) == 'UNAUTHORIZED' else 400)
 
 @router.post('/api/v1/text/caesar')
-def ces(x: Text, authorization: str | None=Header(None)):
+def ces(x: Text, authorization: str | None=Depends(authorization_header)):
     """Atiende la transformación César (§6.3).
 
 Args:
@@ -135,11 +153,11 @@ Returns:
         dst.with_name(dst.name + '.part').unlink(missing_ok=True)
 
 @router.post('/api/v1/files/encrypt')
-async def enc(file: UploadFile=File(...), password: str=Form(...), authorization: str | None=Header(None)):
+async def enc(file: UploadFile=File(...), password: str=Form(...), authorization: str | None=Depends(authorization_header)):
     """Expone el cifrado multipart; delega en fileop."""
     return await fileop(file, password, authorization, False)
 
 @router.post('/api/v1/files/decrypt')
-async def dec(file: UploadFile=File(...), password: str=Form(...), authorization: str | None=Header(None)):
+async def dec(file: UploadFile=File(...), password: str=Form(...), authorization: str | None=Depends(authorization_header)):
     """Expone el descifrado multipart; delega en fileop."""
     return await fileop(file, password, authorization, True)

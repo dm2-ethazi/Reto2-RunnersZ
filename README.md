@@ -38,3 +38,16 @@ Flujo de trabajo: ver `docs/WORKFLOW.md`. Tablero: <https://github.com/orgs/dm2-
 `main.py` compone la aplicación; `routes.py` atiende HTTP; `crypto.py` y `text.py` encapsulan algoritmos. Los módulos incluyen docstrings en español con parámetros, retornos y errores. Configuración, autenticación y modelos auxiliares siguen pendientes de integrar con las rutas.
 
 2026-10-29 — feature/i02-api-base: separa HTTP y documenta el código. Esta reorganización conserva el comportamiento existente y no acredita todavía cumplimiento completo de §5.3/§6.2 ni recepción en streaming.
+
+## Prueba local de autenticación
+
+Desde PowerShell, en `backend/`, elimina un posible token temporal de la sesión
+con `Remove-Item Env:RZ_API_TOKEN -ErrorAction SilentlyContinue` y arranca con
+`uv run --python 3.12 uvicorn runnersz.main:app --app-dir src --env-file .env --host 127.0.0.1 --port 8000 --reload`.
+Uvicorn respeta variables de entorno existentes por encima de `.env`.
+En `/docs`, pulsa Authorize e introduce **solo el token**, sin `Bearer`;
+Swagger añade el prefijo automáticamente. `/api/v1/auth/check` responde 204
+con un token válido y 401 sin credenciales o con uno incorrecto.
+No compartas ni versiones `.env`.
+
+2026-10-29 — Corrige la declaración Bearer en OpenAPI y comparación constante (§3.4).
