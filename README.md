@@ -32,3 +32,9 @@ referencia. El trabajo de integración vive en la rama `prototype/runnersz`.
 - **Jairo** (`@jairoben`): Android, Unity y arranque del repositorio.
 
 Flujo de trabajo: ver `docs/WORKFLOW.md`. Tablero: <https://github.com/orgs/dm2-ethazi/projects/14>.
+
+## Estructura del backend y documentación
+
+`main.py` compone la aplicación; `routes.py` atiende HTTP; `crypto.py` y `text.py` encapsulan algoritmos. Los módulos incluyen docstrings en español con parámetros, retornos y errores. Configuración, autenticación y modelos auxiliares siguen pendientes de integrar con las rutas.
+
+2026-10-29 — feature/i02-api-base: separa HTTP y documenta el código. Esta reorganización conserva el comportamiento existente y no acredita todavía cumplimiento completo de §5.3/§6.2 ni recepción en streaming.
