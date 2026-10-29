@@ -9,7 +9,7 @@ app=FastAPI(title="RunnersZ API",version="2.0.0"); TOKEN=os.getenv("RZ_API_TOKEN
 class Text(BaseModel): text:str; key:str|None=None; shift:int|None=None; mode:str="encrypt"
 def auth(a):
  if not TOKEN or a!=f"Bearer {TOKEN}": raise ValueError("UNAUTHORIZED")
-def fail(code,status): return JSONResponse(status,{"code":code,"message":code})
+def fail(code,status): return JSONResponse({"code":code,"message":code},status_code=status)
 @app.get("/api/v1/health")
 def health(): return {"status":"ok","version":"2.0.0"}
 @app.get("/api/v1/auth/check",status_code=204)
@@ -44,3 +44,4 @@ async def fileop(file,password,authorization,dec):
 async def enc(file:UploadFile=File(...),password:str=Form(...),authorization:str|None=Header(None)): return await fileop(file,password,authorization,False)
 @app.post("/api/v1/files/decrypt")
 async def dec(file:UploadFile=File(...),password:str=Form(...),authorization:str|None=Header(None)): return await fileop(file,password,authorization,True)
+
