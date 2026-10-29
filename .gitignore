@@ -1,0 +1,48 @@
+# Variables de entorno y secretos
+.env
+backend/.env
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Java / Maven
+target/
+
+# Android
+.gradle/
+.kotlin/
+local.properties
+*.apk
+*.aab
+*.jks
+*.keystore
+
+# Unity
+unity/Library/
+unity/Temp/
+unity/Obj/
+unity/Logs/
+unity/Build/
+unity/Builds/
+unity/MemoryCaptures/
+unity/Recordings/
+unity/UserSettings/
+unity/*.csproj
+unity/*.sln
+
+# Sistema y editores
+Thumbs.db
+.DS_Store
+.idea/
+*.iml
+
+# Logs
+*.log
+*.err
