@@ -1,0 +1,1 @@
+namespace RunnersZ.Logic { public sealed class HintScore { public int Score{get;private set;}=0; public int Used{get;private set;} public string Use(string phrase){var words=phrase.Split(' ');if(Used>=words.Length)return "";Used++;Score=System.Math.Max(0,Score-50);return string.Join(" ",words,0,Used);} public void Correct(){Score+=100;}}}

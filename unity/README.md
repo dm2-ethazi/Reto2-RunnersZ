@@ -1,0 +1,3 @@
+# RunnersZ Unity 6.3
+
+Crear en Unity Hub un proyecto 2D con versión 6000.3.x en esta carpeta. Añadir Test Framework, Code Coverage y TextMeshPro. La lógica pura está en Assets/Scripts/Logic; la escena debe contener enemigo con Rigidbody2D kinematic, puerta con BoxCollider2D trigger, HUD de ronda/vidas/puntos, respuestas César, pistas y paneles de victoria/derrota. El editor Unity y su licencia son requisitos humanos para generar escenas, APK y pruebas PlayMode.

@@ -1,0 +1,2 @@
+using UnityEngine;
+namespace RunnersZ.Game { public sealed class EnemyHopper:MonoBehaviour { public float interval=1f; public float jumpDistance=1f; float elapsed; Rigidbody2D body; void Awake(){body=GetComponent<Rigidbody2D>();} void FixedUpdate(){elapsed+=Time.fixedDeltaTime;if(elapsed>=interval){elapsed=0;AdvanceNow();}} public void AdvanceNow(){if(body!=null)body.MovePosition(body.position+Vector2.right*jumpDistance);else transform.position+=Vector3.right*jumpDistance;}}}

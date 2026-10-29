@@ -1,0 +1,1 @@
+namespace RunnersZ.Logic { public sealed class RoundProgression { public int Round{get;private set;}=1; public int Enemies{get;private set;}=5; public float Interval{get;private set;}=10f; public bool Next(){if(Round>=3)return false;Round++;Enemies+=2;Interval*=.9f;return true;} public void Reset(){Round=1;Enemies=5;Interval=10f;}}}
