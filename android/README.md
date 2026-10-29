@@ -1,66 +1,66 @@
-# Android - RunnersZ v2
+# RunnersZ — Android
 
-## Identificacion y autoria
+## Autoría y alcance
 
-- Apartado: Android, trabajo asignado a Jairo.
-- Rama: feature/android-v2.
-- Responsable: Jairo.
-- Revision: Alain.
-- Contrato: Contrato_Tecnico_RunnersZ_v2.docx.
-- Alcance: cliente Android de descifrado y comunicacion con la API.
-- Estado: En revision. No es Hecho hasta tener CI verde, revision aprobada y
-  evidencias reproducibles.
+- Author / responsable: Jairo (@jairoben).
+- Revisor previsto: Alain; no implica revisión aprobada.
+- Rama: feature/android-v2. PR: #39.
+- Referencia principal: Contrato_Tecnico_RunnersZ_v2.docx.
+- Este apartado contiene el cliente Kotlin que delega el descifrado en la API.
 
-## Requisitos del contrato
+## Contenido real
 
-- Kotlin y minSdk 26.
-- Abrir o recibir .txt, .png y .png.enc mediante selector y compartir.
-- Pantalla Imagen: elegir imagen cifrada, introducir clave AES, solicitar el
-  descifrado al backend y mostrar el bitmap recibido.
-- Pantalla Orden: enviar texto y desplazamiento Caesar valido de 1 a 25, y
-  presentar el texto plano.
-- Errores de clave, desplazamiento, archivo corrupto o API no disponible con
-  Toast, Snackbar o dialogo sin cerrar la app.
-- Logica de red separada de UI y cubierta por pruebas unitarias.
-- Direccion, puerto y token configurables.
-- Autenticacion Bearer conforme al backend v2.
+| Archivo | Responsabilidad actual |
+| --- | --- |
+| MainActivity.kt | Activity de arranque; onCreate todavía no crea una interfaz. |
+| ConnectionSettings.kt | Valida URL HTTP/HTTPS y token no vacío; elimina la barra final. |
+| ApiClient.kt | Define peticiones de descifrado multipart y César JSON con OkHttp. |
+| ImageDecryptor.kt | Convierte la respuesta del servidor en bitmap; rechaza imagen inválida. |
+| app/src/test/ | Pruebas de configuración y conversión de imagen. |
 
-## Estructura
+El código Kotlin está en android/app/src/main/java/com/runnersz/reto2/android/.
 
-- app/src/main/java/.../MainActivity.kt: UI y navegacion.
-- ConnectionSettings.kt: direccion, puerto y token.
-- ApiClient.kt: llamadas HTTP con OkHttp.
-- ImageDecryptor.kt: validacion y conversion del resultado.
-- app/src/test/: pruebas unitarias.
-- build.gradle.kts: dependencias declaradas del modulo.
+## Comunicación prevista
 
-El servidor es la autoridad para el descifrado remoto de esta variante. No se
-debe introducir otra implementacion local que contradiga el contrato API v2.
+- POST /api/v1/files/decrypt: multipart con file y password.
+- POST /api/v1/text/caesar: JSON con text, shift y mode=decrypt.
+- El cliente debe enviar Authorization: Bearer seguido del token configurado.
+- Actualmente ApiClient envía únicamente el prefijo Bearer: la autenticación
+  todavía necesita corregirse. Las peticiones no se han validado de extremo a extremo.
 
-## Puesta en marcha
+## Entorno y dependencias declaradas
 
-1. Abrir android/ en Android Studio.
-2. Usar JDK y Android SDK compatibles.
-3. Instalar una plataforma Android igual o superior a minSdk 26.
-4. Ejecutar las pruebas de app/src/test/.
-5. Configurar URL, puerto y token.
-6. Arrancar el backend y probar salud, Imagen y Orden.
-7. Generar APK debug tras completar la validacion Android.
+Kotlin, compileSdk/targetSdk 35, minSdk 26. El módulo declara AndroidX Core
+1.13.1, AppCompat 1.7.0, OkHttp 4.12.0 y JUnit 4.13.2.
+Consulta android/build.gradle.kts y android/app/build.gradle.kts antes de
+preparar el entorno. No se incluye Gradle Wrapper.
 
-No se versionan credenciales, tokens ni archivos locales del SDK.
+1. Abrir android/ en Android Studio y preparar SDK 35.
+2. Sincronizar Gradle con una versión compatible con los plugins declarados.
+3. Ejecutar las pruebas unitarias desde el IDE.
+4. Completar la UI y autenticación antes de intentar la prueba funcional.
+5. Con Gradle compatible instalado, desde android/: gradle testDebugUnitTest.
+6. Para construir: gradle assembleDebug. APK esperado en
+   app/build/outputs/apk/debug/app-debug.apk; su generación no está verificada.
 
-## Validacion
+## Requisitos y trabajo pendiente
 
-Casos previstos: configuracion y URL, peticion autenticada, imagen valida,
-respuesta corrupta, clave incorrecta, desplazamiento fuera de 1..25, backend
-apagado, timeout, error HTTP, compartir y selector.
+El contrato exige pantallas Imagen y Orden, ajustes de conexión, selector,
+recepción de archivos compartidos, operaciones fuera del hilo UI, gestión de
+errores sin cerrar la app y pruebas reproducibles. Estos requisitos no deben
+confundirse con funciones terminadas: la Activity está vacía, falta conectar
+la UI a los servicios y comprobar autenticación, errores HTTP y recursos.
+También faltan validación en dispositivo, cobertura exigida y APK comprobado.
 
-La ejecucion real de Gradle, APK y dispositivo requiere Android SDK, Gradle y
-Android Studio. Hasta ejecutarlo, debe figurar como pendiente humano.
+## Cómo validar
 
-## Documentacion relacionada
+Probar configuración válida e inválida, token incorrecto, backend inaccesible,
+imagen válida/corrupta, clave errónea, César 1 y 25, desplazamientos inválidos,
+selector y compartir. Registrar comando, entorno, resultado y evidencia.
+No hay resultados nuevos de Gradle ni cobertura verificada en esta actualización.
 
-- docs/manual-uso-android.md
-- docs/README-i21.md
-- docs/README-i22.md
-- docs/evidencias/android-unity.md
+## Documentación
+
+El README de android/ contiene esta misma guía para quien abra el módulo.
+Manuales y evidencias complementarios están en docs/. La rama queda pendiente
+de validación y revisión; este README no certifica el cumplimiento del contrato.

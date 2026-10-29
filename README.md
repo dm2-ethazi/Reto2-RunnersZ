@@ -1,34 +1,66 @@
-# RunnersZ · Reto 2 · Fase Discovery
+# RunnersZ — Android
 
-Proyecto del Reto 2 para el cliente **Hogwarts**. Fecha de entrega: **12 de noviembre de 2026**.
+## Autoría y alcance
 
-Arquitectura v2.0 (contrato `docs/contrato/Contrato_Tecnico_RunnersZ_v2.md`):
+- Author / responsable: Jairo (@jairoben).
+- Revisor previsto: Alain; no implica revisión aprobada.
+- Rama: feature/android-v2. PR: #39.
+- Referencia principal: Contrato_Tecnico_RunnersZ_v2.docx.
+- Este apartado contiene el cliente Kotlin que delega el descifrado en la API.
 
-- **Servidor** Python (FastAPI) en **Docker Compose**: concentra toda la lógica de cifrado y expone la API HTTP.
-- **Cliente de escritorio** JavaFX: usa la API solo por HTTP.
-- **App Android**: usa la API solo por HTTP.
-- **Minijuego Unity 6.3**: autónomo (no usa la API).
+## Contenido real
 
-## Estructura del monorepo
+| Archivo | Responsabilidad actual |
+| --- | --- |
+| MainActivity.kt | Activity de arranque; onCreate todavía no crea una interfaz. |
+| ConnectionSettings.kt | Valida URL HTTP/HTTPS y token no vacío; elimina la barra final. |
+| ApiClient.kt | Define peticiones de descifrado multipart y César JSON con OkHttp. |
+| ImageDecryptor.kt | Convierte la respuesta del servidor en bitmap; rechaza imagen inválida. |
+| app/src/test/ | Pruebas de configuración y conversión de imagen. |
 
-| Carpeta | Contenido |
-|---|---|
-| `backend/` | Servidor FastAPI + Docker Compose |
-| `desktop/` | Cliente de escritorio JavaFX |
-| `android/` | Aplicación Android |
-| `unity/` | Minijuego Unity 6.3 |
-| `scripts/` | Utilidades del equipo (p. ej. `board.py` del tablero) |
-| `docs/` | Contrato, workflow, planificación, plan de pruebas, evidencias |
+El código Kotlin está en android/app/src/main/java/com/runnersz/reto2/android/.
 
-## Estado
+## Comunicación prevista
 
-**Reinicio del repositorio (29-oct-2026).** Se arranca de cero: `main` contiene solo la base y la
-estructura vacía; el material de la v1 rechazada se conserva como material reutilizable, no como
-referencia. El trabajo de integración vive en la rama `prototype/runnersz`.
+- POST /api/v1/files/decrypt: multipart con file y password.
+- POST /api/v1/text/caesar: JSON con text, shift y mode=decrypt.
+- El cliente debe enviar Authorization: Bearer seguido del token configurado.
+- Actualmente ApiClient envía únicamente el prefijo Bearer: la autenticación
+  todavía necesita corregirse. Las peticiones no se han validado de extremo a extremo.
 
-## Equipo
+## Entorno y dependencias declaradas
 
-- **Alain** (`@GH_ALAIN`): servidor, cliente JavaFX, CI/hooks y documentación de servidor/escritorio.
-- **Jairo** (`@jairoben`): Android, Unity y arranque del repositorio.
+Kotlin, compileSdk/targetSdk 35, minSdk 26. El módulo declara AndroidX Core
+1.13.1, AppCompat 1.7.0, OkHttp 4.12.0 y JUnit 4.13.2.
+Consulta android/build.gradle.kts y android/app/build.gradle.kts antes de
+preparar el entorno. No se incluye Gradle Wrapper.
 
-Flujo de trabajo: ver `docs/WORKFLOW.md`. Tablero: <https://github.com/orgs/dm2-ethazi/projects/14>.
+1. Abrir android/ en Android Studio y preparar SDK 35.
+2. Sincronizar Gradle con una versión compatible con los plugins declarados.
+3. Ejecutar las pruebas unitarias desde el IDE.
+4. Completar la UI y autenticación antes de intentar la prueba funcional.
+5. Con Gradle compatible instalado, desde android/: gradle testDebugUnitTest.
+6. Para construir: gradle assembleDebug. APK esperado en
+   app/build/outputs/apk/debug/app-debug.apk; su generación no está verificada.
+
+## Requisitos y trabajo pendiente
+
+El contrato exige pantallas Imagen y Orden, ajustes de conexión, selector,
+recepción de archivos compartidos, operaciones fuera del hilo UI, gestión de
+errores sin cerrar la app y pruebas reproducibles. Estos requisitos no deben
+confundirse con funciones terminadas: la Activity está vacía, falta conectar
+la UI a los servicios y comprobar autenticación, errores HTTP y recursos.
+También faltan validación en dispositivo, cobertura exigida y APK comprobado.
+
+## Cómo validar
+
+Probar configuración válida e inválida, token incorrecto, backend inaccesible,
+imagen válida/corrupta, clave errónea, César 1 y 25, desplazamientos inválidos,
+selector y compartir. Registrar comando, entorno, resultado y evidencia.
+No hay resultados nuevos de Gradle ni cobertura verificada en esta actualización.
+
+## Documentación
+
+El README de android/ contiene esta misma guía para quien abra el módulo.
+Manuales y evidencias complementarios están en docs/. La rama queda pendiente
+de validación y revisión; este README no certifica el cumplimiento del contrato.
