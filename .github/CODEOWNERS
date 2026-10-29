@@ -1,0 +1,51 @@
+# Propiedad de ficheros (protocolo C.3 de docs/WORKFLOW.md).
+# Cada ruta la revisa su dueño. Nota: @GH_ALAIN debe sustituirse por el
+# usuario real de Alain en GitHub (PENDIENTE-HUMANO hasta confirmarlo).
+
+# Alain (A): servidor, escritorio, CI y documentacion transversal
+/backend/                         @jairoben @GH_ALAIN
+/desktop/                         @jairoben @GH_ALAIN
+/scripts/                         @jairoben @GH_ALAIN
+/.github/workflows/backend.yml    @jairoben @GH_ALAIN
+/.github/workflows/desktop.yml    @jairoben @GH_ALAIN
+/.github/workflows/docker.yml     @jairoben @GH_ALAIN
+/.pre-commit-config.yaml          @jairoben @GH_ALAIN
+/.actrc                           @jairoben @GH_ALAIN
+/.github/CODEOWNERS               @jairoben @GH_ALAIN
+/.github/ISSUE_TEMPLATE/          @jairoben @GH_ALAIN
+/.github/pull_request_template.md @jairoben @GH_ALAIN
+/.gitignore                       @jairoben @GH_ALAIN
+/.gitattributes                   @jairoben @GH_ALAIN
+/README.md                        @jairoben @GH_ALAIN
+/docs/WORKFLOW.md                 @jairoben @GH_ALAIN
+/docs/api-contract.md             @jairoben @GH_ALAIN
+/docs/openapi.json                @jairoben @GH_ALAIN
+/docs/formato-enc-v2.md           @jairoben @GH_ALAIN
+/docs/vectors/                    @jairoben @GH_ALAIN
+/docs/decisiones.md               @jairoben @GH_ALAIN
+/docs/auditoria-v1-a-v2.md        @jairoben @GH_ALAIN
+/docs/planificacion/indice-issues.md            @jairoben @GH_ALAIN
+/docs/plan-de-pruebas/README.md                 @jairoben @GH_ALAIN
+/docs/plan-de-pruebas/servidor-escritorio.md    @jairoben @GH_ALAIN
+/docs/evidencias/                 @jairoben @GH_ALAIN
+/docs/manual-instalacion-servidor.md            @jairoben @GH_ALAIN
+/docs/manual-uso-escritorio.md                  @jairoben @GH_ALAIN
+/docs/demo.md                     @jairoben @GH_ALAIN
+
+# Jairo (J): Android, Unity y su documentacion
+/android/                         @jairoben
+/unity/                           @jairoben
+/.github/workflows/android.yml    @jairoben
+/.github/workflows/unity.yml      @jairoben
+/scripts/check_unity_coverage.py  @jairoben
+/docs/decisiones-android-unity.md @jairoben
+/docs/plan-de-pruebas/android-unity.md         @jairoben
+/docs/evidencias/android/          @jairoben
+/docs/evidencias/unity/            @jairoben
+/docs/manual-uso-android.md        @jairoben
+/docs/manual-uso-unity.md          @jairoben
+/docs/entregables/                 @jairoben
+
+# Solo el humano (cambios de contrato = decision de ambos)
+/docs/contrato/                   @jairoben @GH_ALAIN
+/docs/prompts/                    @jairoben @GH_ALAIN
