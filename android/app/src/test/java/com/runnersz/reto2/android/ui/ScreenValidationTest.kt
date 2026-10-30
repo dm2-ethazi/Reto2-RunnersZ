@@ -1,4 +1,4 @@
-package com.runnersz.reto2.android.ui
+﻿package com.runnersz.reto2.android.ui
 
 import android.view.View
 import android.view.ViewGroup
@@ -37,7 +37,7 @@ class ScreenValidationTest {
   screen(OrderFragment()){all->
    all.filterIsInstance<EditText>().last().setText("26")
    all.filterIsInstance<Button>().first{it.text=="Descifrar orden"}.performClick()
-   assertTrue(all.filterIsInstance<TextView>().any{it.text.toString().contains("1–25")})
+   assertTrue(all.filterIsInstance<TextView>().any{it.text.toString().contains("1-25")})
   }
  }
  @Test fun firstLaunchHasSettingsAndNavigation(){
@@ -48,3 +48,4 @@ class ScreenValidationTest {
   controller.pause().stop().destroy()
  }
 }
+
