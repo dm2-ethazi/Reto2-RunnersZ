@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder de Imagen (I-06); la lógica completa es I-07. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/nav_imagen"
+        android:textAppearance="@style/TextAppearance.RunnersZ.Titulo" />
+
+    <TextView
+        android:id="@+id/ayudaImagen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="@string/imagen_placeholder"
+        android:textAppearance="@style/TextAppearance.RunnersZ.Ayuda" />
+</LinearLayout>
