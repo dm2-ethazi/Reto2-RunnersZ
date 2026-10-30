@@ -1,66 +1,67 @@
-# RunnersZ — Android
+# RunnersZ Android
 
-## Autoría y alcance
+Author: Jairo (@jairoben). Revisión: Alain. Rama: feature/android-v2.
+Contrato principal: Contrato_Tecnico_RunnersZ_v2.docx (28/10/2026).
+Seguimiento: issue #42, PR #39.
 
-- Author / responsable: Jairo (@jairoben).
-- Revisor previsto: Alain; no implica revisión aprobada.
-- Rama: feature/android-v2. PR: #39.
-- Referencia principal: Contrato_Tecnico_RunnersZ_v2.docx.
-- Este apartado contiene el cliente Kotlin que delega el descifrado en la API.
+## Qué hace
 
-## Contenido real
+Cliente nativo Kotlin, minSdk 26 / targetSdk 35. No cifra localmente:
+Imagen sube un .png.enc y la contraseña a la API multipart; solo acepta
+resultados con X-Integrity: verified y muestra el bitmap escalado.
+Orden abre TXT UTF-8 o admite texto escrito; valida desplazamiento 1..25,
+envía JSON a César y muestra el campo result.
+Ajustes guarda dirección y token en preferencias privadas y prueba autenticación.
+Recibe archivos por Abrir con o Compartir; la navegación conserva acceso a Ajustes.
 
-| Archivo | Responsabilidad actual |
-| --- | --- |
-| MainActivity.kt | Activity de arranque; onCreate todavía no crea una interfaz. |
-| ConnectionSettings.kt | Valida URL HTTP/HTTPS y token no vacío; elimina la barra final. |
-| ApiClient.kt | Define peticiones de descifrado multipart y César JSON con OkHttp. |
-| ImageDecryptor.kt | Convierte la respuesta del servidor en bitmap; rechaza imagen inválida. |
-| app/src/test/ | Pruebas de configuración y conversión de imagen. |
+## Estructura
 
-El código Kotlin está en android/app/src/main/java/com/runnersz/reto2/android/.
+- app/src/main/.../data: ApiClient asíncrono OkHttp, resultados y preferencias.
+- app/src/main/.../domain: dirección, errores y desplazamiento.
+- app/src/main/.../ui: Imagen, Orden y Ajustes.
+- MainActivity: navegación y recepción de intents.
+- app/src/main/res: navegación, estilos y tipografías Inter/Open Sans.
+- app/src/test: JUnit, Robolectric y servidor HTTP de pruebas.
+- licenses: licencias OFL de las fuentes.
+- gradle/wrapper: Gradle 8.9, sin instalación global necesaria.
 
-## Comunicación prevista
+## Compilar y probar
 
-- POST /api/v1/files/decrypt: multipart con file y password.
-- POST /api/v1/text/caesar: JSON con text, shift y mode=decrypt.
-- El cliente debe enviar Authorization: Bearer seguido del token configurado.
-- Actualmente ApiClient envía únicamente el prefijo Bearer: la autenticación
-  todavía necesita corregirse. Las peticiones no se han validado de extremo a extremo.
+Desde android/, con JDK 21 y SDK Android 35:
 
-## Entorno y dependencias declaradas
+    gradlew.bat testDebugUnitTest assembleDebug
+    gradlew.bat jacocoTestReport jacocoCoverageVerification
 
-Kotlin, compileSdk/targetSdk 35, minSdk 26. El módulo declara AndroidX Core
-1.13.1, AppCompat 1.7.0, OkHttp 4.12.0 y JUnit 4.13.2.
-Consulta android/build.gradle.kts y android/app/build.gradle.kts antes de
-preparar el entorno. No se incluye Gradle Wrapper.
+Linux: sustituir gradlew.bat por ./gradlew.
+Definir ANDROID_HOME o sdk.dir en local.properties (archivo local, no subir).
+APK: app/build/outputs/apk/debug/app-debug.apk.
+Informe: app/build/reports/jacoco/jacocoTestReport/.
+El umbral JaCoCo es 80%; no se rebaja para dar un resultado positivo.
 
-1. Abrir android/ en Android Studio y preparar SDK 35.
-2. Sincronizar Gradle con una versión compatible con los plugins declarados.
-3. Ejecutar las pruebas unitarias desde el IDE.
-4. Completar la UI y autenticación antes de intentar la prueba funcional.
-5. Con Gradle compatible instalado, desde android/: gradle testDebugUnitTest.
-6. Para construir: gradle assembleDebug. APK esperado en
-   app/build/outputs/apk/debug/app-debug.apk; su generación no está verificada.
+## Uso
 
-## Requisitos y trabajo pendiente
+1. Abrir Ajustes, indicar IP:puerto del servidor y token.
+2. Guardar y Probar; el servidor debe responder 204 en /api/v1/auth/check.
+3. Imagen: seleccionar archivo, introducir contraseña y pulsar Descifrar.
+4. Orden: escribir o abrir TXT, indicar desplazamiento y Descifrar orden.
+5. Un error conserva la aplicación abierta para corregir y reintentar.
 
-El contrato exige pantallas Imagen y Orden, ajustes de conexión, selector,
-recepción de archivos compartidos, operaciones fuera del hilo UI, gestión de
-errores sin cerrar la app y pruebas reproducibles. Estos requisitos no deben
-confundirse con funciones terminadas: la Activity está vacía, falta conectar
-la UI a los servicios y comprobar autenticación, errores HTTP y recursos.
-También faltan validación en dispositivo, cobertura exigida y APK comprobado.
+En emulador, 10.0.2.2 accede al PC anfitrión. En móvil real usar su IP LAN.
+El servidor es una dependencia externa del módulo: debe ofrecer los endpoints
+v2. No se incluye ni se modifica el backend en esta rama.
 
-## Cómo validar
+## Protección y límites
 
-Probar configuración válida e inválida, token incorrecto, backend inaccesible,
-imagen válida/corrupta, clave errónea, César 1 y 25, desplazamientos inválidos,
-selector y compartir. Registrar comando, entorno, resultado y evidencia.
-No hay resultados nuevos de Gradle ni cobertura verificada en esta actualización.
+- El original se lee sin modificar. Subida desde copia privada con buffer 64 KiB.
+- La copia temporal se borra al salir de Imagen. La contraseña no se persiste.
+- Máximo de entrada Imagen: 100 MiB; TXT: 1 MiB. Bitmap reducido a 2048 px.
+- Token en preferencias privadas con backup desactivado, sin cifrado adicional.
+- HTTP LAN permitido por contrato: usar solamente red de demo controlada.
+- Solicitudes OkHttp fuera del hilo UI, timeout 120 s, sin reintentos automáticos.
+- Respuestas y pantallas no registran token ni contraseña en logs.
+- TalkBack, 48 dp, fuentes escalables y estados textuales; revisar en dispositivo.
 
-## Documentación
+## Validación
 
-El README de android/ contiene esta misma guía para quien abra el módulo.
-Manuales y evidencias complementarios están en docs/. La rama queda pendiente
-de validación y revisión; este README no certifica el cumplimiento del contrato.
+Consultar docs/validacion-android.md para resultados realmente ejecutados.
+Una compilación local no equivale a revisión aprobada ni CI verde.
