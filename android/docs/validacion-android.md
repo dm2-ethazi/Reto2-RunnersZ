@@ -3,8 +3,8 @@ Autor: Jairo. Fecha: 2026-10-30. Tarea #42, rama feature/android-v2.
 
 ## Ejecución local
 Windows 11, JDK 21, Gradle Wrapper 8.9, SDK 35.
-Comando: gradlew.bat testDebugUnitTest assembleDebug jacocoTestReport jacocoCoverageVerification
-Resultado: BUILD SUCCESSFUL.
+Comando: gradlew.bat testDebugUnitTest assembleDebug jacocoTestReport jacocoCoverageVerification lintDebug
+Resultado: BUILD SUCCESSFUL; Android Lint sin errores bloqueantes.
 Tests: 47. Fallos: 0. Errores: 0.
 Líneas cubiertas: 301; sin cubrir: 17.
 Cobertura global: 94.65 %. Umbral bloqueante: 80 %.
@@ -13,10 +13,10 @@ Se realizó una compilación limpia para retirar artefactos v1 anteriores.
 
 ## Emulador y entregable
 Pixel 8a conectado mediante adb. Instalación APK y apertura MainActivity verificadas.
-Capturas: evidencias/ajustes.png y evidencias/orden.png.
+Capturas: evidencias/ajustes.png, evidencias/imagen.png y evidencias/orden.png.
 APK debug: app/build/outputs/apk/debug/app-debug.apk.
 Copia para probar: Escritorio/RunnersZ-Pruebas/runnersz-android-v2-debug.apk.
-SHA-256: 5AC6DAB7C775509A37BD260ED98018E5F23DB253EF94296A1DA42D3E8260DE0F
+SHA-256: 17973E154EB4B845D5BDC828040C59CB88396D056652A334AF3FEF561EA84BD2
 
 ## Pruebas cubiertas
 Configuración, autenticación HTTP 204/401/500, conexión y timeout, Bearer,

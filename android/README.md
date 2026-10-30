@@ -65,3 +65,8 @@ v2. No se incluye ni se modifica el backend en esta rama.
 
 Consultar docs/validacion-android.md para resultados realmente ejecutados.
 Una compilación local no equivale a revisión aprobada ni CI verde.
+
+## Capturas del emulador
+- [Ajustes](docs/evidencias/ajustes.png)
+- [Imagen](docs/evidencias/imagen.png)
+- [Orden](docs/evidencias/orden.png)
