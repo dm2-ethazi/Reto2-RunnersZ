@@ -97,6 +97,39 @@ def test_backlog_id_desde_titulo():
     assert board._backlog_id({"title": "Sin identificador"}) == "?"
 
 
+def test_load_indice_contrasta_no_deduce():
+    """El I-NN sale del índice contrastado; el orden #N≠I-NN se respeta."""
+    tmp = Path(__file__).with_name("indice-falso.md")
+    tmp.write_text(
+        "# Índice\n\n"
+        "| I-13 | #13 | Pruebas del Anexo VI.4 con evidencias | Alain |\n"
+        "| I-12 | #15 | Tests, cobertura 80 %, pre-push y act | Alain |\n"
+        "| I-15 | #41 | Android: órdenes César y accesibilidad | Jairo |\n",
+        encoding="utf-8",
+    )
+    try:
+        indice = board._load_indice(tmp)
+        assert indice[13] == ("I-13", "Pruebas del Anexo VI.4 con evidencias")
+        assert indice[15][0] == "I-12" and indice[41][0] == "I-15"
+        # título coincidente → I-NN del índice
+        item = {"content": {"number": 13}, "title": "Pruebas del Anexo VI.4 con evidencias"}
+        assert board._backlog_id(item, indice) == "I-13"
+        # título cambiado → se avisa en lugar de deducir
+        item2 = {"content": {"number": 41}, "title": "Otro título cualquiera"}
+        assert board._backlog_id(item2, indice) == "I-15 (título≠índice)"
+        # fuera del índice → ?
+        item3 = {"content": {"number": 99}, "title": "Sin registro"}
+        assert board._backlog_id(item3, indice) == "?"
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
+def test_backlog_id_titulo_explicito_gana_sobre_indice():
+    indice = {9: ("I-06", "Android: base, ajustes y navegación")}
+    item = {"content": {"number": 9}, "title": "[I-06] Android: base, ajustes y navegación"}
+    assert board._backlog_id(item, indice) == "I-06"
+
+
 def test_assignees_acepta_strings_y_dicts():
     assert board._assignees({"assignees": ["jairoben"]}) == ["jairoben"]
     assert board._assignees({"content": {"assignees": [{"login": "alain8123"}]}}) == ["alain8123"]
@@ -144,7 +177,7 @@ def test_linked_pr_en_verde(monkeypatch):
             "statusCheckRollup": [{"conclusion": "success"}]}]
     monkeypatch.setattr(subprocess, "run",
                         lambda *a, **k: _fake_proc(json.dumps(prs)))
-    num, ci = board._linked_pr(1, dry_run=False)
+    num, ci = board._linked_pr(4, "I-01", dry_run=False)
     assert num == "7" and ci == "CI verde"
 
 @pytest.mark.parametrize("check,expected", [
@@ -159,15 +192,23 @@ def test_actual_checks_and_issue_mapping(monkeypatch, check, expected):
     prs = [{"number": 23, "title": "[I-01] base",
             "body": "Refs #4", "statusCheckRollup": [check]}]
     monkeypatch.setattr(board, "run_gh", lambda *a, **k: json.dumps(prs))
-    assert board._linked_pr(4, False) == ("23", expected)
-    assert board._linked_pr(40, False) == ("-", "-")
+    assert board._linked_pr(4, "I-01", False) == ("23", expected)
+    assert board._linked_pr(40, "?", False) == ("-", "-")
 
 
 def test_multiple_prs_are_not_hidden(monkeypatch):
     prs = [{"number": n, "body": "Refs #4", "statusCheckRollup": []}
            for n in [23, 24]]
     monkeypatch.setattr(board, "run_gh", lambda *a, **k: json.dumps(prs))
-    assert board._linked_pr(4, False) == ("23, 24", "sin checks")
+    assert board._linked_pr(4, "I-01", False) == ("23, 24", "sin checks")
+
+
+def test_linked_pr_detecta_por_iid_en_rama(monkeypatch):
+    """Una PR que solo nombra el I-NN en la rama («i06») también se enlaza."""
+    prs = [{"number": 30, "title": "Añade base de API",
+            "headRefName": "feature/i02-api-base", "statusCheckRollup": []}]
+    monkeypatch.setattr(board, "run_gh", lambda *a, **k: json.dumps(prs))
+    assert board._linked_pr(5, "I-02", False) == ("30", "sin checks")
 
 
 @pytest.mark.parametrize("assignees,dry_run,assign", [

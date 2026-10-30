@@ -24,10 +24,13 @@ import re
 import subprocess
 import sys
 import unicodedata
+from pathlib import Path
 from typing import Any
 
 OWNER = "dm2-ethazi"
 PROJECT = 14
+
+INDICE = Path(__file__).resolve().parent.parent / "docs" / "planificacion" / "indice-issues.md"
 
 STATUS_FIELD = "Status"
 STATUS_OPTIONS = {
@@ -118,11 +121,44 @@ def _issue_number(item: dict[str, Any]) -> int | None:
     return content.get("number")
 
 
-def _backlog_id(item: dict[str, Any]) -> str:
-    """Identificador interno I-NN, extraído del título («[I-07] …»)."""
+def _load_indice(path: Path = INDICE) -> dict[int, tuple[str, str]]:
+    """Carga el índice contrastado `indice-issues.md`: {nº issue: (I-NN, título)}.
+
+    El I-NN **no se deduce del número de GitHub** (tras la reestructuración del
+    29-10-2026 el orden cambió: #13=I-13, #15=I-12, #41=I-15). Se lee de la tabla
+    verificada contra los cuerpos de los issues (§Anexo I).
+    """
+    if not path.is_file():
+        return {}
+    out: dict[int, tuple[str, str]] = {}
+    for line in path.read_text(encoding="utf-8").splitlines():
+        m = re.match(r"\|\s*(I-\d{2})\s*\|\s*#?(\d+)\s*\|\s*([^|]+?)\s*\|", line)
+        if m:
+            out[int(m.group(2))] = (m.group(1), m.group(3).strip())
+    return out
+
+
+def _backlog_id(item: dict[str, Any], indice: dict[int, tuple[str, str]] | None = None) -> str:
+    """Identificador interno I-NN de una tarjeta.
+
+    1. Si el título lo trae explícito («[I-07] …»), se usa.
+    2. Si no, se busca el nº de issue en el índice contrastado y se **contrasta**
+       que el título siga siendo el del índice; si difiere, se marca «(título≠índice)».
+    3. Si no aparece en ninguno de los dos: «?».
+    """
     title = item.get("title") or (item.get("content") or {}).get("title", "")
     m = re.search(r"\[(I-\d{2})\]", title)
-    return m.group(1) if m else "?"
+    if m:
+        return m.group(1)
+    if indice is None:
+        indice = _load_indice()
+    n = _issue_number(item)
+    if n in indice:
+        iid, esperado = indice[n]
+        if _norm(esperado)[:24] != _norm(title)[:24]:
+            return f"{iid} (título≠índice)"
+        return iid
+    return "?"
 
 
 def _assignees(item: dict[str, Any]) -> list[str]:
@@ -171,7 +207,13 @@ def _find_item(number: int) -> dict[str, Any] | None:
     return None
 
 
-def _linked_pr(number: int, dry_run: bool) -> tuple[str, str]:
+def _linked_pr(number: int, iid: str, dry_run: bool) -> tuple[str, str]:
+    """Busca las PRs que referencian al issue; devuelve (nºs, estado CI).
+
+    Coincide por `closingIssuesReferences`, por «#N» en el cuerpo o título y
+    también por el identificador interno («[I-06] …», rama «i06-…»), porque
+    el I-NN no coincide con el número de issue.
+    """
     raw = run_gh(
         ["pr", "list", "--state", "all", "--limit", "100",
          "--json", "number,title,body,headRefName,statusCheckRollup,closingIssuesReferences"],
@@ -179,13 +221,17 @@ def _linked_pr(number: int, dry_run: bool) -> tuple[str, str]:
     )
     if not raw:
         return ("-", "-")
+    nn = iid.split()[0].lower().replace("-", "") if iid != "?" else ""
     matches = []
     for pr in json.loads(raw):
         linked = any(issue.get("number") == number
                      for issue in pr.get("closingIssuesReferences", []))
         reference = re.search(rf"(?<![\w/])#{number}(?!\d)",
                               pr.get("body", "") + " " + pr.get("title", ""))
-        if linked or reference:
+        por_iid = bool(nn) and (
+            nn in (pr.get("title") or "").lower().replace("-", "")
+            or nn in (pr.get("headRefName") or "").lower())
+        if linked or reference or por_iid:
             matches.append(pr)
     if not matches:
         return ("-", "-")
@@ -214,6 +260,7 @@ def cmd_status(args: argparse.Namespace) -> None:
     if not items and not args.dry_run:
         print("El proyecto no tiene tarjetas todavía.")
         return
+    indice = _load_indice()
     by_col: dict[str, list[dict[str, Any]]] = {c: [] for c in COLUMN_ORDER}
     for item in items:
         # gh incluye la columna Status como clave superior "status" del item.
@@ -226,9 +273,9 @@ def cmd_status(args: argparse.Namespace) -> None:
             title = item.get("title") or (item.get("content") or {}).get("title", "")
             resp = ", ".join(_assignees(item)) or "sin asignar"
             horas = _field_value(item, "Horas") or "?"
-            pr, ci = _linked_pr(n, args.dry_run) if n else ("-", "-")
-            iid = _backlog_id(item)
-            print(f"  #{n} {iid} | {title[:48]:48} | {resp:10} | {horas:>3} h | PR {pr} | {ci}")
+            iid = _backlog_id(item, indice)
+            pr, ci = _linked_pr(n, iid, args.dry_run) if n else ("-", "-")
+            print(f"  #{n} {iid} | {title[:44]:44} | {resp:10} | {horas:>3} h | PR {pr} | {ci}")
 
 
 def _set_status(number: int, target: str, dry_run: bool) -> None:
