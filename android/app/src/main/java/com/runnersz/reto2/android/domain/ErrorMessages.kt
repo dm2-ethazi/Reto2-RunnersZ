@@ -28,6 +28,9 @@ object ErrorMessages {
 
     const val SIN_CONEXION = "No se pudo conectar con el servidor"
 
+    /** DJ7: el servidor respondió 200 pero sin `X-Integrity: verified`. */
+    const val INTEGRIDAD_NO_CONFIRMADA = "El servidor no confirmó la integridad"
+
     private val genericosPorEstado = mapOf(
         400 to ErrorDeLaApp("Petición no válida"),
         401 to ErrorDeLaApp("Token no válido. Revisa los ajustes", AccionError.IR_A_AJUSTES),
@@ -60,4 +63,8 @@ object ErrorMessages {
     /** Fallo de red (sin respuesta o tiempo agotado). */
     fun sinConexion(): ErrorDeLaApp =
         ErrorDeLaApp(SIN_CONEXION, AccionError.REINTENTAR)
+
+    /** DJ7: un 200 sin cabecera `X-Integrity: verified` no entrega el contenido. */
+    fun sinIntegridad(): ErrorDeLaApp =
+        ErrorDeLaApp(INTEGRIDAD_NO_CONFIRMADA, AccionError.REINTENTAR)
 }

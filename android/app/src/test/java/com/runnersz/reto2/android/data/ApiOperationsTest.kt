@@ -43,7 +43,10 @@ class ApiOperationsTest {
   val f=File.createTempFile("image",".enc");f.writeBytes(byteArrayOf(1))
   try{
    server.enqueue(MockResponse().setBody("unverified"))
-   assertTrue(await<ByteArray>{api().decryptFile(f,"p",it)} is ApiResult.Failure)
+   val r=await<ByteArray>{api().decryptFile(f,"p",it)}
+   assertTrue(r is ApiResult.Failure)
+   // DJ7: un 200 sin X-Integrity no es «sin conexión», el servidor sí respondió.
+   assertEquals("El servidor no confirmó la integridad",(r as ApiResult.Failure).error.texto)
   }finally{f.delete()}
  }
  @Test fun decryptSendsMultipartAndAcceptsVerifiedBytes(){

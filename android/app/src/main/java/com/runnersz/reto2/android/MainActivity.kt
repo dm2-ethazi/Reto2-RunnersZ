@@ -39,4 +39,6 @@ class MainActivity:AppCompatActivity(){
   show(destination);return true
  }
  private fun show(fragment:Fragment){supportFragmentManager.beginTransaction().replace(R.id.contenedor,fragment).commit()}
+ /** §5.1: acción «Ir a Ajustes» junto a errores UNAUTHORIZED. */
+ fun abrirAjustes(){show(SettingsFragment())}
 }

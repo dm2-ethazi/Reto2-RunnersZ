@@ -10,7 +10,9 @@ import android.graphics.Typeface
 import android.content.res.ColorStateList
 import androidx.fragment.app.Fragment
 import androidx.activity.result.contract.ActivityResultContracts
+import com.runnersz.reto2.android.MainActivity
 import com.runnersz.reto2.android.data.*
+import com.runnersz.reto2.android.domain.AccionError
 import java.io.File
 import kotlin.concurrent.thread
 
@@ -40,7 +42,7 @@ class ImageFragment:Fragment(){
     if(view==null)return@decryptFile
     isEnabled=true
     when(r){
-     is ApiResult.Failure->status?.text="Error: comprueba clave, archivo, token y conexión"
+     is ApiResult.Failure->{status?.text=r.error.texto;if(r.error.accion==AccionError.IR_A_AJUSTES)UiMessages.aviso(this@ImageFragment,r.error.texto,"Ir a Ajustes"){(activity as? MainActivity)?.abrirAjustes()}}
      is ApiResult.Success->thread{
       try{
        require(r.data.size>=8 && r.data.take(8).toByteArray().contentEquals(byteArrayOf(137.toByte(),80,78,71,13,10,26,10)))

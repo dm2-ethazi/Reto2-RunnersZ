@@ -124,8 +124,12 @@ class ApiClient(
                         if (!resp.isSuccessful) {
                             ApiResult.Failure(errorDeRespuesta(resp), resp.code)
                         } else {
-                            if (peticion.url.encodedPath.endsWith("/files/decrypt") && resp.header("X-Integrity") != "verified") throw IOException("Integridad no verificada")
-                            exito(resp.body?.bytes() ?: ByteArray(0), resp.code)
+                            // DJ7: un 200 sin la cabecera no entrega el contenido.
+                            if (peticion.url.encodedPath.endsWith("/files/decrypt") && resp.header("X-Integrity") != "verified") {
+                                ApiResult.Failure(ErrorMessages.sinIntegridad(), resp.code)
+                            } else {
+                                exito(resp.body?.bytes() ?: ByteArray(0), resp.code)
+                            }
                         }
                     } catch (e: Exception) {
                         ApiResult.Failure(ErrorMessages.sinConexion(), resp.code)

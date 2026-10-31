@@ -9,7 +9,9 @@ import android.graphics.Typeface
 import android.content.res.ColorStateList
 import androidx.fragment.app.Fragment
 import androidx.activity.result.contract.ActivityResultContracts
+import com.runnersz.reto2.android.MainActivity
 import com.runnersz.reto2.android.data.*
+import com.runnersz.reto2.android.domain.AccionError
 import kotlin.concurrent.thread
 
 /** Órdenes César delegadas a la API. Author: Jairo. */
@@ -34,7 +36,7 @@ class OrderFragment:Fragment(){
    ApiClient(settings.direccion,settings.token).caesarDecrypt(input?.text.toString(),n){r->
     if(view==null)return@caesarDecrypt
     isEnabled=true
-    result?.text=when(r){is ApiResult.Success->r.data;is ApiResult.Failure->"Error: comprueba conexión, token y texto (desplazamiento 1-25)"}
+    result?.text=when(r){is ApiResult.Success->r.data;is ApiResult.Failure->{r.error.texto.also{if(r.error.accion==AccionError.IR_A_AJUSTES)UiMessages.aviso(this@OrderFragment,r.error.texto,"Ir a Ajustes"){(activity as? MainActivity)?.abrirAjustes()}}}}
    }
   }}
   for(v in listOf(title,validationHint,input,open,shift,send,result))root.addView(v)

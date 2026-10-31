@@ -2,6 +2,7 @@ package com.runnersz.reto2.android.domain
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -46,6 +47,15 @@ class ErrorMessagesTest {
     fun `sin conexion ofrece reintentar`() {
         val e = ErrorMessages.sinConexion()
         assertEquals(ErrorMessages.SIN_CONEXION, e.texto)
+        assertEquals(AccionError.REINTENTAR, e.accion)
+    }
+
+    @Test
+    fun `dj7 distingue integridad no confirmada de caida de red`() {
+        val e = ErrorMessages.sinIntegridad()
+        assertEquals("El servidor no confirmó la integridad", e.texto)
+        // No debe confundirse con una caída de red: el servidor sí respondió.
+        assertNotEquals(ErrorMessages.SIN_CONEXION, e.texto)
         assertEquals(AccionError.REINTENTAR, e.accion)
     }
 

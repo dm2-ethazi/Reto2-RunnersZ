@@ -79,7 +79,7 @@ class ScreenFlowsTest{
    send.performClick();waitFor{send.isEnabled}
    assertTrue(all.filterIsInstance<TextView>().any{it.text.toString()=="ATA"})
    server.enqueue(MockResponse().setResponseCode(401));send.performClick();waitFor{send.isEnabled}
-   assertTrue(all.filterIsInstance<TextView>().any{it.text.toString().startsWith("Error:")})
+   assertTrue(all.filterIsInstance<TextView>().any{it.text.toString().contains("Token no válido")})
   }
  }
  private fun imageFlow(body:ByteArray,code:Int=200,expected:String){
@@ -101,7 +101,7 @@ class ScreenFlowsTest{
   imageFlow(png.toByteArray(),expected="Integridad verificada")
  }
  @Test fun invalidBitmapShowsError(){imageFlow(byteArrayOf(1,2),expected="Imagen corrupta")}
- @Test fun wrongPasswordShowsError(){imageFlow("bad".toByteArray(),422,"Error:")}
+ @Test fun wrongPasswordShowsError(){imageFlow("""{"code":"DECRYPT_FAILED"}""".toByteArray(),422,"Clave incorrecta")}
  @Test fun incomingTextIsRead(){
   val uri=Uri.parse("content://test/order.txt")
   shadowOf(RuntimeEnvironment.getApplication().contentResolver).registerInputStream(uri,ByteArrayInputStream("DWD".toByteArray()))
