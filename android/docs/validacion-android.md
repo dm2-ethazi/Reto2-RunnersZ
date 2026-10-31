@@ -1,15 +1,19 @@
 # Validación Android
-Autor: Jairo. Fecha: 2026-10-30. Tarea #42, rama feature/android-v2.
+Autor: Jairo. Fecha: 2026-10-30 (re-verificada 2026-10-31). Tarea #42, rama feature/android-v2.
 
 ## Ejecución local
 Windows 11, JDK 21, Gradle Wrapper 8.9, SDK 35.
-Comando: gradlew.bat testDebugUnitTest assembleDebug jacocoTestReport jacocoCoverageVerification lintDebug
+Comando: gradlew.bat clean testDebugUnitTest assembleDebug jacocoTestReport jacocoCoverageVerification lintDebug
 Resultado: BUILD SUCCESSFUL; Android Lint sin errores bloqueantes.
-Tests: 47. Fallos: 0. Errores: 0.
-Líneas cubiertas: 301; sin cubrir: 17.
-Cobertura global: 94.65 %. Umbral bloqueante: 80 %.
+Tests: 48. Fallos: 0. Errores: 0.
+Líneas cubiertas: 306; sin cubrir: 19.
+Cobertura global: 94.15 %. Umbral bloqueante: 80 %.
 Solo se excluyen recursos, bindings y BuildConfig generados; UI incluida.
 Se realizó una compilación limpia para retirar artefactos v1 anteriores.
+
+Re-verificación 2026-10-31 desde cero (clean): mismos resultados con 48 tests.
+Correcciones aplicadas ese día: codificación UTF-8 de Imagen/Orden y mensaje
+DJ7 «El servidor no confirmó la integridad» distinto de «sin conexión».
 
 ## Emulador y entregable
 Pixel 8a conectado mediante adb. Instalación APK y apertura MainActivity verificadas.
