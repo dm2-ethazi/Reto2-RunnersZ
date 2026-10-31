@@ -12,7 +12,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import com.runnersz.reto2.android.data.*
 import kotlin.concurrent.thread
 
-/** Ã“rdenes CÃ©sar delegadas a la API. Author: Jairo. */
+/** Órdenes César delegadas a la API. Author: Jairo. */
 class OrderFragment:Fragment(){
  private var input:EditText?=null
  private var result:TextView?=null
@@ -21,10 +21,10 @@ class OrderFragment:Fragment(){
   val ctx=requireContext()
   val horizontal=resources.configuration.orientation==Configuration.ORIENTATION_LANDSCAPE
   val root=LinearLayout(ctx).apply{orientation=LinearLayout.VERTICAL;setPadding(if(horizontal)16 else 24,16,if(horizontal)16 else 24,16);setBackgroundColor(Color.rgb(232,220,198))}
-  val title=TextView(ctx).apply{text="Orden CÃ©sar";textSize=24f;setTextColor(Color.rgb(27,42,65));typeface=Typeface.DEFAULT_BOLD}
+  val title=TextView(ctx).apply{text="Orden César";textSize=24f;setTextColor(Color.rgb(27,42,65));typeface=Typeface.DEFAULT_BOLD}
   val validationHint=TextView(ctx).apply{text="1-25";setTextColor(Color.rgb(74,53,32));setPadding(0,8,0,8);visibility=View.VISIBLE}
   input=EditText(ctx).apply{hint="Orden cifrada";minLines=if(horizontal)2 else 4;isSaveEnabled=false;setTextColor(Color.rgb(46,46,51));setHintTextColor(Color.rgb(74,53,32));setPadding(16,12,16,12)}
-  val shift=EditText(ctx).apply{hint="Desplazamiento 1â€“25";inputType=2;setTextColor(Color.rgb(46,46,51));setHintTextColor(Color.rgb(74,53,32));minHeight=(56*resources.displayMetrics.density).toInt()}
+  val shift=EditText(ctx).apply{hint="Desplazamiento 1–25";inputType=2;setTextColor(Color.rgb(46,46,51));setHintTextColor(Color.rgb(74,53,32));minHeight=(56*resources.displayMetrics.density).toInt()}
   result=TextView(ctx).apply{text="1-25";accessibilityLiveRegion=View.ACCESSIBILITY_LIVE_REGION_POLITE;setTextIsSelectable(true);setTextColor(Color.rgb(46,46,51));setPadding(16,16,16,16);setBackgroundColor(Color.rgb(255,255,255))}
   val open=Button(ctx).apply{text="Abrir TXT";setTextColor(Color.rgb(27,42,65));backgroundTintList=ColorStateList.valueOf(Color.rgb(201,169,106));setOnClickListener{picker.launch(arrayOf("text/plain"))}}
   val send=Button(ctx).apply{text="Descifrar orden";setTextColor(Color.rgb(232,220,198));backgroundTintList=ColorStateList.valueOf(Color.rgb(27,42,65));setOnClickListener{
@@ -34,7 +34,7 @@ class OrderFragment:Fragment(){
    ApiClient(settings.direccion,settings.token).caesarDecrypt(input?.text.toString(),n){r->
     if(view==null)return@caesarDecrypt
     isEnabled=true
-    result?.text=when(r){is ApiResult.Success->r.data;is ApiResult.Failure->"Error: comprueba conexiÃ³n, token y texto (desplazamiento 1-25)"}
+    result?.text=when(r){is ApiResult.Success->r.data;is ApiResult.Failure->"Error: comprueba conexión, token y texto (desplazamiento 1-25)"}
    }
   }}
   for(v in listOf(title,validationHint,input,open,shift,send,result))root.addView(v)

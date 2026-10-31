@@ -14,7 +14,7 @@ import com.runnersz.reto2.android.data.*
 import java.io.File
 import kotlin.concurrent.thread
 
-/** Cliente de imÃ¡genes AES remoto. Author: Jairo. */
+/** Cliente de imágenes AES remoto. Author: Jairo. */
 class ImageFragment:Fragment(){
  private var status:TextView?=null
  private var picture:ImageView?=null
@@ -25,8 +25,8 @@ class ImageFragment:Fragment(){
   val ctx=requireContext()
   val horizontal=resources.configuration.orientation==Configuration.ORIENTATION_LANDSCAPE
   val root=LinearLayout(ctx).apply{orientation=LinearLayout.VERTICAL;setPadding(if(horizontal)16 else 24,16,if(horizontal)16 else 24,16);setBackgroundColor(Color.rgb(232,220,198))}
-  val title=TextView(ctx).apply{text="Imagen AES";textSize=24f;setTextColor(Color.rgb(27,42,65));typeface=Typeface.DEFAULT_BOLD;contentDescription="Pantalla de descifrado de imÃ¡genes"}
-  val key=EditText(ctx).apply{hint="ContraseÃ±a AES";inputType=129;isSaveEnabled=false;setTextColor(Color.rgb(46,46,51));setHintTextColor(Color.rgb(74,53,32));minHeight=(56*resources.displayMetrics.density).toInt()}
+  val title=TextView(ctx).apply{text="Imagen AES";textSize=24f;setTextColor(Color.rgb(27,42,65));typeface=Typeface.DEFAULT_BOLD;contentDescription="Pantalla de descifrado de imágenes"}
+  val key=EditText(ctx).apply{hint="Contraseña AES";inputType=129;isSaveEnabled=false;setTextColor(Color.rgb(46,46,51));setHintTextColor(Color.rgb(74,53,32));minHeight=(56*resources.displayMetrics.density).toInt()}
   status=TextView(ctx).apply{text="Selecciona .png.enc";accessibilityLiveRegion=View.ACCESSIBILITY_LIVE_REGION_POLITE}
   picture=ImageView(ctx).apply{adjustViewBounds=true;contentDescription="Imagen descifrada";setBackgroundColor(Color.rgb(255,255,255));setPadding(8,8,8,8);minimumHeight=(if(horizontal)220 else 280)*resources.displayMetrics.density.toInt()}
   val open=Button(ctx).apply{text="Seleccionar archivo";setTextColor(Color.rgb(27,42,65));backgroundTintList=ColorStateList.valueOf(Color.rgb(201,169,106));setOnClickListener{if(!busy)picker.launch(arrayOf("*/*"))}}
@@ -34,13 +34,13 @@ class ImageFragment:Fragment(){
    val file=selected;val password=key.text.toString();val settings=ServerSettings(ctx)
    if(busy)return@setOnClickListener
    if(file==null||password.isEmpty()||settings.estaIncompleto()){status?.text="Selecciona archivo, clave y configura Ajustes";return@setOnClickListener}
-   busy=true;isEnabled=false;key.text.clear();status?.text="Descifrandoâ€¦"
+   busy=true;isEnabled=false;key.text.clear();status?.text="Descifrando…"
    ApiClient(settings.direccion,settings.token).decryptFile(file,password){r->
     busy=false
     if(view==null)return@decryptFile
     isEnabled=true
     when(r){
-     is ApiResult.Failure->status?.text="Error: comprueba clave, archivo, token y conexiÃ³n"
+     is ApiResult.Failure->status?.text="Error: comprueba clave, archivo, token y conexión"
      is ApiResult.Success->thread{
       try{
        require(r.data.size>=8 && r.data.take(8).toByteArray().contentEquals(byteArrayOf(137.toByte(),80,78,71,13,10,26,10)))
@@ -77,7 +77,7 @@ class ImageFragment:Fragment(){
     require(temp.length()>0)
     val ready=temp
     activity?.runOnUiThread{busy=false;if(status!=null){selected?.delete();selected=ready;status?.text="Archivo preparado"}else ready.delete()}?:ready.delete()
-   }catch(e:Exception){temp?.delete();activity?.runOnUiThread{busy=false;status?.text="Archivo vacÃ­o, ilegible o mayor de 100 MiB"}}
+   }catch(e:Exception){temp?.delete();activity?.runOnUiThread{busy=false;status?.text="Archivo vacío, ilegible o mayor de 100 MiB"}}
   }
  }
  override fun onDestroyView(){picture?.setImageDrawable(null);picture=null;status=null;selected?.delete();selected=null;super.onDestroyView()}
