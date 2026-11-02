@@ -1,13 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-  DJ9: paleta del contrato §9. Azul Hogwarts, Pergamino, Oro, Piedra y Madera.
-  Regla §9.3: el oro nunca se usa como texto sobre pergamino.
--->
 <resources>
-    <color name="azul_hogwarts">#1B2A41</color>
-    <color name="pergamino">#E8DCC6</color>
-    <color name="oro">#C9A96A</color>
-    <color name="piedra">#2E2E33</color>
-    <color name="madera">#4A3520</color>
-    <color name="blanco">#FFFFFF</color>
+    <!-- Paleta Hogwarts (Contrato Técnico 9.1) -->
+    <color name="color_azul_hogwarts">#1B2A41</color>
+    <color name="color_pergamino">#E8DCC6</color>
+    <color name="color_oro_magico">#C9A96A</color>
+    <color name="color_piedra_castillo">#2E2E33</color>
+    <color name="color_madera_antigua">#4A3520</color>
+
+    <color name="color_primary">#1B2A41</color>
+    <color name="color_primary_dark">#0E1A28</color>
+    <color name="color_accent">#C9A96A</color>
+    <color name="color_background">#E8DCC6</color>
+    <color name="color_surface">#FFFFFF</color>
+    <color name="color_text_primary">#1B2A41</color>
+    <color name="color_text_secondary">#4A3520</color>
+    <color name="color_error">#EF4444</color>
+    <color name="color_success">#10B981</color>
+    <color name="color_border">#2E2E33</color>
+
 </resources>

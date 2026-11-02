@@ -1,32 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-  DJ9: paleta §9 sobre AppCompat + Material Components (DJ2).
-  Tamaños: 22 sp títulos, 16 sp cuerpo/botones, 14 sp ayudas (§9.2).
--->
 <resources>
-    <style name="Theme.RunnersZ" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-        <item name="android:fontFamily">@font/open_sans</item><item name="fontFamily">@font/open_sans</item><item name="colorPrimary">@color/azul_hogwarts</item>
-        <item name="colorPrimaryVariant">@color/piedra</item>
-        <item name="colorOnPrimary">@color/pergamino</item>
-        <item name="colorSecondary">@color/oro</item>
-        <item name="colorOnSecondary">@color/azul_hogwarts</item>
-        <item name="android:statusBarColor">@color/azul_hogwarts</item>
-        <item name="android:windowBackground">@color/pergamino</item>
-    </style>
-
-    <!-- §9.2: tamaños tipográficos -->
-    <style name="TextAppearance.RunnersZ.Titulo" parent="TextAppearance.MaterialComponents.Headline6">
-        <item name="android:fontFamily">@font/inter</item><item name="android:textSize">22sp</item>
-        <item name="android:textColor">@color/azul_hogwarts</item>
-    </style>
-
-    <style name="TextAppearance.RunnersZ.Cuerpo" parent="TextAppearance.MaterialComponents.Body1">
-        <item name="android:textSize">16sp</item>
-        <item name="android:textColor">@color/piedra</item>
-    </style>
-
-    <style name="TextAppearance.RunnersZ.Ayuda" parent="TextAppearance.MaterialComponents.Caption">
-        <item name="android:textSize">14sp</item>
-        <item name="android:textColor">@color/piedra</item>
+    <style name="Theme.CipherSprint" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/color_azul_hogwarts</item>
+        <item name="colorPrimaryDark">@color/color_primary_dark</item>
+        <item name="colorAccent">@color/color_oro_magico</item>
+        <item name="android:windowBackground">@color/color_pergamino</item>
     </style>
 </resources>

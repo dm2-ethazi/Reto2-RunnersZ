@@ -1,103 +1,173 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  Ajustes (CU-17, §9.4): dirección con ayuda, token oculto por defecto con botón mostrar,
-  botones «Probar» y «Guardar» y resultado de la conexión.
--->
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="20dp">
 
         <TextView
-            android:id="@+id/titulo"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/ajustes"
-            android:textAppearance="@style/TextAppearance.RunnersZ.Titulo" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/campoDireccion"
+            android:id="@+id/tvTituloAjustes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="@string/direccion_servidor"
-            app:helperText="@string/direccion_ayuda">
+            android:text="@string/title_ajustes"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/color_azul_hogwarts"
+            android:layout_marginBottom="20dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDireccion"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:startIconDrawable="@drawable/ic_token"
+            app:startIconContentDescription="@string/a11y_campo_direccion_servidor"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/direccion"
+                android:id="@+id/etDireccion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textUri"
-                android:importantForAutofill="no" />
+                android:hint="@string/ajustes_hint_direccion"
+                android:inputType="textUri" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/campoToken"
+            android:id="@+id/tilToken"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:startIconDrawable="@drawable/ic_password"
+            app:startIconContentDescription="@string/a11y_campo_token"
+            app:endIconMode="password_toggle"
+            app:layout_constraintTop_toBottomOf="@id/tilDireccion"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etToken"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/ajustes_hint_token"
+                android:inputType="text" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGuardarConfig"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:text="@string/ajustes_btn_guardar"
+            android:contentDescription="@string/a11y_btn_guardar_config"
+            app:layout_constraintTop_toBottomOf="@id/tilToken"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnProbarConexion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:layout_marginStart="8dp"
+            android:text="@string/ajustes_btn_probar"
+            android:contentDescription="@string/a11y_btn_probar_conexion"
+            app:layout_constraintTop_toBottomOf="@id/tilToken"
+            app:layout_constraintStart_toEndOf="@+id/btnGuardarConfig"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/tvConfigEstado"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/ajustes_config_no_guardada"
+            android:textColor="@color/color_text_secondary"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/btnGuardarConfig"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:background="@color/color_border"
+            app:layout_constraintTop_toBottomOf="@id/tvConfigEstado"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/tvApiLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/ajustes_api_ok"
+            android:textStyle="bold"
+            android:textColor="@color/color_azul_hogwarts"
+            app:layout_constraintTop_toBottomOf="@id/divider"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <TextView
+            android:id="@+id/tvApiEstado"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:hint="@string/token"
-            app:endIconMode="password_toggle">
+            android:text="@string/ajustes_api_error"
+            android:textColor="@color/color_text_secondary"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tvApiLabel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/token"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPassword"
-                android:importantForAutofill="no" />
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <LinearLayout
+        <TextView
+            android:id="@+id/tvSeguridadValor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="horizontal">
+            android:layout_marginTop="24dp"
+            android:text="@string/ajustes_seguridad_alto"
+            android:textColor="@color/color_success"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tvApiEstado"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-            <Button
-                android:id="@+id/botonProbar"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/probar" />
-
-            <Button
-                android:id="@+id/botonGuardar"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="8dp"
-                android:text="@string/guardar" />
-        </LinearLayout>
-
-        <!-- Resultado de la conexión: icono + texto (§5.2) -->
-        <LinearLayout
-            android:id="@+id/resultadoConexion"
+        <TextView
+            android:id="@+id/tvTiempoEspera"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:visibility="gone">
+            android:layout_marginTop="8dp"
+            android:text="@string/ajustes_tiempo_espera"
+            android:textColor="@color/color_text_secondary"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tvSeguridadValor"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-            <ImageView
-                android:id="@+id/iconoResultado"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:contentDescription="@null" />
+        <TextView
+            android:id="@+id/tvMensajeAjustes"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:textColor="@color/color_text_secondary"
+            android:textSize="14sp"
+            app:layout_constraintTop_toBottomOf="@id/tvTiempoEspera"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="Configurá dirección y token, luego probá la conexión" />
 
-            <TextView
-                android:id="@+id/textoResultado"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:textAppearance="@style/TextAppearance.RunnersZ.Cuerpo" />
-        </LinearLayout>
-    </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </ScrollView>

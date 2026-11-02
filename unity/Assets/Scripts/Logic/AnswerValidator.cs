@@ -1,0 +1,1 @@
+namespace RunnersZ.Logic { public static class AnswerValidator { public static bool IsCorrect(string answer,string expected)=>AnswerNormalizer.Normalize(answer)==AnswerNormalizer.Normalize(expected)&&AnswerNormalizer.Normalize(answer).Length>0; } }
