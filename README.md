@@ -1,67 +1,53 @@
-# RunnersZ — Unity
+# RunnersZ - Unity
 
-## Autoría y alcance
+Minijuego autonomo de descifrado Cesar para Windows, con Unity 6000.3.24f1.
+No consume la API del servidor. Responsable: Jairo (@jairoben).
+Rama de trabajo: feature/unity-v2.
 
-- Author / responsable: Jairo (@jairoben).
-- Revisor previsto: Alain; no implica revisión aprobada.
-- Rama: feature/unity-v2. PR: #40.
-- Referencia principal: Contrato_Tecnico_RunnersZ_v2.docx.
-- Minijuego 2D autónomo en Unity 6.3; no consume la API del servidor.
+## Jugar
 
-## Contenido real
+Abre `unity/Builds/Windows/RunnersZ.exe` en el ordenador de desarrollo.
+Para compartirlo, conserva toda la carpeta Windows, incluidos los datos y DLL.
+El ejecutable no se incluye en Git: se puede regenerar desde el proyecto.
 
-| Carpeta o componente | Responsabilidad |
-| --- | --- |
-| Assets/Scripts/Logic/ | César, normalización, respuestas, estados, dificultad y rondas. |
-| HintScore, PhraseBank | Apoyo para pistas, puntuación y frases. |
-| GameSession | Estados EnCurso, Victoria y Derrota; puntuación y reinicio lógico. |
-| DoorLives | Contador de vidas y reinicio. |
-| Assets/Scripts/Game/EnemyHopper.cs | Desplaza el enemigo a intervalos mediante Rigidbody2D. |
-| Assets/Scripts/Game/Door.cs | Detecta enemigos, resta vidas, desactiva el objeto y emite Hit. |
-| Assets/Scripts/Editor/SceneBuilder.cs | Menú RunnersZ/Build Game Scene para una escena inicial. |
-| Logic/*Tests.cs | Casos de lógica sujetos a configuración del Test Framework. |
+En Unity Hub abre la carpeta `unity`, carga `Assets/Scenes/Game.unity`
+y pulsa Play. El menu `RunnersZ/Build Game Scene` regenera la escena inicial.
 
-## Flujo de juego previsto
+Selecciona Facil, Normal o Dificil. Introduce el mensaje descifrado y pulsa
+Validar o Enter. Cesar rota A-Z; conserva espacios y signos. Facil muestra el
+desplazamiento. Hay tres rondas, tres vidas y 3/2/1 pistas segun dificultad.
+Cada acierto suma 100 puntos. Cada pista resta 50, con minimo cero.
+Un fallo acerca a los enemigos; cuando llegan a la puerta se pierde una vida.
+Resolver tres mensajes produce victoria. Perder tres vidas produce derrota.
+Reiniciar restaura vidas, puntuacion y ronda; puedes cambiar de dificultad.
 
-Mostrar un mensaje César, aceptar respuesta y validarla mientras el enemigo
-avanza. La respuesta correcta debe conducir a victoria y el evento de puerta
-debe conectarse al criterio de derrota del contrato. Reiniciar restablece la
-sesión y la escena. Dificultad, rondas, pistas y puntuación deben enlazarse al HUD.
+La interfaz y los enemigos usan formas basicas dibujadas por RunnerGame.
+Los scripts Door/EnemyHopper se conservan como componentes previos; la escena
+entregada ejecuta RunnerGame y su simulacion de avance, sin depender de tags.
 
-Esto describe el objetivo. Door actualmente descuenta vidas y emite un evento;
-no invoca directamente GameSession.Lose. La unión escena-lógica sigue pendiente.
+## Validacion del 2 de noviembre de 2026
 
-## Preparación del editor
+- Generacion de escena y compilacion de scripts con Unity: correctas.
+- EditMode: 10 pruebas aprobadas, 0 fallos.
+- PlayMode: 2 pruebas aprobadas, 0 fallos.
+- Windows x64: ejecutable generado; proceso iniciado y registro inspeccionado.
+- Evidencias XML: `docs/evidencias/unity/`.
+- Seguimiento y limitaciones: `docs/planificacion/unity-tareas.md`.
 
-1. Instalar Unity Hub y Unity 6.3 (6000.3.x) con licencia válida.
-2. Crear el proyecto 2D conservando Assets/Scripts del repositorio.
-3. Configurar Test Framework y Code Coverage; preparar los recursos de texto
-   que requiera la interfaz elegida.
-4. Crear Assets/Scenes y registrar los tags Enemy y Door antes del generador.
-5. Revisar SceneBuilder antes de ejecutar RunnersZ/Build Game Scene.
-6. Configurar cámara, posiciones, sprites, colliders, HUD y controles.
-7. Conectar EnemyHopper, eventos de Door, validación, sesión y reinicio.
+Las pruebas cubren Cesar, normalizacion, dificultad, rondas, puntuacion,
+pistas, victoria, derrota por enemigos y reinicio. No se ha medido cobertura.
+No se declara APK ni revision visual humana aprobada.
 
-SceneBuilder solo crea objetos iniciales. No construye un juego terminado:
-faltan conexiones de componentes, disposición visual y pruebas en el editor.
-No se han comprobado compilación ni resolución de paquetes en Unity.
+## Regenerar Windows
 
-## Pruebas y aceptación
+Desde la raiz del repositorio, con Unity instalado y licencia activa:
 
-- EditMode: César, normalización, validación, vidas, estados, puntuación y rondas.
-- PlayMode: movimiento, trigger, conexión de derrota, victoria y reinicio.
-- Confirmar que no se admiten acciones de juego tras finalizar la sesión.
-- Comprobar interfaz, dificultades y progresión en la plataforma de entrega.
-- Medir cobertura conforme al contrato; registrar logs, versión y evidencias.
+```powershell
+& 'C:\Program Files\Unity\Hub\Editor\6000.3.24f1\Editor\Unity.exe' `
+  -batchmode -nographics -projectPath "$PWD/unity" `
+  -executeMethod RunnersZ.Editor.SceneBuilder.BuildWindows -quit `
+  -logFile "$PWD/unity/windows-build.log"
+```
 
-## Estado y entregables
-
-No hay ejecución verificada de Unity 6.3, EditMode, PlayMode, cobertura ni build.
-Escena, prefabs, configuración de proyecto y UI requieren trabajo en el editor.
-La licencia no se guarda en Git. Solo tras pruebas y revisión se puede considerar
-terminado el apartado. No se declara ningún APK ni ejecutable generado.
-
-## Documentación
-
-El README de unity/ contiene esta misma guía. Consulta también el manual Unity
-de docs/. Esta documentación distingue código disponible de integración pendiente.
+Las pruebas se ejecutan desde Window > General > Test Runner: EditMode y
+PlayMode. Los ensamblados de pruebas estan incluidos en el proyecto.

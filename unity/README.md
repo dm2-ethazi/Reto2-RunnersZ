@@ -1,15 +1,53 @@
-﻿# RunnersZ â€” Unity 6.3
+# RunnersZ - Unity
 
-Autor: Jairo (`@jairoben`). Rama Ãºnica: `feature/unity-v2`. PR: #40.
+Minijuego autonomo de descifrado Cesar para Windows, con Unity 6000.3.24f1.
+No consume la API del servidor. Responsable: Jairo (@jairoben).
+Rama de trabajo: feature/unity-v2.
 
-`GameController` conecta el flujo 2D con la lÃ³gica pura: texto CÃ©sar, entrada, victoria, derrota por puerta y reinicio. `EnemyHopper` mueve el enemigo con `Rigidbody2D`; `Door` consume vidas mediante `Collider2D` trigger.
+## Jugar
 
-## Escena
+Abre `unity/Builds/Windows/RunnersZ.exe` en el ordenador de desarrollo.
+Para compartirlo, conserva toda la carpeta Windows, incluidos los datos y DLL.
+El ejecutable no se incluye en Git: se puede regenerar desde el proyecto.
 
-1. Abrir con Unity 6.3 (`6000.3.x`).
-2. Ejecutar `RunnersZ > Build Game Scene`.
-3. Asignar en `GameController` la puerta, enemigo, textos, `InputField` y botones.
-4. Confirmar tag `Enemy`, `Rigidbody2D`, colliders y trigger de la puerta.
-5. Ejecutar: respuesta correcta = victoria; tres impactos = derrota; Reiniciar restablece todo.
+En Unity Hub abre la carpeta `unity`, carga `Assets/Scenes/Game.unity`
+y pulsa Play. El menu `RunnersZ/Build Game Scene` regenera la escena inicial.
 
-EditMode cubre CÃ©sar, validaciÃ³n, estados, vidas, rondas, pistas y puntuaciÃ³n. PlayMode debe comprobar movimiento, trigger, victoria, derrota y reinicio. Unity serializa referencias de escena, por lo que la comprobaciÃ³n final requiere abrir el editor. No se versionan licencia, `Library/` ni artefactos generados.
+Selecciona Facil, Normal o Dificil. Introduce el mensaje descifrado y pulsa
+Validar o Enter. Cesar rota A-Z; conserva espacios y signos. Facil muestra el
+desplazamiento. Hay tres rondas, tres vidas y 3/2/1 pistas segun dificultad.
+Cada acierto suma 100 puntos. Cada pista resta 50, con minimo cero.
+Un fallo acerca a los enemigos; cuando llegan a la puerta se pierde una vida.
+Resolver tres mensajes produce victoria. Perder tres vidas produce derrota.
+Reiniciar restaura vidas, puntuacion y ronda; puedes cambiar de dificultad.
+
+La interfaz y los enemigos usan formas basicas dibujadas por RunnerGame.
+Los scripts Door/EnemyHopper se conservan como componentes previos; la escena
+entregada ejecuta RunnerGame y su simulacion de avance, sin depender de tags.
+
+## Validacion del 2 de noviembre de 2026
+
+- Generacion de escena y compilacion de scripts con Unity: correctas.
+- EditMode: 10 pruebas aprobadas, 0 fallos.
+- PlayMode: 2 pruebas aprobadas, 0 fallos.
+- Windows x64: ejecutable generado; proceso iniciado y registro inspeccionado.
+- Evidencias XML: `docs/evidencias/unity/`.
+- Seguimiento y limitaciones: `docs/planificacion/unity-tareas.md`.
+
+Las pruebas cubren Cesar, normalizacion, dificultad, rondas, puntuacion,
+pistas, victoria, derrota por enemigos y reinicio. No se ha medido cobertura.
+No se declara APK ni revision visual humana aprobada.
+
+## Regenerar Windows
+
+Desde la raiz del repositorio, con Unity instalado y licencia activa:
+
+```powershell
+& 'C:\Program Files\Unity\Hub\Editor\6000.3.24f1\Editor\Unity.exe' `
+  -batchmode -nographics -projectPath "$PWD/unity" `
+  -executeMethod RunnersZ.Editor.SceneBuilder.BuildWindows -quit `
+  -logFile "$PWD/unity/windows-build.log"
+```
+
+Las pruebas se ejecutan desde Window > General > Test Runner: EditMode y
+PlayMode. Los ensamblados de pruebas estan incluidos en el proyecto.
