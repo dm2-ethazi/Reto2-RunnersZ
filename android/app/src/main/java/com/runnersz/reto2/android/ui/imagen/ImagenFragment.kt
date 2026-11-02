@@ -112,6 +112,7 @@ class ImagenFragment : Fragment() {
 
         binding.tvEstadoValor.text = requireContext().getString(R.string.imagen_estado_procesando)
         binding.tvEstadoValor.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_text_secondary))
+        binding.progresoDescifrado.visibility = View.VISIBLE
         ocultarReintentar()
 
         CoroutineScope(Dispatchers.Main).launch {
@@ -119,6 +120,7 @@ class ImagenFragment : Fragment() {
                 val file = uriToFile(requireContext(), uri)
                 if (file == null) {
                     withContext(Dispatchers.Main) {
+                        binding.progresoDescifrado.visibility = View.GONE
                         binding.tvMensajeImagen.text = requireContext().getString(R.string.imagen_error_seleccion)
                         binding.tvMensajeImagen.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
                         mostrarReintentar()
@@ -136,6 +138,7 @@ class ImagenFragment : Fragment() {
                 val response: retrofit2.Response<kotlin.Unit> = api.decryptFile(body, passwordBody)
 
                 withContext(Dispatchers.Main) {
+                    binding.progresoDescifrado.visibility = View.GONE
                     if (response.isSuccessful) {
                         val integrityHeader = response.headers().get("X-Integrity")
                         val verificada = "verified".equals(integrityHeader, ignoreCase = true)
@@ -157,13 +160,15 @@ class ImagenFragment : Fragment() {
 
                         Toast.makeText(requireContext(), requireContext().getString(R.string.imagen_exito), Toast.LENGTH_SHORT).show()
 
-                        file.delete()
+                        // Borrado robusto de caché temporal (Contrato 5.1)
+                        borrarArchivoTemporal(file)
                     } else {
                         manejarErrorApi(response)
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    binding.progresoDescifrado.visibility = View.GONE
                     binding.tvEstadoValor.text = requireContext().getString(R.string.imagen_error_api)
                     binding.tvEstadoValor.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
                     binding.tvMensajeImagen.text = "${e.message}"
@@ -222,6 +227,21 @@ class ImagenFragment : Fragment() {
         }
     }
 
+    private fun borrarArchivoTemporal(file: File) {
+        try {
+            if (file.exists()) {
+                val length = file.length()
+                val fos = FileOutputStream(file)
+                fos.write(ByteArray(length.toInt()))
+                fos.close()
+                file.delete()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            file.delete()
+        }
+    }
+
     private fun uriToFile(context: Context, uri: Uri): File? {
         return try {
             val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
@@ -252,6 +272,16 @@ class ImagenFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        try {
+            val cacheDir = requireContext().cacheDir
+            cacheDir.listFiles()?.forEach { file ->
+                if (file.name.endsWith("_file")) {
+                    borrarArchivoTemporal(file)
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
         _binding = null
     }
 }
