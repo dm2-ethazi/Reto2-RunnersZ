@@ -56,9 +56,47 @@ class ApiOperationsTest {
    assertArrayEquals("PNG".toByteArray(),(await<ByteArray>{api().decryptFile(f," ",it)} as ApiResult.Success).data)
    val req=server.takeRequest()
    assertEquals("/api/v1/files/decrypt",req.path)
+   assertEquals("Bearer test-token",req.getHeader("Authorization"))
    val body=req.body.readUtf8()
    assertTrue(body.contains("name=\"file\""))
    assertTrue(body.contains("name=\"password\""))
+  }finally{f.delete()}
+ }
+ @Test fun decryptTranslatesContractErrors(){
+  val f=File.createTempFile("image",".enc");f.writeBytes(byteArrayOf(1))
+  try{
+   // 401 con code UNAUTHORIZED (§5.1: el code del servidor manda).
+   server.enqueue(MockResponse().setResponseCode(401).setBody("""{"code":"UNAUTHORIZED"}"""))
+   val r401=await<ByteArray>{api().decryptFile(f,"p",it)} as ApiResult.Failure
+   assertEquals("Token no válido. Revisa los ajustes",r401.error.texto)
+   assertEquals(com.runnersz.reto2.android.domain.AccionError.IR_A_AJUSTES,r401.error.accion)
+   // 400 EMPTY_FILE ⇒ «El archivo está vacío».
+   server.enqueue(MockResponse().setResponseCode(400).setBody("""{"code":"EMPTY_FILE"}"""))
+   val r400=await<ByteArray>{api().decryptFile(f,"p",it)} as ApiResult.Failure
+   assertEquals("El archivo está vacío",r400.error.texto)
+   // 413 sin JSON ⇒ mensaje genérico del estado.
+   server.enqueue(MockResponse().setResponseCode(413))
+   val r413=await<ByteArray>{api().decryptFile(f,"p",it)} as ApiResult.Failure
+   assertEquals("El archivo supera el tamaño máximo permitido",r413.error.texto)
+   // 500 INTERNAL_ERROR ⇒ aviso con «Reintentar», sin cerrar (§7.2).
+   server.enqueue(MockResponse().setResponseCode(500).setBody("""{"code":"INTERNAL_ERROR"}"""))
+   val r500=await<ByteArray>{api().decryptFile(f,"p",it)} as ApiResult.Failure
+   assertEquals("Error del servidor. Inténtalo de nuevo",r500.error.texto)
+   assertEquals(com.runnersz.reto2.android.domain.AccionError.REINTENTAR,r500.error.accion)
+  }finally{f.delete()}
+ }
+ @Test fun uploadTwentyMiBStreamsFromTmpWithoutBuffering(){
+  // Genera 20 MiB en tmp por bloques (nunca un ByteArray de 20 MiB)…
+  val f=File.createTempFile("big",".enc")
+  f.outputStream().use{out->val bloque=ByteArray(1024*1024){(it%251).toByte()};repeat(20){out.write(bloque)}}
+  try{
+   server.enqueue(MockResponse().setHeader("X-Integrity","verified").setBody("PNG"))
+   assertTrue(await<ByteArray>{api().decryptFile(f,"secret",it)} is ApiResult.Success)
+   val req=server.takeRequest()
+   // …y comprueba el tamaño por cabecera, sin leer el cuerpo en memoria.
+   assertTrue("Content-Length>=20MiB",(req.getHeader("Content-Length")?.toLongOrNull()?:0)>=20L*1024*1024)
+   assertTrue(req.bodySize>=20L*1024*1024)
+   assertEquals("/api/v1/files/decrypt",req.path)
   }finally{f.delete()}
  }
  @Test fun corruptImageResponseBecomesControlledFailure(){

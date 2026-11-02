@@ -102,6 +102,20 @@ class ScreenFlowsTest{
  }
  @Test fun invalidBitmapShowsError(){imageFlow(byteArrayOf(1,2),expected="Imagen corrupta")}
  @Test fun wrongPasswordShowsError(){imageFlow("""{"code":"DECRYPT_FAILED"}""".toByteArray(),422,"Clave incorrecta")}
+ @Test fun imageCacheIsClearedWhenLeavingTheScreen(){
+  val uri=Uri.parse("content://test/clean.png.enc")
+  shadowOf(RuntimeEnvironment.getApplication().contentResolver).registerInputStream(uri,ByteArrayInputStream(byteArrayOf(1,2,3)))
+  val fragment=ImageFragment().apply{arguments=Bundle().apply{putString("uri",uri.toString())}}
+  val cache=RuntimeEnvironment.getApplication().cacheDir
+  fun temporales():Set<String> = (cache.listFiles()?:emptyArray()).filter{it.name.startsWith("runnersz-")}.map{it.name}.toSet()
+  val antes=temporales()
+  host(fragment){_,all->
+   waitFor{all.filterIsInstance<TextView>().any{it.text.toString()=="Archivo preparado"}}
+   assertTrue("La copia temporal debe existir mientras se usa",temporales().size>antes.size)
+  }
+  // host() destruye la vista: onDestroyView debe borrar la caché (§4, §5.2).
+  assertTrue("La caché temporal debe borrarse al salir",temporales()==antes)
+ }
  @Test fun incomingTextIsRead(){
   val uri=Uri.parse("content://test/order.txt")
   shadowOf(RuntimeEnvironment.getApplication().contentResolver).registerInputStream(uri,ByteArrayInputStream("DWD".toByteArray()))
