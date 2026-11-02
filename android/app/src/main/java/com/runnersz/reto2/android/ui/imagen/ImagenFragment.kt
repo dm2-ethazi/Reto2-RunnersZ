@@ -15,12 +15,16 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.observe
+import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.runnersz.reto2.android.R
 import com.runnersz.reto2.android.api.ApiClient
 import com.runnersz.reto2.android.api.ApiError
 import com.runnersz.reto2.android.api.RunnersZApi
 import com.runnersz.reto2.android.databinding.FragmentImagenBinding
+import com.runnersz.reto2.android.viewmodel.ImagenViewModel
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -31,24 +35,22 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
-import okhttp3.MediaType.Companion.toMediaType
 
 class ImagenFragment : Fragment() {
 
     private var _binding: FragmentImagenBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var api: RunnersZApi
+    private val imagenViewModel: ImagenViewModel by viewModels()
     private val gson: Gson = Gson()
-    private var archivoSeleccionado: Uri? = null
 
     private val seleccionarArchivo = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        archivoSeleccionado = uri
         uri?.let {
+            imagenViewModel.seleccionarArchivo(it, requireContext())
             binding.tvArchivoSeleccionado.text = it.lastPathSegment ?: it.toString()
             binding.tvMensajeImagen.text = "Archivo cargado / File loaded"
             binding.tvMensajeImagen.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_success))
-            binding.ivResultadoImagen.setImageBitmap(null)
+            binding.ivResultadoImagen.setImageBitmap(it.toBitmap(requireContext()))
             binding.tvEstadoValor.text = requireContext().getString(R.string.imagen_estado_listo)
             ocultarReintentar()
         }
@@ -61,8 +63,6 @@ class ImagenFragment : Fragment() {
     ): View {
         _binding = FragmentImagenBinding.inflate(inflater, container, false)
         val view = binding.root
-
-        api = ApiClient.api
 
         verificarArchivoCompartido()
 
@@ -78,6 +78,42 @@ class ImagenFragment : Fragment() {
             descifrarImagen()
         }
 
+        // Observar ViewModel
+        imagenViewModel.esProcesando.observe(viewLifecycleOwner) { procesando ->
+            binding.progresoDescifrado.visibility = if (procesando) View.VISIBLE else View.GONE
+            binding.btnDescifrarImagen.isEnabled = !procesando
+            binding.btnReintentarImagen.isEnabled = !procesando
+        }
+
+        imagenViewModel.mensajeEstado.observe(viewLifecycleOwner) { estado ->
+            binding.tvEstadoValor.text = estado
+            binding.tvEstadoValor.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    if (imagenViewModel.esError.value == true) R.color.color_error else R.color.color_success
+                )
+            )
+        }
+
+        imagenViewModel.bitmapResultado.observe(viewLifecycleOwner) { bitmap ->
+            if (bitmap != null) {
+                binding.ivResultadoImagen.setImageBitmap(bitmap)
+                binding.tvMensajeImagen.text = requireContext().getString(R.string.imagen_exito)
+                binding.tvMensajeImagen.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_success))
+                Toast.makeText(requireContext(), requireContext().getString(R.string.imagen_exito), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        imagenViewModel.esError.observe(viewLifecycleOwner) { esError ->
+            if (esError == true && imagenViewModel.mensajeEstado.value != "Listo / Ready") {
+                Snackbar.make(view, imagenViewModel.mensajeEstado.value ?: "", Snackbar.LENGTH_LONG).show()
+            }
+        }
+
+        imagenViewModel.esProcesando.observe(viewLifecycleOwner) { procesando ->
+            binding.btnReintentarImagen.visibility = if (procesando || imagenViewModel.esError.value == true) View.VISIBLE else View.GONE
+        }
+
         return view
     }
 
@@ -87,7 +123,7 @@ class ImagenFragment : Fragment() {
         if (uriStr != null) {
             prefs.edit().remove("shared_uri").apply()
             Uri.parse(uriStr)?.let {
-                archivoSeleccionado = it
+                imagenViewModel.seleccionarArchivo(it, requireContext())
                 binding.tvArchivoSeleccionado.text = it.lastPathSegment ?: it.toString()
                 binding.tvMensajeImagen.text = "Archivo recibido vía Compartir / Received via Share"
                 binding.tvMensajeImagen.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_success))
@@ -96,175 +132,34 @@ class ImagenFragment : Fragment() {
     }
 
     private fun descifrarImagen() {
-        val uri = archivoSeleccionado
-        val password = binding.etClave.text?.toString()?.trim()
+        val uri = imagenViewModel.archivoSeleccionado.value
+        val password = binding.etClave.text?.toString()?.trim() ?: ""
 
         if (uri == null) {
             binding.tvMensajeImagen.text = requireContext().getString(R.string.imagen_error_seleccion)
             binding.tvMensajeImagen.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
+            Snackbar.make(binding.root, getString(R.string.imagen_error_seleccion), Snackbar.LENGTH_SHORT).show()
             return
         }
 
-        if (TextUtils.isEmpty(password)) {
+        if (password.isEmpty()) {
             binding.tvMensajeImagen.text = requireContext().getString(R.string.imagen_error_clave)
             binding.tvMensajeImagen.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
+            Snackbar.make(binding.root, getString(R.string.imagen_error_clave), Snackbar.LENGTH_SHORT).show()
             return
         }
 
-        binding.tvEstadoValor.text = requireContext().getString(R.string.imagen_estado_procesando)
-        binding.tvEstadoValor.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_text_secondary))
-        binding.progresoDescifrado.visibility = View.VISIBLE
-        ocultarReintentar()
-
-        CoroutineScope(Dispatchers.Main).launch {
-            try {
-                val file = uriToFile(requireContext(), uri)
-                if (file == null) {
-                    withContext(Dispatchers.Main) {
-                        binding.progresoDescifrado.visibility = View.GONE
-                        binding.tvMensajeImagen.text = requireContext().getString(R.string.imagen_error_seleccion)
-                        binding.tvMensajeImagen.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
-                        mostrarReintentar()
-                    }
-                    return@launch
-                }
-
-                val mediaTypeFile = "application/octet-stream".toMediaType()!!
-                val requestFile = RequestBody.create(mediaTypeFile, file)
-                val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
-
-                val mediaTypeText = "text/plain".toMediaType()!!
-                val passwordVal = password!!
-                val passwordBody = RequestBody.create(mediaTypeText, passwordVal)
-
-                val response: retrofit2.Response<kotlin.Unit> = api.decryptFile(body, passwordBody)
-
-                withContext(Dispatchers.Main) {
-                    binding.progresoDescifrado.visibility = View.GONE
-                    if (response.isSuccessful) {
-                        val integrityHeader = response.headers().get("X-Integrity")
-                        val verificada = "verified".equals(integrityHeader, ignoreCase = true)
-
-                        val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                        if (bitmap != null) {
-                            binding.ivResultadoImagen.setImageBitmap(bitmap)
-                        }
-
-                        binding.tvEstadoValor.text = if (verificada) {
-                            requireContext().getString(R.string.imagen_integridad_verificada)
-                        } else {
-                            requireContext().getString(R.string.imagen_integridad_fallida)
-                        }
-                        binding.tvEstadoValor.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_success))
-
-                        binding.tvMensajeImagen.text = requireContext().getString(R.string.imagen_exito)
-                        binding.tvMensajeImagen.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_success))
-
-                        Toast.makeText(requireContext(), requireContext().getString(R.string.imagen_exito), Toast.LENGTH_SHORT).show()
-
-                        borrarArchivoTemporal(file)
-                    } else {
-                        manejarErrorApi(response)
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    binding.progresoDescifrado.visibility = View.GONE
-                    binding.tvEstadoValor.text = requireContext().getString(R.string.imagen_error_api)
-                    binding.tvEstadoValor.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
-                    binding.tvMensajeImagen.text = "${e.message}"
-                    binding.tvMensajeImagen.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
-                    mostrarReintentar()
-                    e.printStackTrace()
-                }
-            }
-        }
+        imagenViewModel.descifrarImagen(uri, password, requireContext())
     }
 
-    private fun manejarErrorApi(response: retrofit2.Response<*>) {
-        val errorMessage = when (response.code()) {
-            401 -> {
-                val apiError = parseErrorBody(response)
-                getString(R.string.error_unauthorized, apiError?.message ?: "Token no válido")
-            }
-            400 -> {
-                val apiError = parseErrorBody(response)
-                when (apiError?.code) {
-                    "EMPTY_FILE" -> getString(R.string.error_empty_file)
-                    "EMPTY_PASSWORD" -> getString(R.string.error_empty_password)
-                    else -> apiError?.message ?: getString(R.string.imagen_error_api)
-                }
-            }
-            413 -> {
-                getString(R.string.error_file_too_large)
-            }
-            422 -> {
-                val apiError = parseErrorBody(response)
-                when (apiError?.code) {
-                    "DECRYPT_FAILED" -> getString(R.string.error_decrypt_failed)
-                    else -> apiError?.message ?: getString(R.string.imagen_error_api)
-                }
-            }
-            else -> getString(R.string.imagen_error_api) + " (HTTP ${response.code()})"
-        }
-        binding.tvEstadoValor.text = errorMessage
-        binding.tvEstadoValor.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
-        binding.tvMensajeImagen.text = errorMessage
-        binding.tvMensajeImagen.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
-        mostrarReintentar()
-    }
-
-    private fun parseErrorBody(response: retrofit2.Response<*>): ApiError? {
+    private fun Uri.toBitmap(context: Context): Bitmap? {
         return try {
-            val errorBody = response.errorBody()?.string()
-            if (errorBody != null) {
-                gson.fromJson(errorBody, ApiError::class.java)
-            } else {
-                null
-            }
+            val inputStream: InputStream? = context.contentResolver.openInputStream(this)
+            inputStream?.use { BitmapFactory.decodeStream(it) }
         } catch (e: Exception) {
             e.printStackTrace()
             null
         }
-    }
-
-    private fun uriToFile(context: Context, uri: Uri): File? {
-        return try {
-            val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
-            val file = File(context.cacheDir, System.currentTimeMillis().toString() + "_file")
-            inputStream?.use { input ->
-                FileOutputStream(file).use { output ->
-                    val buffer = ByteArray(8192)
-                    var read: Int
-                    while (input.read(buffer).also { read = it } != -1) {
-                        output.write(buffer, 0, read)
-                    }
-                }
-            }
-            file
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
-    }
-
-    private fun borrarArchivoTemporal(file: File) {
-        try {
-            if (file.exists()) {
-                val length = file.length()
-                val fos = FileOutputStream(file)
-                fos.write(ByteArray(length.toInt()))
-                fos.close()
-                file.delete()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            file.delete()
-        }
-    }
-
-    private fun mostrarReintentar() {
-        binding.btnReintentarImagen.visibility = View.VISIBLE
     }
 
     private fun ocultarReintentar() {
@@ -284,5 +179,20 @@ class ImagenFragment : Fragment() {
             e.printStackTrace()
         }
         _binding = null
+    }
+
+    private fun borrarArchivoTemporal(file: File) {
+        try {
+            if (file.exists()) {
+                val length = file.length()
+                val fos = FileOutputStream(file)
+                fos.write(ByteArray(length.toInt()))
+                fos.close()
+                file.delete()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            file.delete()
+        }
     }
 }

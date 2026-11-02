@@ -1,0 +1,89 @@
+<resources>
+    <string name="app_name">CipherSprint</string>
+    <string name="title_orden">Orden</string>
+    <string name="title_imagen">Imagen</string>
+    <string name="title_ajustes">Ajustes</string>
+    <string name="menu_orden">Orden</string>
+    <string name="menu_imagen">Imagen</string>
+    <string name="menu_ajustes">Ajustes</string>
+
+    -- Pantalla Orden --
+    <string name="orden_label_texto">Texto cifrado:</string>
+    <string name="orden_hint_texto">Pegá el texto cifrado o cargá un .txt...</string>
+    <string name="orden_label_desplazamiento">Desplazamiento César:</string>
+    <string name="orden_hint_desplazamiento">1 a 25</string>
+    <string name="orden_btn_descifrar">Descifrar orden</string>
+    <string name="orden_label_resultado">Texto plano:</string>
+    <string name="orden_hint_resultado">El resultado aparecerá aquí...</string>
+    <string name="orden_error_texto">Ingresá un texto válido</string>
+    <string name="orden_error_shift">El desplazamiento debe ser un número del 1 al 25</string>
+    <string name="orden_exito">Orden descifrada</string>
+    <string name="orden_error_api">Error al comunicarse con la API</string>
+
+    -- Pantalla Imagen --
+    <string name="imagen_label_archivo">Archivo .enc:</string>
+    <string name="imagen_btn_seleccionar">Seleccionar archivo</string>
+    <string name="imagen_label_clave">Clave AES:</string>
+    <string name="imagen_hint_clave">Contraseña para descifrar</string>
+    <string name="imagen_btn_descifrar">Descifrar imagen</string>
+    <string name="imagen_label_estado">Estado:</string>
+    <string name="imagen_estado_listo">Listo</string>
+    <string name="imagen_estado_procesando">Procesando...</string>
+    <string name="imagen_exito">Imagen descifrada</string>
+    <string name="imagen_error_seleccion">Seleccioná un archivo .enc primero</string>
+    <string name="imagen_error_clave">Ingresá una clave AES válida</string>
+    <string name="imagen_error_api">Error al descifrar la imagen</string>
+    <string name="imagen_integridad_verificada">Integridad verificada</string>
+    <string name="imagen_integridad_fallida">Integridad fallida</string>
+
+    -- Pantalla Ajustes --
+    <string name="ajustes_label_direccion">Dirección del servidor:</string>
+    <string name="ajustes_hint_direccion">Ej: 192.168.1.50:8000</string>
+    <string name="ajustes_label_token">Token Bearer:</string>
+    <string name="ajustes_hint_token">Tu token de la API...</string>
+    <string name="ajustes_btn_guardar">Guardar configuración</string>
+    <string name="ajustes_btn_probar">Probar conexión</string>
+    <string name="ajustes_config_guardada">Configuración guardada</string>
+    <string name="ajustes_config_no_guardada">Configuración no guardada</string>
+    <string name="ajustes_api_ok">API responde correctamente</string>
+    <string name="ajustes_api_error">La API no responde</string>
+    <string name="ajustes_token_invalido">Token inválido</string>
+    <string name="ajustes_seguridad">Seguridad:</string>
+    <string name="ajustes_seguridad_alto">Nivel: Alto</string>
+    <string name="ajustes_tiempo_espera">Tiempo de espera: 120 s máx.</string>
+
+    -- General --
+    <string name="msg_cargando">Cargando...</string>
+    <string name="msg_error">Error</string>
+    <string name="msg_exito">Éxito</string>
+    <string name="btn_aceptar">Aceptar</string>
+    <string name="btn_cancelar">Cancelar</string>
+    <string name="btn_reintentar">Reintentar</string>
+    <string name="msg_sin_config">No hay configuración de servidor. Ir a Ajustes.</string>
+    <string name="msg_config_requerida">Configurá dirección y token en Ajustes primero</string>
+
+    -- Errores específicos --
+    <string name="error_unauthorized">Token no válido. Revisá los ajustes: %s</string>
+    <string name="error_empty_password">Contraseña vacía</string>
+    <string name="error_empty_file">El archivo está vacío</string>
+    <string name="error_file_too_large">Archivo demasiado grande</string>
+    <string name="error_decrypt_failed">Clave incorrecta o fichero dañado</string>
+    <string name="error_invalid_key">Clave inválida</string>
+    <string name="error_invalid_shift">Desplazamiento inválido</string>
+    <string name="error_internal_error">Error interno del servidor</string>
+
+    -- Accesibilidad --
+    <string name="a11y_btn_descifrar_orden">Botón descifrar orden César</string>
+    <string name="a11y_btn_descifrar_imagen">Botón descifrar imagen AES</string>
+    <string name="a11y_btn_probar_conexion">Botón probar conexión con la API</string>
+    <string name="a11y_btn_guardar_config">Botón guardar configuración</string>
+    <string name="a11y_campo_texto_cifrado">Campo de texto cifrado</string>
+    <string name="a11y_campo_desplazamiento">Campo desplazamiento César 1-25</string>
+    <string name="a11y_campo_archivo_enc">Campo archivo .enc</string>
+    <string name="a11y_campo_clave_aes">Campo clave AES</string>
+    <string name="a11y_campo_direccion_servidor">Campo dirección del servidor IP:puerto</string>
+    <string name="a11y_campo_token">Campo token Bearer de la API</string>
+    <string name="a11y_resultado_texto">Resultado del descifrado de texto</string>
+    <string name="a11y_estado_operacion">Estado de la operación actual</string>
+    <string name="a11y_imagen_descifrada">Imagen descifrada mostrada en pantalla</string>
+</resources>

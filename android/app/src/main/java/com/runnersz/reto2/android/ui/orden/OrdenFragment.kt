@@ -13,6 +13,9 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.observe
+import com.google.android.material.snackbar.Snackbar
 import com.google.gson.Gson
 import com.runnersz.reto2.android.R
 import com.runnersz.reto2.android.api.ApiClient
@@ -21,6 +24,7 @@ import com.runnersz.reto2.android.api.CaesarRequest
 import com.runnersz.reto2.android.api.CaesarResponse
 import com.runnersz.reto2.android.api.RunnersZApi
 import com.runnersz.reto2.android.databinding.FragmentOrdenBinding
+import com.runnersz.reto2.android.viewmodel.OrdenViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,7 +37,7 @@ class OrdenFragment : Fragment() {
     private var _binding: FragmentOrdenBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var api: RunnersZApi
+    private val ordenViewModel: OrdenViewModel by viewModels()
     private val gson: Gson = Gson()
 
     private val cargarArchivo = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -48,8 +52,6 @@ class OrdenFragment : Fragment() {
         _binding = FragmentOrdenBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        api = ApiClient.api
-
         verificarArchivoCompartido()
 
         binding.btnCargarTxt.setOnClickListener {
@@ -62,6 +64,31 @@ class OrdenFragment : Fragment() {
 
         binding.btnReintentar.setOnClickListener {
             descifrarOrden()
+        }
+
+        // Observar ViewModel
+        ordenViewModel.esProcesando.observe(viewLifecycleOwner) { procesando ->
+            binding.btnDescifrarOrden.isEnabled = !procesando
+            binding.btnReintentar.isEnabled = !procesando
+        }
+
+        ordenViewModel.resultadoDescifrado.observe(viewLifecycleOwner) { resultado ->
+            if (resultado.isNotEmpty()) {
+                binding.etResultado.setText(resultado)
+                mostrarMensaje(getString(R.string.orden_exito), false)
+                Toast.makeText(requireContext(), getString(R.string.orden_exito), Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        ordenViewModel.mensajeError.observe(viewLifecycleOwner) { error ->
+            if (error != null && ordenViewModel.esError.value == true) {
+                mostrarMensaje(error, true)
+                Snackbar.make(binding.root, error, Snackbar.LENGTH_LONG).show()
+            }
+        }
+
+        ordenViewModel.esProcesando.observe(viewLifecycleOwner) { procesando ->
+            binding.btnReintentar.visibility = if (procesando || ordenViewModel.mensajeError.value != null) View.VISIBLE else View.GONE
         }
 
         return view
@@ -83,6 +110,7 @@ class OrdenFragment : Fragment() {
                 val reader = BufferedReader(InputStreamReader(stream))
                 val texto = reader.readText()
                 binding.etTexto.setText(texto)
+                ordenViewModel.cargarTexto(texto)
                 mostrarMensaje("Archivo cargado / File loaded", false)
             }
         } catch (e: Exception) {
@@ -97,85 +125,24 @@ class OrdenFragment : Fragment() {
 
         if (texto.isNullOrEmpty()) {
             mostrarMensaje(getString(R.string.orden_error_texto), true)
+            Snackbar.make(binding.root, getString(R.string.orden_error_texto), Snackbar.LENGTH_SHORT).show()
             return
         }
 
         if (shiftStr.isNullOrEmpty()) {
             mostrarMensaje(getString(R.string.orden_error_shift), true)
+            Snackbar.make(binding.root, getString(R.string.orden_error_shift), Snackbar.LENGTH_SHORT).show()
             return
         }
 
         val shift = shiftStr?.toIntOrNull()
         if (shift == null || shift < 1 || shift > 25) {
             mostrarMensaje(getString(R.string.orden_error_shift), true)
+            Snackbar.make(binding.root, getString(R.string.orden_error_shift), Snackbar.LENGTH_SHORT).show()
             return
         }
 
-        ocultarReintentar()
-        mostrarMensaje(getString(R.string.msg_cargando), false)
-
-        CoroutineScope(Dispatchers.Main).launch {
-            try {
-                val response: retrofit2.Response<CaesarResponse> = api.caesar(
-                    CaesarRequest(text = texto, shift = shift, mode = "decrypt")
-                )
-
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful) {
-                        val resultado = response.body()?.result ?: "Sin resultado"
-                        binding.etResultado.setText(resultado)
-                        mostrarMensaje(getString(R.string.orden_exito), false)
-                        Toast.makeText(requireContext(), getString(R.string.orden_exito), Toast.LENGTH_SHORT).show()
-                    } else {
-                        manejarErrorApi(response)
-                    }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    mostrarMensaje("${getString(R.string.orden_error_api)}: ${e.message}", true)
-                    mostrarReintentar()
-                    e.printStackTrace()
-                }
-            }
-        }
-    }
-
-    private fun manejarErrorApi(response: retrofit2.Response<*>) {
-        val errorMessage = when (response.code()) {
-            401 -> {
-                val apiError = parseErrorBody(response)
-                getString(R.string.error_unauthorized, apiError?.message ?: "Token no válido")
-            }
-            400 -> {
-                val apiError = parseErrorBody(response)
-                when (apiError?.code) {
-                    "INVALID_SHIFT" -> getString(R.string.orden_error_shift)
-                    "EMPTY_PASSWORD" -> getString(R.string.error_empty_password)
-                    else -> apiError?.message ?: getString(R.string.orden_error_api)
-                }
-            }
-            422 -> {
-                val apiError = parseErrorBody(response)
-                apiError?.message ?: getString(R.string.orden_error_api)
-            }
-            else -> getString(R.string.orden_error_api) + " (HTTP ${response.code()})"
-        }
-        mostrarMensaje(errorMessage, true)
-        mostrarReintentar()
-    }
-
-    private fun parseErrorBody(response: retrofit2.Response<*>): ApiError? {
-        return try {
-            val errorBody = response.errorBody()?.string()
-            if (errorBody != null) {
-                gson.fromJson(errorBody, ApiError::class.java)
-            } else {
-                null
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            null
-        }
+        ordenViewModel.descifrarOrden(texto, shift)
     }
 
     private fun mostrarMensaje(mensaje: String, esError: Boolean) {
@@ -186,14 +153,6 @@ class OrdenFragment : Fragment() {
                 if (esError) R.color.color_error else R.color.color_success
             )
         )
-    }
-
-    private fun mostrarReintentar() {
-        binding.btnReintentar.visibility = View.VISIBLE
-    }
-
-    private fun ocultarReintentar() {
-        binding.btnReintentar.visibility = View.GONE
     }
 
     override fun onDestroyView() {

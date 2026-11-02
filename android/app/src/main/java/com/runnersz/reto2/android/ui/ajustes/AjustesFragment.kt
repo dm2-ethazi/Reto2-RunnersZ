@@ -10,11 +10,15 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import androidx.lifecycle.observe
+import com.google.android.material.snackbar.Snackbar
 import com.runnersz.reto2.android.R
 import com.runnersz.reto2.android.api.ApiClient
 import com.runnersz.reto2.android.api.RunnersZApi
 import com.runnersz.reto2.android.api.TokenManager
 import com.runnersz.reto2.android.databinding.FragmentAjustesBinding
+import com.runnersz.reto2.android.viewmodel.AjustesViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -25,7 +29,7 @@ class AjustesFragment : Fragment() {
     private var _binding: FragmentAjustesBinding? = null
     private val binding get() = _binding!!
 
-    private lateinit var api: RunnersZApi
+    private val ajustesViewModel: AjustesViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -35,8 +39,7 @@ class AjustesFragment : Fragment() {
         _binding = FragmentAjustesBinding.inflate(inflater, container, false)
         val view = binding.root
 
-        api = ApiClient.api
-
+        // Cargar configuración existente
         val tokenGuardado = TokenManager.getToken()
         val servidorGuardado = TokenManager.getServerUrl()
 
@@ -48,6 +51,28 @@ class AjustesFragment : Fragment() {
         }
 
         actualizarEstadoConfig(TokenManager.isConfigured())
+
+        // Observar ViewModel
+        ajustesViewModel.mensajeEstado.observe(viewLifecycleOwner) { estado ->
+            binding.tvConfigEstado.text = estado
+            binding.tvConfigEstado.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    if (ajustesViewModel.esError.value == true) R.color.color_error else R.color.color_success
+                )
+            )
+        }
+
+        ajustesViewModel.esProcesandoConexion.observe(viewLifecycleOwner) { procesando ->
+            binding.btnProbarConexion.isEnabled = !procesando
+            binding.btnGuardarConfig.isEnabled = !procesando
+        }
+
+        ajustesViewModel.esError.observe(viewLifecycleOwner) { esError ->
+            if (esError == true && ajustesViewModel.mensajeEstado.value != "Configuración no guardada / Config not saved") {
+                Snackbar.make(view, ajustesViewModel.mensajeEstado.value ?: "", Snackbar.LENGTH_LONG).show()
+            }
+        }
 
         binding.btnGuardarConfig.setOnClickListener {
             guardarConfiguracion()
@@ -67,18 +92,21 @@ class AjustesFragment : Fragment() {
         if (direccion.isNullOrEmpty()) {
             binding.tvConfigEstado.text = "Ingresá la dirección del servidor"
             binding.tvConfigEstado.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
+            Snackbar.make(binding.root, "Ingresá la dirección del servidor", Snackbar.LENGTH_SHORT).show()
             return
         }
 
         if (!esUrlValida(direccion)) {
-            binding.tvConfigEstado.text = "URL inválida. Usá el formato IP:puerto o https://host"
+            binding.tvConfigEstado.text = "URL inválida. Formato: IP:puerto o https://host"
             binding.tvConfigEstado.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
+            Snackbar.make(binding.root, "URL inválida", Snackbar.LENGTH_SHORT).show()
             return
         }
 
         if (token.isNullOrEmpty()) {
             binding.tvConfigEstado.text = "Ingresá el token Bearer"
             binding.tvConfigEstado.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
+            Snackbar.make(binding.root, "Ingresá el token Bearer", Snackbar.LENGTH_SHORT).show()
             return
         }
 
@@ -86,16 +114,7 @@ class AjustesFragment : Fragment() {
         val tokenValido = token!!
         val serverUrl = if (!direccionValida.endsWith("/")) direccionValida + "/" else direccionValida
 
-        val exito = TokenManager.saveConfig(tokenValido, serverUrl)
-        if (exito) {
-            actualizarEstadoConfig(true)
-            binding.tvConfigEstado.text = requireContext().getString(R.string.ajustes_config_guardada)
-            binding.tvConfigEstado.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_success))
-            Toast.makeText(requireContext(), requireContext().getString(R.string.ajustes_config_guardada), Toast.LENGTH_SHORT).show()
-        } else {
-            binding.tvConfigEstado.text = "Error guardando configuración"
-            binding.tvConfigEstado.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
-        }
+        ajustesViewModel.guardarConfiguracion(serverUrl, tokenValido, requireContext())
     }
 
     private fun esUrlValida(url: String): Boolean {
@@ -113,7 +132,7 @@ class AjustesFragment : Fragment() {
         CoroutineScope(Dispatchers.Main).launch {
             try {
                 TokenManager.applyConfigToApi()
-                val response = api.checkToken()
+                val response = ApiClient.api.checkToken()
 
                 withContext(Dispatchers.Main) {
                     when (response.code()) {
