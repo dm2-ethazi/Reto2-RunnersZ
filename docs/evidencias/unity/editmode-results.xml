@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<test-run id="2" testcasecount="10" result="Passed" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0" engine-version="3.5.0.0" clr-version="4.0.30319.42000" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0,0444222">
+  <test-suite type="TestSuite" id="1000" name="RunnersZ" fullname="RunnersZ" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.044422" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+    <properties>
+      <property name="platform" value="EditMode" />
+    </properties>
+    <test-suite type="Assembly" id="1014" name="RunnersZ.Tests.dll" fullname="C:/Users/dm2/Documents/reto2_RunnersZ/unity/Library/ScriptAssemblies/RunnersZ.Tests.dll" runstate="Runnable" testcasecount="10" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.034007" total="10" passed="10" failed="0" inconclusive="0" skipped="0" asserts="0">
+      <properties>
+        <property name="_PID" value="2984" />
+        <property name="_APPDOMAIN" value="Unity Child Domain" />
+        <property name="platform" value="EditMode" />
+        <property name="EditorOnly" value="True" />
+      </properties>
+      <test-suite type="TestFixture" id="1001" name="DifficultyTests" fullname="DifficultyTests" classname="DifficultyTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.020501" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1002" name="ConfigMatchesContract" fullname="DifficultyTests.ConfigMatchesContract" methodname="ConfigMatchesContract" classname="DifficultyTests" runstate="Runnable" seed="1243129623" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.010590" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1004" name="HintHasFloor" fullname="DifficultyTests.HintHasFloor" methodname="HintHasFloor" classname="DifficultyTests" runstate="Runnable" seed="1662443510" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.000237" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1003" name="RoundsStopAtThree" fullname="DifficultyTests.RoundsStopAtThree" methodname="RoundsStopAtThree" classname="DifficultyTests" runstate="Runnable" seed="968205739" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.000436" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1005" name="LogicTests" fullname="LogicTests" classname="LogicTests" runstate="Runnable" testcasecount="3" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.003665" total="3" passed="3" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1006" name="CaesarRoundtrip" fullname="LogicTests.CaesarRoundtrip" methodname="CaesarRoundtrip" classname="LogicTests" runstate="Runnable" seed="1861595662" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.000270" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1007" name="Normalizes" fullname="LogicTests.Normalizes" methodname="Normalizes" classname="LogicTests" runstate="Runnable" seed="1002659211" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.002570" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1008" name="Score" fullname="LogicTests.Score" methodname="Score" classname="LogicTests" runstate="Runnable" seed="1342672164" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.000171" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+      </test-suite>
+      <test-suite type="TestFixture" id="1009" name="SessionTests" fullname="SessionTests" classname="SessionTests" runstate="Runnable" testcasecount="4" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.007789" total="4" passed="4" failed="0" inconclusive="0" skipped="0" asserts="0">
+        <properties />
+        <test-case id="1012" name="HintsRespectDifficultyAndScoreFloor" fullname="SessionTests.HintsRespectDifficultyAndScoreFloor" methodname="HintsRespectDifficultyAndScoreFloor" classname="SessionTests" runstate="Runnable" seed="1332015229" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.005126" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1013" name="RestartRestoresSession" fullname="SessionTests.RestartRestoresSession" methodname="RestartRestoresSession" classname="SessionTests" runstate="Runnable" seed="1923065212" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.001134" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1010" name="ThreeMessagesWinAndFurtherAnswersDoNotScore" fullname="SessionTests.ThreeMessagesWinAndFurtherAnswersDoNotScore" methodname="ThreeMessagesWinAndFurtherAnswersDoNotScore" classname="SessionTests" runstate="Runnable" seed="1035093193" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.000286" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+        </test-case>
+        <test-case id="1011" name="WrongAnswerDoesNotCompleteRound" fullname="SessionTests.WrongAnswerDoesNotCompleteRound" methodname="WrongAnswerDoesNotCompleteRound" classname="SessionTests" runstate="Runnable" seed="1423293989" result="Passed" start-time="2026-11-02 11:53:06Z" end-time="2026-11-02 11:53:06Z" duration="0.000281" asserts="0">
+          <properties>
+            <property name="retryIteration" value="0" />
+            <property name="repeatIteration" value="0" />
+          </properties>
+          <output><![CDATA[Saving results to: C:\Users\dm2\Documents\reto2_RunnersZ\unity\editmode-results.xml
+]]></output>
+        </test-case>
+      </test-suite>
+    </test-suite>
+  </test-suite>
+</test-run>

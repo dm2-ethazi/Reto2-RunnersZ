@@ -1,55 +1,72 @@
-# Android — descifrado móvil
+# RunnersZ Android
 
-Kotlin, Android mínimo 26, compile/target SDK 35 y Gradle Wrapper 8.9.
-La aplicación solo descifra; no requiere que el backend esté encendido.
+Author: Jairo (@jairoben). Revisión: Alain. Rama: feature/android-v2.
+Contrato principal: Contrato_Tecnico_RunnersZ_v2.docx (28/10/2026).
+Seguimiento: issue #42, PR #39.
 
-## Compilar y probar desde la raíz
+## Qué hace
 
-Configura JAVA_HOME al JDK 21 y ANDROID_HOME al SDK. Instala Android 35 y
-Build Tools 34.0.0 desde Android Studio/SDK Manager. No uses Java 25 con este wrapper.
+Cliente nativo Kotlin, minSdk 26 / targetSdk 35. No cifra localmente:
+Imagen sube un .png.enc y la contraseña a la API multipart; solo acepta
+resultados con X-Integrity: verified y muestra el bitmap escalado.
+Orden abre TXT UTF-8 o admite texto escrito; valida desplazamiento 1..25,
+envía JSON a César y muestra el campo result.
+Ajustes guarda dirección y token en preferencias privadas y prueba autenticación.
+Recibe archivos por Abrir con o Compartir; la navegación conserva acceso a Ajustes.
 
-```powershell
-.\android\gradlew.bat -p android clean testDebugUnitTest jacocoTestReport jacocoTestCoverageVerification assembleDebug
-```
+## Estructura
 
-APK debug: app/build/outputs/apk/debug/app-debug.apk. No es un APK de producción
-firmado para una tienda. Informe: app/build/reports/jacoco/jacocoTestReport/html.
-JaCoCo mide todo el paquete de aplicación, incluida MainActivity, y exige >=80 %
-de líneas. Las pruebas de UI se ejecutan en JVM con Android simulado API 26;
-no equivalen a una ejecución en un móvil físico.
+- app/src/main/.../data: ApiClient asíncrono OkHttp, resultados y preferencias.
+- app/src/main/.../domain: dirección, errores y desplazamiento.
+- app/src/main/.../ui: Imagen, Orden y Ajustes.
+- MainActivity: navegación y recepción de intents.
+- app/src/main/res: navegación, estilos y tipografías Inter/Open Sans.
+- app/src/test: JUnit, Robolectric y servidor HTTP de pruebas.
+- licenses: licencias OFL de las fuentes.
+- gradle/wrapper: Gradle 8.9, sin instalación global necesaria.
 
-## Dependencias documentadas
+## Compilar y probar
 
-- AGP 8.6.1, Kotlin 2.0.21, JUnit 4.13.2, declarados en Gradle.
-- Robolectric 4.14.1, SOLO testImplementation: simula ciclo de vida, selectores,
-  intents y errores de la Activity sin emulador. Artefacto comprobado en Maven
-  Central; trae AndroidX Test de forma transitiva, por eso useAndroidX=true.
-- La app productiva no añade dependencias AndroidX de interfaz; usa Activity
-  y widgets Android, java.crypto y java.security disponibles desde API 26.
+Desde android/, con JDK 21 y SDK Android 35:
 
-## Usar
+    gradlew.bat testDebugUnitTest assembleDebug
+    gradlew.bat jacocoTestReport jacocoCoverageVerification
 
-Imagen: abre o comparte .png/.png.enc, o pulsa selector. Introduce la contraseña
-AES si está cifrada y pulsa Mostrar/Descifrar. Solo muestra el bitmap después
- de verificar tags GCM y SHA-256. Un PNG sin cifrar también puede visualizarse.
-Orden: abre/comparte .txt, introduce César 1..25 y pulsa Descifrar orden.
-Los errores se muestran con Toast/estado; no deben cerrar la aplicación.
+Linux: sustituir gradlew.bat por ./gradlew.
+Definir ANDROID_HOME o sdk.dir en local.properties (archivo local, no subir).
+APK: app/build/outputs/apk/debug/app-debug.apk.
+Informe: app/build/reports/jacoco/jacocoTestReport/.
+El umbral JaCoCo es 80%; no se rebaja para dar un resultado positivo.
 
-## Código y pruebas
+## Uso
 
-MainActivity conecta intents, selector, vistas y trabajo en ExecutorService.
-`core/` contiene descifrado AES en streaming, formato HGAE v1, César y detección
- de archivos, separados de Android y testeables en JVM.
-MainActivityTest prueba navegación, compartir/abrir/seleccionar, clave vacía,
-clave incorrecta, imagen corrupta, orden válida y desplazamientos inválidos.
-AesInteropTest usa vectores reales del backend, incluido el caso en que el tag
-GCM es válido pero la huella almacenada es incorrecta.
+1. Abrir Ajustes, indicar IP:puerto del servidor y token.
+2. Guardar y Probar; el servidor debe responder 204 en /api/v1/auth/check.
+3. Imagen: seleccionar archivo, introducir contraseña y pulsar Descifrar.
+4. Orden: escribir o abrir TXT, indicar desplazamiento y Descifrar orden.
+5. Un error conserva la aplicación abierta para corregir y reintentar.
 
-Vectores y contraseña pública SOLO de prueba en src/test/resources/vectors.
-Se regeneran desde la raíz con el Python preparado y scripts/generate_vectors.py.
-El temporal se crea en caché privada y se publica sin reemplazo mediante enlace
-duro; si el sistema de archivos no lo admite, falla sin recurrir a sobrescritura.
+En emulador, 10.0.2.2 accede al PC anfitrión. En móvil real usar su IP LAN.
+El servidor es una dependencia externa del módulo: debe ofrecer los endpoints
+v2. No se incluye ni se modifica el backend en esta rama.
 
-Prueba también en móvil real las concesiones URI de otros proveedores de archivos,
-rotación/ciclo de vida y compartir desde distintas apps. Los tests de JVM no
-certifican por sí solos ese comportamiento ni todas las versiones Android.
+## Protección y límites
+
+- El original se lee sin modificar. Subida desde copia privada con buffer 64 KiB.
+- La copia temporal se borra al salir de Imagen. La contraseña no se persiste.
+- Máximo de entrada Imagen: 100 MiB; TXT: 1 MiB. Bitmap reducido a 2048 px.
+- Token en preferencias privadas con backup desactivado, sin cifrado adicional.
+- HTTP LAN permitido por contrato: usar solamente red de demo controlada.
+- Solicitudes OkHttp fuera del hilo UI, timeout 120 s, sin reintentos automáticos.
+- Respuestas y pantallas no registran token ni contraseña en logs.
+- TalkBack, 48 dp, fuentes escalables y estados textuales; revisar en dispositivo.
+
+## Validación
+
+Consultar docs/validacion-android.md para resultados realmente ejecutados.
+Una compilación local no equivale a revisión aprobada ni CI verde.
+
+## Capturas del emulador
+- [Ajustes](docs/evidencias/ajustes.png)
+- [Imagen](docs/evidencias/imagen.png)
+- [Orden](docs/evidencias/orden.png)

@@ -1,10 +1,28 @@
 * text=auto
+
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
 *.sh text eol=lf
-mvnw text eol=lf
-gradlew text eol=lf
-*.cmd text eol=crlf
-*.bat text eol=crlf
-*.enc binary
-*.bin binary
+*.py text
+*.kt text
+*.java text
+*.cs text
+*.meta text
+*.unity text
+*.prefab text
+*.asset text
+*.xml text
+*.json text
+*.md text
+
+*.ttf binary
+*.otf binary
+*.ogg binary
+*.wav binary
 *.png binary
-*.jar binary
+*.jpg binary
+*.apk binary
+*.aab binary
+*.docx binary
+*.pdf binary
