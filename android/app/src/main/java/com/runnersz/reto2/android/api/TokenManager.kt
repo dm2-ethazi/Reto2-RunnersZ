@@ -12,19 +12,19 @@ object TokenManager {
     private const val KEY_SERVER_URL = "api_server_url"
     private const val KEY_CONFIGURED = "api_configured"
 
-    private var prefs: androidx.security.crypto.EncryptedSharedPreferences? = null
+    private var prefs: SharedPreferences? = null
 
     fun init(context: Context) {
         try {
             val masterKeyAlias = MasterKeys.getOrCreate(MasterKeys.AES256_GCM_SPEC)
-            prefs = EncryptedSharedPreferences.create(
+            val encPrefs = EncryptedSharedPreferences.create(
                 PREFS_NAME,
                 masterKeyAlias,
                 context,
                 EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
-            // Cargar valores guardados en ApiConfig
+            prefs = encPrefs
             ApiConfig.bearerToken = getToken()
             ApiConfig.baseUrl = getServerUrl()
         } catch (e: Exception) {

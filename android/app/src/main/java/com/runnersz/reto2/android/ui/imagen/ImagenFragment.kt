@@ -31,6 +31,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
+import okhttp3.MediaType.Companion.toMediaType
 
 class ImagenFragment : Fragment() {
 
@@ -96,7 +97,7 @@ class ImagenFragment : Fragment() {
 
     private fun descifrarImagen() {
         val uri = archivoSeleccionado
-        val password = binding.etClave.text?.toString().trim()
+        val password = binding.etClave.text?.toString()?.trim()
 
         if (uri == null) {
             binding.tvMensajeImagen.text = requireContext().getString(R.string.imagen_error_seleccion)
@@ -128,12 +129,13 @@ class ImagenFragment : Fragment() {
                     return@launch
                 }
 
-                val requestFile = RequestBody.create(
-                    file,
-                    MediaType.parse("application/octet-stream")
-                )
+                val mediaTypeFile = "application/octet-stream".toMediaType()!!
+                val requestFile = RequestBody.create(mediaTypeFile, file)
                 val body = MultipartBody.Part.createFormData("file", file.name, requestFile)
-                val passwordBody = RequestBody.create(password, MediaType.parse("text/plain"))
+
+                val mediaTypeText = "text/plain".toMediaType()!!
+                val passwordVal = password!!
+                val passwordBody = RequestBody.create(mediaTypeText, passwordVal)
 
                 val response: retrofit2.Response<kotlin.Unit> = api.decryptFile(body, passwordBody)
 
@@ -160,7 +162,6 @@ class ImagenFragment : Fragment() {
 
                         Toast.makeText(requireContext(), requireContext().getString(R.string.imagen_exito), Toast.LENGTH_SHORT).show()
 
-                        // Borrado robusto de caché temporal (Contrato 5.1)
                         borrarArchivoTemporal(file)
                     } else {
                         manejarErrorApi(response)
@@ -227,21 +228,6 @@ class ImagenFragment : Fragment() {
         }
     }
 
-    private fun borrarArchivoTemporal(file: File) {
-        try {
-            if (file.exists()) {
-                val length = file.length()
-                val fos = FileOutputStream(file)
-                fos.write(ByteArray(length.toInt()))
-                fos.close()
-                file.delete()
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            file.delete()
-        }
-    }
-
     private fun uriToFile(context: Context, uri: Uri): File? {
         return try {
             val inputStream: InputStream? = context.contentResolver.openInputStream(uri)
@@ -259,6 +245,21 @@ class ImagenFragment : Fragment() {
         } catch (e: Exception) {
             e.printStackTrace()
             null
+        }
+    }
+
+    private fun borrarArchivoTemporal(file: File) {
+        try {
+            if (file.exists()) {
+                val length = file.length()
+                val fos = FileOutputStream(file)
+                fos.write(ByteArray(length.toInt()))
+                fos.close()
+                file.delete()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            file.delete()
         }
     }
 

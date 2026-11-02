@@ -1,21 +1,8 @@
 <resources>
-    <style name="Theme.CipherSprint" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.CipherSprint" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/color_azul_hogwarts</item>
         <item name="colorPrimaryDark">@color/color_primary_dark</item>
         <item name="colorAccent">@color/color_oro_magico</item>
         <item name="android:windowBackground">@color/color_pergamino</item>
-        <item name="materialButtonStyle">@style/Widget.CipherSprint.Button</item>
-        <item name="textInputStyle">@style/Widget.CipherSprint.TextInput</item>
     </style>
-
-    <style name="Widget.CipherSprint.Button" parent="Widget.Material3.Button">
-        <item name="cornerRadius">8dp</item>
-        <item name="android:minHeight">48dp</item>
-    </style>
-
-    <style name="Widget.CipherSprint.TextInput" parent="Widget.Material3.TextInputField">
-        <item name="boxCornerRadiusStart">8dp</item>
-        <item name="boxCornerRadiusEnd">8dp</item>
-    </style>
-
 </resources>

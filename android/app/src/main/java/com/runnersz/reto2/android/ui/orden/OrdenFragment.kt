@@ -92,20 +92,20 @@ class OrdenFragment : Fragment() {
     }
 
     private fun descifrarOrden() {
-        val texto = binding.etTexto.text?.toString().trim()
-        val shiftStr = binding.etDesplazamiento.text?.toString().trim()
+        val texto = binding.etTexto.text?.toString()?.trim()
+        val shiftStr = binding.etDesplazamiento.text?.toString()?.trim()
 
-        if (TextUtils.isEmpty(texto)) {
+        if (texto.isNullOrEmpty()) {
             mostrarMensaje(getString(R.string.orden_error_texto), true)
             return
         }
 
-        if (TextUtils.isEmpty(shiftStr)) {
+        if (shiftStr.isNullOrEmpty()) {
             mostrarMensaje(getString(R.string.orden_error_shift), true)
             return
         }
 
-        val shift = shiftStr.toIntOrNull()
+        val shift = shiftStr?.toIntOrNull()
         if (shift == null || shift < 1 || shift > 25) {
             mostrarMensaje(getString(R.string.orden_error_shift), true)
             return

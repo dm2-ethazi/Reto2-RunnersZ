@@ -61,31 +61,32 @@ class AjustesFragment : Fragment() {
     }
 
     private fun guardarConfiguracion() {
-        val direccion = binding.etDireccion.text?.toString().trim()
-        val token = binding.etToken.text?.toString().trim()
+        val direccion = binding.etDireccion.text?.toString()?.trim()
+        val token = binding.etToken.text?.toString()?.trim()
 
-        if (TextUtils.isEmpty(direccion)) {
+        if (direccion.isNullOrEmpty()) {
             binding.tvConfigEstado.text = "Ingresá la dirección del servidor"
             binding.tvConfigEstado.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
             return
         }
 
-        // Validar formato de URL (Contrato Técnico 9.4: dirección configurable)
         if (!esUrlValida(direccion)) {
             binding.tvConfigEstado.text = "URL inválida. Usá el formato IP:puerto o https://host"
             binding.tvConfigEstado.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
             return
         }
 
-        if (TextUtils.isEmpty(token)) {
+        if (token.isNullOrEmpty()) {
             binding.tvConfigEstado.text = "Ingresá el token Bearer"
             binding.tvConfigEstado.setTextColor(ContextCompat.getColor(requireContext(), R.color.color_error))
             return
         }
 
-        val serverUrl = if (!direccion.endsWith("/")) direccion + "/" else direccion
+        val direccionValida = direccion!!
+        val tokenValido = token!!
+        val serverUrl = if (!direccionValida.endsWith("/")) direccionValida + "/" else direccionValida
 
-        val exito = TokenManager.saveConfig(token, serverUrl)
+        val exito = TokenManager.saveConfig(tokenValido, serverUrl)
         if (exito) {
             actualizarEstadoConfig(true)
             binding.tvConfigEstado.text = requireContext().getString(R.string.ajustes_config_guardada)
@@ -98,11 +99,9 @@ class AjustesFragment : Fragment() {
     }
 
     private fun esUrlValida(url: String): Boolean {
-        // Aceptar http://, https:// o simplemente host:puerto
         return if (url.startsWith("http://") || url.startsWith("https://")) {
             Patterns.WEB_URL.matcher(url).matches()
         } else {
-            // Formato host:puerto (ej: 192.168.1.50:8000)
             url.contains(":") && !url.contains(" ") && url.length > 3
         }
     }

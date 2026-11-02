@@ -2,14 +2,12 @@ package com.runnersz.reto2.android.api
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.runnersz.reto2.android.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 import java.security.MessageDigest
 import java.security.cert.X509Certificate
@@ -17,15 +15,16 @@ import java.security.cert.X509Certificate
 object ApiClient {
 
     // SHA-256 fingerprint del certificado SSL de runnersz-api.onrender.com
-    // Obtenido del servidor real en tiempo de compilación
     private const val API_SHA256_FINGERPRINT = "A88CF8E12B2E731A485D320C92B48EA71E0D6BF8A83868B5D110DA51D4A1A45C"
+
+    private const val DEBUG_BUILD = true
 
     private val gson: Gson = GsonBuilder()
         .setLenient()
         .create()
 
     private val loggingInterceptor: HttpLoggingInterceptor = HttpLoggingInterceptor().apply {
-        level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
+        level = if (DEBUG_BUILD) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
     }
 
     private val okHttpClient: OkHttpClient = OkHttpClient.Builder()
@@ -44,13 +43,11 @@ object ApiClient {
         .retryOnConnectionFailure(true)
         .sslSocketFactory(createSslSocketFactory(), createTrustManager())
         .hostnameVerifier { hostname, session ->
-            // Certificate pinning: validar el fingerprint SHA-256 del servidor
             val peerCertificates = session.peerCertificates
             if (peerCertificates.isNotEmpty()) {
                 val cert = peerCertificates[0] as X509Certificate
                 val fingerprint = sha256Fingerprint(cert.encoded)
-                // En debug se permite cualquier certificado; en release se exige pinning exacto
-                if (BuildConfig.DEBUG) {
+                if (DEBUG_BUILD) {
                     true
                 } else {
                     fingerprint.equals(API_SHA256_FINGERPRINT, ignoreCase = true)
@@ -69,9 +66,6 @@ object ApiClient {
 
     val api: RunnersZApi = retrofit.create(RunnersZApi::class.java)
 
-    /**
-     * Reconstruye el Retrofit con la URL base actual (llamado tras cambiar dirección en Ajustes).
-     */
     fun rebuildWithBaseUrl(baseUrl: String) {
         ApiConfig.baseUrl = if (baseUrl.isNotBlank()) baseUrl.trimEnd { it == '/' } + "/" else "https://runnersz-api.onrender.com/"
     }
@@ -82,7 +76,7 @@ object ApiClient {
         return sslContext.socketFactory
     }
 
-    private fun createTrustManager(): TrustManager {
+    private fun createTrustManager(): X509TrustManager {
         return object : X509TrustManager {
             override fun checkClientTrusted(chain: Array<X509Certificate>, authType: String) {}
             override fun checkServerTrusted(chain: Array<X509Certificate>, authType: String) {}

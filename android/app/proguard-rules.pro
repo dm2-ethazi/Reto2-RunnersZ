@@ -3,7 +3,7 @@
 
 -keep class com.runnersz.reto2.android.** { *; }
 -keepnames class com.runnersz.reto2.android.** { *; }
--keepmembernames class com.runnersz.reto2.android.** { *; }
+-keepclassmembernames class com.runnersz.reto2.android.** { *; }
 
 # Retrofit + Gson + OkHttp
 -keep class com.squareup.okhttp3.** { *; }

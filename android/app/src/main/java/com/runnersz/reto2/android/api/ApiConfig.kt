@@ -2,7 +2,6 @@ package com.runnersz.reto2.android.api
 
 object ApiConfig {
     // URL base de la API. Se configura en Ajustes (IP:puerto) y se guarda localmente.
-    // Valor por defecto para pruebas rápidas; en producción se edita desde la app.
     var baseUrl: String = "https://runnersz-api.onrender.com/"
 
     // Bearer token. Se configura en Ajustes y se cifra en EncryptedSharedPreferences.
@@ -12,6 +11,8 @@ object ApiConfig {
     const val ENDPOINT_HEALTH = "/api/v1/health"
     const val ENDPOINT_AUTH_CHECK = "/api/v1/auth/check"
     const val ENDPOINT_CAESAR = "/api/v1/text/caesar"
+    const val ENDPOINT_VIGENERE = "/api/v1/text/vigenere"
+    const val ENDPOINT_FILE_ENCRYPT = "/api/v1/files/encrypt"
     const val ENDPOINT_FILE_DECRYPT = "/api/v1/files/decrypt"
 
     // Headers

@@ -3,6 +3,7 @@ package com.runnersz.reto2.android.api
 import com.runnersz.reto2.android.api.ApiConfig.ENDPOINT_AUTH_CHECK
 import com.runnersz.reto2.android.api.ApiConfig.ENDPOINT_CAESAR
 import com.runnersz.reto2.android.api.ApiConfig.ENDPOINT_FILE_DECRYPT
+import com.runnersz.reto2.android.api.ApiConfig.ENDPOINT_FILE_ENCRYPT
 import com.runnersz.reto2.android.api.ApiConfig.ENDPOINT_HEALTH
 import com.runnersz.reto2.android.api.ApiConfig.ENDPOINT_VIGENERE
 import okhttp3.MultipartBody
