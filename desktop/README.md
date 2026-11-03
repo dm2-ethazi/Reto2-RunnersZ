@@ -43,7 +43,7 @@ El servidor debe estar disponible desde este equipo, con el token correcto y est
 
 ```text
 src/main/java/
-  com/runnersz/desktop/
+  com/runnersz/
     Main.java
     Launcher.java
     controller/DesktopController.java
@@ -53,7 +53,7 @@ src/main/java/
     service/FileOperationService.java
     service/FileService.java
     service/SettingsStore.java
-src/main/resources/com/runnersz/desktop/runnersz.css
+src/main/resources/com/runnersz/runnersz.css
 ```
 
 La separación responde al contrato §5.4: los servicios no importan JavaFX y el
@@ -141,3 +141,72 @@ los lanzadores de compatibilidad. El JAR se revisa para confirmar que conserva
 la entrada y los recursos actuales y no empaqueta las clases de org.example.
 Las pruebas de scripts de la raíz suman 41 casos superados; no equivalen a
 cobertura JUnit del cliente. Se mantiene pendiente la revisión gráfica y con servidor real.
+
+## Idiomas: español, euskera e inglés
+
+1. Abre el cliente y elige **Español**, **Euskara** o **English** en la cabecera.
+2. El cambio se aplica inmediatamente, sin reiniciar ni borrar mensajes, claves,
+   contraseñas, rutas, resultados o la pestaña seleccionada.
+3. Abre Ajustes o realiza una operación: los diálogos, alertas, validaciones,
+   mensajes de error y menús de edición también usan ese idioma.
+4. Al volver a abrir el cliente se recupera el idioma elegido; el valor inicial
+   es español. Solo se guarda la clave `language` junto a las preferencias existentes.
+
+`utiles` carga catálogos UTF-8 mediante ResourceBundle y MessageFormat,
+con claves estables y parámetros para nombres/rutas. Los controles enlazan sus
+propiedades a la selección; no se reconstruye la escena ni se traduce el texto
+introducido por el usuario. Los servicios mantienen su independencia de JavaFX.
+Los códigos de error de la API se convierten a mensajes locales: una respuesta
+inesperada produce un aviso traducido, sin mostrar el cuerpo remoto arbitrario.
+Los nombres de marca, algoritmos, rutas de protocolo y datos del usuario se conservan.
+
+Los catálogos están en `src/main/resources/com/runnersz/i18n/`; no se añaden
+bibliotecas. La selección responde a la petición de multidioma y mantiene las
+capas y ayudas accesibles del contrato §5.4 y §9.3. Las ventanas nativas de
+selección de archivos pertenecen al sistema operativo: su título y filtro los
+traduce la aplicación, pero sus botones y avisos internos siguen el idioma del SO.
+
+Las limitaciones contractuales previas de fuentes, cobertura y servidor real
+siguen pendientes; este cambio no las resuelve.
+
+### Validación del multidioma en pc_clase
+
+- `mvn -B -ntp clean verify`: BUILD SUCCESS; catálogos UTF-8 incluidos en el fat JAR.
+- Un comprobador Java temporal, externo al repositorio, verificó 133 claves por
+  idioma, parámetros y saltos de línea, preferencias aisladas, textos de los tres idiomas y las etiquetas, prompts y ayudas de las vistas.
+  La prueba anterior no detectó el bloqueo tras el primer cambio; la regresión
+  posterior de cambios consecutivos, descrita abajo, sí lo reproduce y verifica la corrección.
+- Se verificaron los botones Aceptar/Cancelar, menús de edición, estados con
+  parámetros y conservación de mensajes, contraseña, rutas y resultado. Se
+  instanciaron controles JavaFX sin mostrar ventanas.
+- Un servidor HTTP simulado comprobó los ocho códigos de error del contrato,
+  errores desconocidos y la ausencia de X-Integrity: verified en los tres idiomas.
+  El comprobador terminó con 2456 aserciones correctas y se retiró después.
+- `git diff --check -- desktop` correcto. HEAD e índice se conservaron.
+
+Estas comprobaciones no sustituyen la revisión visual con teclado, las pruebas
+con el servidor criptográfico real ni la cobertura JUnit/JaCoCo pendiente.
+
+### Corrección de cambios consecutivos
+
+`I18n` permanece en `com.runnersz.utiles`, respetando el traslado del usuario.
+Los catálogos siguen en `com/runnersz/i18n`: el paquete de la clase y la ruta de
+recursos son independientes. Se corrigió el binding del controlador para leer
+la propiedad de idioma en cada cálculo y recibir todos los cambios posteriores.
+
+La regresión `LanguageSwitchRegression` usa controles JavaFX sin mostrar ventanas
+y preferencias en memoria. Compila con `mvn clean verify` y ejecútala desde desktop:
+
+```powershell
+java -cp "target/test-classes;target/runnersz-desktop.jar" com.runnersz.controller.LanguageSwitchRegression
+```
+
+En Linux, el separador del classpath es `:`. Requiere un entorno gráfico accesible
+para iniciar JavaFX, aunque no muestra ventanas. Maven compila esta prueba, pero
+no la ejecuta automáticamente: es un comprobador independiente sin nuevas dependencias.
+La prueba reproduce el fallo anterior en el segundo cambio y verifica 12 cambios
+consecutivos, botones, pestañas, ayudas, menús, preferencias y conservación de datos.
+Se mantienen pendientes los requisitos contractuales ya documentados de fuentes,
+JUnit/JaCoCo y validación con el servidor real.
+
+Resultado de la corrección: la prueba fallaba antes en el segundo cambio (inglés); después pasa con 144 comprobaciones y 12 cambios consecutivos. `mvn clean verify` y `git diff --check -- desktop` terminan correctamente. No se mostraron ventanas y las preferencias de prueba fueron efímeras.

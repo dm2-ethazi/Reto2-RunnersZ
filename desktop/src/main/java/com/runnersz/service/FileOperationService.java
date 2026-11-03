@@ -1,5 +1,6 @@
 package com.runnersz.service;
 
+import com.runnersz.utiles.I18n;
 import com.runnersz.model.FileResult;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,11 +26,11 @@ public final class FileOperationService {
     Path target = output.toAbsolutePath().normalize();
     // isSameFile cubre también enlaces y variantes de una misma ruta existente.
     if (source.equals(target) || (Files.exists(target) && Files.isSameFile(source, target))) {
-      throw new IOException("El resultado no puede sobrescribir el fichero original.");
+      throw I18n.failure("error.original");
     }
     byte[] bytes = files.readBytes(source);
     if (bytes.length == 0) {
-      throw new IOException("El archivo está vacío (EMPTY_FILE).");
+      throw I18n.failure("error.emptyFile");
     }
     FileResult result =
         api.fileOperation(bytes, source.getFileName().toString(), password, encrypt);

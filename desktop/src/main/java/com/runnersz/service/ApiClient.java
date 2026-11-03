@@ -1,5 +1,6 @@
 package com.runnersz.service;
 
+import com.runnersz.utiles.I18n;
 import com.runnersz.model.ConnectionSettings;
 import com.runnersz.model.FileResult;
 import java.io.ByteArrayOutputStream;
@@ -58,7 +59,7 @@ public final class ApiClient {
 
     String result = jsonString(new String(response.body(), StandardCharsets.UTF_8), "result");
     if (result == null) {
-      throw new IOException("La API respondió correctamente, pero no incluyó el campo «result».");
+      throw I18n.failure("error.apiResult");
     }
     return result;
   }
@@ -102,9 +103,7 @@ public final class ApiClient {
 
     if (!encrypt
         && !"verified".equalsIgnoreCase(response.headers().firstValue("X-Integrity").orElse(""))) {
-      throw new IOException(
-          "La API no confirmó la integridad del fichero (falta X-Integrity: verified). No se guardó"
-              + " el resultado.");
+      throw I18n.failure("error.integrity");
     }
     return new FileResult(response.body());
   }
@@ -113,10 +112,9 @@ public final class ApiClient {
     try {
       return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
     } catch (IOException ex) {
-      String detail = ex.getMessage();
-      if (detail == null || detail.isBlank()) detail = ex.getClass().getSimpleName();
-      throw new IOException(
-          "No se pudo completar la llamada a " + request.uri() + ": " + detail, ex);
+      IOException failure = I18n.failure("error.network");
+      failure.initCause(ex);
+      throw failure;
     }
   }
 
@@ -130,15 +128,20 @@ public final class ApiClient {
 
     String payload = new String(response.body(), StandardCharsets.UTF_8).trim();
     String code = jsonString(payload, "code");
-    String message = jsonString(payload, "message");
-    if (message == null) message = jsonString(payload, "detail");
-    if (message == null) message = jsonString(payload, "msg");
-    if (message == null || message.isBlank()) {
-      message = payload.isBlank() ? "La API no devolvió detalles." : payload;
-    }
-    if (message.length() > 600) message = message.substring(0, 597) + "…";
-    if (code != null && !code.isBlank() && !message.contains(code)) message += " (" + code + ")";
-    throw new IOException("Error HTTP " + status + ": " + message);
+    // Los códigos del contrato se traducen; nunca mostramos cuerpos arbitrarios del servidor.
+    String messageKey = switch (code == null ? "" : code) {
+      case "UNAUTHORIZED", "EMPTY_FILE", "EMPTY_PASSWORD", "INVALID_KEY", "INVALID_SHIFT",
+          "FILE_TOO_LARGE", "DECRYPT_FAILED", "INTERNAL_ERROR" -> "error." + code;
+      default -> switch (status) {
+        case 401, 403 -> "error.UNAUTHORIZED";
+        case 413 -> "error.FILE_TOO_LARGE";
+        case 422 -> "error.DECRYPT_FAILED";
+        case 500 -> "error.INTERNAL_ERROR";
+        default -> "error.apiUnknown";
+      };
+    };
+    // La excepción conserva la clave, de modo que el detalle se resuelve en el idioma actual.
+    throw I18n.httpFailure(status, messageKey);
   }
 
   private static String quote(String value) {

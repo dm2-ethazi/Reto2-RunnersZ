@@ -1,5 +1,12 @@
 package com.runnersz.controller;
 
+import static com.runnersz.utiles.I18n.text;
+
+import com.runnersz.utiles.I18n;
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.StringBinding;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import com.runnersz.service.ApiClient;
 import com.runnersz.service.FileOperationService;
 import com.runnersz.service.FileService;
@@ -35,6 +42,7 @@ public final class DesktopController {
             thread.setDaemon(true);
             return thread;
           });
+  private final StringProperty languageCode = new SimpleStringProperty(I18n.locale().getLanguage());
   private Stage stage;
   private Label status;
   private ProgressIndicator progress;
@@ -47,7 +55,7 @@ public final class DesktopController {
   /** Monta la ventana y enlaza las acciones del usuario. */
   public void start(Stage stage) {
     this.stage = stage;
-    stage.setTitle("RunnersZ · Cliente de escritorio");
+    stage.titleProperty().bind(words("app.title"));
     BorderPane root = new BorderPane();
     root.getStyleClass().add("app-root");
     root.setTop(header());
@@ -55,7 +63,7 @@ public final class DesktopController {
     tabs.getStyleClass().add("main-tabs");
     tabs.getTabs()
         .addAll(
-            new Tab("Ficheros · AES", fileView()), new Tab("Mensajes · Vigenère", vigenereView()));
+            tab("tab.files", fileView()), tab("tab.messages", vigenereView()));
     tabs.getTabs().forEach(tab -> tab.setClosable(false));
     root.setCenter(tabs);
     root.setBottom(footer());
@@ -72,14 +80,30 @@ public final class DesktopController {
   private HBox header() {
     Label brand = new Label("RUNNERSZ");
     brand.getStyleClass().add("brand");
-    Label subtitle = new Label("HOGWARTS  /  GESTIÓN SEGURA DE ARCHIVOS");
+    Label subtitle = label("brand.subtitle");
     subtitle.getStyleClass().add("eyebrow");
-    Button config = new Button("Ajustes");
-    accessible(config, AccessibleRole.BUTTON, "Abrir ajustes de conexión");
+    subtitle.setWrapText(true);
+    Button config = button("settings.open");
+    ComboBox<String> language = new ComboBox<>();
+    // Los nombres propios de idioma se mantienen reconocibles en los tres catálogos.
+    language.getItems().addAll("Español", "Euskara", "English");
+    language.setValue(switch (I18n.locale().getLanguage()) {
+      case "eu" -> "Euskara";
+      case "en" -> "English";
+      default -> "Español";
+    });
+    language.accessibleTextProperty().bind(words("language"));
+    language.setOnAction(e -> {
+      String selected = language.getValue();
+      String code = selected.equals("Euskara") ? "eu" : selected.equals("English") ? "en" : "es";
+      I18n.setLanguage(code);
+      languageCode.set(code);
+    });
+    accessible(config, AccessibleRole.BUTTON, "settings.open.help");
     config.setOnAction(e -> showSettings());
     VBox identity = new VBox(4, brand, subtitle);
     HBox.setHgrow(identity, Priority.ALWAYS);
-    HBox bar = new HBox(16, identity, config);
+    HBox bar = new HBox(16, identity, language, config);
     bar.setAlignment(Pos.CENTER_LEFT);
     bar.setPadding(new Insets(24, 32, 20, 32));
     bar.getStyleClass().add("header");
@@ -87,59 +111,56 @@ public final class DesktopController {
   }
 
   private VBox fileView() {
-    Label title = new Label("Protección de ficheros");
+    Label title = label("files.title");
     title.getStyleClass().add("section-title");
-    Label intro = new Label("Cifra o recupera un archivo mediante el servicio seguro RunnersZ.");
+    Label intro = label("files.intro");
     intro.getStyleClass().add("muted");
     inputPath = new TextField();
-    accessible(inputPath, AccessibleRole.TEXT_FIELD, "Fichero de entrada");
-    inputPath.setPromptText("Selecciona un fichero de entrada");
-    inputPath.setAccessibleHelp("Ruta del fichero que se enviará al servidor.");
+    accessible(inputPath, AccessibleRole.TEXT_FIELD, "files.input");
+    inputPath.promptTextProperty().bind(words("files.input.prompt"));
+    inputPath.accessibleHelpProperty().bind(words("files.input.help"));
     inputPath.setEditable(false);
-    Button browseInput = new Button("Elegir…");
-    accessible(browseInput, AccessibleRole.BUTTON, "Elegir fichero de entrada");
+    Button browseInput = button("files.choose");
+    accessible(browseInput, AccessibleRole.BUTTON, "files.choose.help");
     browseInput.setOnAction(e -> chooseInput());
     HBox inputRow = new HBox(10, inputPath, browseInput);
     HBox.setHgrow(inputPath, Priority.ALWAYS);
     outputPath = new TextField();
-    accessible(outputPath, AccessibleRole.TEXT_FIELD, "Fichero de salida");
-    outputPath.setPromptText("Ubicación de salida");
-    outputPath.setAccessibleHelp("Ruta donde se guardará el resultado; el original se conserva.");
+    accessible(outputPath, AccessibleRole.TEXT_FIELD, "files.output");
+    outputPath.promptTextProperty().bind(words("files.output.prompt"));
+    outputPath.accessibleHelpProperty().bind(words("files.output.help"));
     outputPath.setEditable(false);
-    Button browseOutput = new Button("Guardar como…");
-    accessible(browseOutput, AccessibleRole.BUTTON, "Elegir ubicación del fichero de salida");
+    Button browseOutput = button("files.saveAs");
+    accessible(browseOutput, AccessibleRole.BUTTON, "files.saveAs.help");
     browseOutput.setOnAction(e -> chooseOutput());
     HBox outputRow = new HBox(10, outputPath, browseOutput);
     HBox.setHgrow(outputPath, Priority.ALWAYS);
     aesPassword = new PasswordField();
-    accessible(aesPassword, AccessibleRole.PASSWORD_FIELD, "Contraseña AES");
-    aesPassword.setPromptText("Contraseña AES");
-    aesPassword.setAccessibleHelp(
-        "La contraseña se envía al servidor para cifrar o descifrar. No se guarda.");
+    accessible(aesPassword, AccessibleRole.PASSWORD_FIELD, "files.password");
+    aesPassword.promptTextProperty().bind(words("files.password"));
+    aesPassword.accessibleHelpProperty().bind(words("files.password.help"));
     Label note =
-        new Label(
-            "La contraseña solo se usa en esta operación. Los ficheros vacíos se rechazan de forma"
-                + " controlada.");
+        label("files.note");
     note.getStyleClass().add("helper");
     note.setWrapText(true);
     VBox card =
         new VBox(
             14,
-            fieldLabel("Fichero de entrada"),
+            fieldLabel("files.input"),
             inputRow,
-            fieldLabel("Fichero de salida"),
+            fieldLabel("files.output"),
             outputRow,
-            fieldLabel("Contraseña"),
+            fieldLabel("password"),
             aesPassword,
             note);
     card.getStyleClass().add("card");
-    encryptButton = new Button("Cifrar archivo");
-    accessible(encryptButton, AccessibleRole.BUTTON, "Cifrar archivo AES");
+    encryptButton = button("files.encrypt");
+    accessible(encryptButton, AccessibleRole.BUTTON, "files.encrypt.help");
     encryptButton.setMinWidth(150);
     encryptButton.setOnAction(e -> runFileOperation(true));
     encryptButton.getStyleClass().add("primary-button");
-    decryptButton = new Button("Descifrar archivo");
-    accessible(decryptButton, AccessibleRole.BUTTON, "Descifrar archivo AES");
+    decryptButton = button("files.decrypt");
+    accessible(decryptButton, AccessibleRole.BUTTON, "files.decrypt.help");
     decryptButton.setMinWidth(160);
     decryptButton.setOnAction(e -> runFileOperation(false));
     HBox actions = new HBox(12, encryptButton, decryptButton);
@@ -151,55 +172,53 @@ public final class DesktopController {
   }
 
   private VBox vigenereView() {
-    Label title = new Label("Cifrado Vigenère");
+    Label title = label("vigenere.title");
     title.getStyleClass().add("section-title");
     Label intro =
-        new Label(
-            "Los mensajes se procesan en el servidor. Espacios, signos y caracteres fuera de A–Z se"
-                + " conservan.");
+        label("vigenere.intro");
     intro.getStyleClass().add("muted");
     intro.setWrapText(true);
     plainText = new TextArea();
-    accessible(plainText, AccessibleRole.TEXT_AREA, "Texto de entrada");
-    plainText.setPromptText("Escribe un mensaje o carga un archivo .txt…");
+    accessible(plainText, AccessibleRole.TEXT_AREA, "text.input");
+    plainText.promptTextProperty().bind(words("text.prompt"));
     plainText.setWrapText(true);
     plainText.setPrefRowCount(8);
-    plainText.setAccessibleHelp("Texto en UTF-8 que se cifrará o descifrará.");
+    plainText.accessibleHelpProperty().bind(words("text.help"));
     resultText = new TextArea();
-    accessible(resultText, AccessibleRole.TEXT_AREA, "Resultado Vigenère");
-    resultText.setPromptText("El resultado aparecerá aquí");
+    accessible(resultText, AccessibleRole.TEXT_AREA, "vigenere.result");
+    resultText.promptTextProperty().bind(words("result.prompt"));
     resultText.setWrapText(true);
     resultText.setPrefRowCount(8);
     resultText.setEditable(false);
     TextField key = new TextField();
-    accessible(key, AccessibleRole.TEXT_FIELD, "Clave Vigenère");
-    key.setPromptText("Clave (solo letras A–Z)");
-    key.setAccessibleHelp("Clave no vacía compuesta por letras de la A a la Z.");
-    Button load = new Button("Abrir .txt");
-    accessible(load, AccessibleRole.BUTTON, "Abrir archivo de texto UTF-8");
+    accessible(key, AccessibleRole.TEXT_FIELD, "vigenere.key");
+    key.promptTextProperty().bind(words("vigenere.key.prompt"));
+    key.accessibleHelpProperty().bind(words("vigenere.key.help"));
+    Button load = button("text.open");
+    accessible(load, AccessibleRole.BUTTON, "text.open.help");
     load.setOnAction(e -> loadText());
-    Button save = new Button("Guardar resultado…");
-    accessible(save, AccessibleRole.BUTTON, "Guardar resultado como archivo de texto");
+    Button save = button("text.save");
+    accessible(save, AccessibleRole.BUTTON, "text.save.help");
     save.setOnAction(e -> saveText());
-    vigenereEncryptButton = new Button("Cifrar");
-    accessible(vigenereEncryptButton, AccessibleRole.BUTTON, "Cifrar mensaje con Vigenère");
+    vigenereEncryptButton = button("encrypt");
+    accessible(vigenereEncryptButton, AccessibleRole.BUTTON, "vigenere.encrypt.help");
     vigenereEncryptButton.setMinWidth(110);
     vigenereEncryptButton.getStyleClass().add("primary-button");
     vigenereEncryptButton.setOnAction(e -> runVigenere(key.getText(), "encrypt"));
-    vigenereDecryptButton = new Button("Descifrar");
-    accessible(vigenereDecryptButton, AccessibleRole.BUTTON, "Descifrar mensaje con Vigenère");
+    vigenereDecryptButton = button("decrypt");
+    accessible(vigenereDecryptButton, AccessibleRole.BUTTON, "vigenere.decrypt.help");
     vigenereDecryptButton.setMinWidth(110);
     vigenereDecryptButton.setOnAction(e -> runVigenere(key.getText(), "decrypt"));
     VBox card =
         new VBox(
             12,
-            fieldLabel("Texto de entrada"),
+            fieldLabel("text.input"),
             plainText,
             new HBox(10, load),
-            fieldLabel("Clave"),
+            fieldLabel("key"),
             key,
             new HBox(10, vigenereEncryptButton, vigenereDecryptButton),
-            fieldLabel("Resultado"),
+            fieldLabel("result"),
             resultText,
             save);
     card.getStyleClass().add("card");
@@ -213,13 +232,14 @@ public final class DesktopController {
   }
 
   private HBox footer() {
-    status = new Label("Listo · configura el servidor para empezar");
+    status = new Label();
+    setStatus("status.initial");
     status.getStyleClass().add("status-text");
     progress = new ProgressIndicator();
     progress.setMaxSize(20, 20);
     progress.setVisible(false);
     progress.setAccessibleRole(AccessibleRole.PROGRESS_INDICATOR);
-    progress.setAccessibleText("Operación en curso");
+    progress.accessibleTextProperty().bind(words("status.busy"));
     HBox bar = new HBox(10, progress, status);
     bar.setAlignment(Pos.CENTER_LEFT);
     bar.setPadding(new Insets(12, 32, 16, 32));
@@ -227,20 +247,87 @@ public final class DesktopController {
     return bar;
   }
 
+  /** Cada propiedad conserva su clave: es posible cambiar de idioma sin perder el formulario. */
+  private StringBinding words(String key, Object... arguments) {
+    return Bindings.createStringBinding(
+        () -> {
+          // La lectura revalida la propiedad de JavaFX para recibir los siguientes cambios.
+          // Consultar solo I18n.locale() dejaría de notificar después del primer cambio.
+          languageCode.get();
+          return text(key, arguments);
+        },
+        languageCode);
+  }
+
+  private Label label(String key) {
+    Label label = new Label();
+    label.textProperty().bind(words(key));
+    return label;
+  }
+
+  private Button button(String key) {
+    Button button = new Button();
+    button.textProperty().bind(words(key));
+    return button;
+  }
+
+  private Tab tab(String key, javafx.scene.Node content) {
+    Tab tab = new Tab();
+    tab.textProperty().bind(words(key));
+    tab.setContent(content);
+    return tab;
+  }
+
+  private void translateButtons(DialogPane pane) {
+    for (ButtonType type : pane.getButtonTypes()) {
+      String key = type == ButtonType.CANCEL ? "cancel" : type == ButtonType.OK ? "ok" : null;
+      if (key != null) ((Button) pane.lookupButton(type)).textProperty().bind(words(key));
+    }
+  }
+
   private Label fieldLabel(String text) {
-    Label label = new Label(text);
+    Label label = label(text);
     label.getStyleClass().add("field-label");
     return label;
   }
 
   private void accessible(Control control, AccessibleRole role, String name) {
     control.setAccessibleRole(role);
-    control.setAccessibleText(name);
+    control.accessibleTextProperty().bind(words(name));
+    if (control instanceof TextInputControl input) installEditMenu(input);
+  }
+
+  /** El menú JavaFX predeterminado usa el idioma del entorno; este sigue el selector. */
+  private void installEditMenu(TextInputControl input) {
+    ContextMenu menu = new ContextMenu();
+    String[] keys = {"edit.undo", "edit.redo", "edit.cut", "edit.copy", "edit.paste",
+        "edit.delete", "edit.selectAll"};
+    Runnable[] actions = {input::undo, input::redo, input::cut, input::copy, input::paste,
+        () -> input.replaceSelection(""), input::selectAll};
+    for (int i = 0; i < keys.length; i++) {
+      MenuItem item = new MenuItem();
+      item.textProperty().bind(words(keys[i]));
+      Runnable action = actions[i];
+      int index = i;
+      item.setOnAction(e -> action.run());
+      switch (i) {
+        case 0 -> item.disableProperty().bind(input.undoableProperty().not().or(input.editableProperty().not()));
+        case 1 -> item.disableProperty().bind(input.redoableProperty().not().or(input.editableProperty().not()));
+        case 2, 3 -> item.disableProperty().bind(Bindings.createBooleanBinding(
+            () -> input instanceof PasswordField || input.getSelectedText().isEmpty()
+                || (index == 2 && !input.isEditable()),
+            input.selectedTextProperty(), input.editableProperty()));
+        case 4, 5 -> item.disableProperty().bind(input.editableProperty().not());
+        default -> { }
+      }
+      menu.getItems().add(item);
+    }
+    input.setContextMenu(menu);
   }
 
   private void chooseInput() {
     FileChooser chooser = new FileChooser();
-    chooser.setTitle("Seleccionar fichero");
+    chooser.setTitle(text("chooser.input"));
     File file = chooser.showOpenDialog(stage);
     if (file == null) return;
     selectedInput = file;
@@ -248,14 +335,14 @@ public final class DesktopController {
     String name = file.getName();
     String defaultName =
         name.endsWith(".enc")
-            ? name.substring(0, name.length() - 4) + ".recuperado"
+            ? name.substring(0, name.length() - 4) + text("file.recovered")
             : name + ".enc";
     outputPath.setText(file.toPath().resolveSibling(defaultName).toString());
   }
 
   private void chooseOutput() {
     FileChooser chooser = new FileChooser();
-    chooser.setTitle("Guardar resultado");
+    chooser.setTitle(text("chooser.output"));
     String existing = outputPath.getText();
     if (!existing.isBlank()) {
       Path p = Path.of(existing);
@@ -272,16 +359,16 @@ public final class DesktopController {
     String password = aesPassword.getText();
     String output = outputPath.getText().trim();
     if (selectedInput == null || !selectedInput.isFile()) {
-      alert(Alert.AlertType.WARNING, "Falta el fichero", "Selecciona un fichero de entrada.");
+      alert(Alert.AlertType.WARNING, text("missing.file"), text("missing.file.help"));
       return;
     }
     if (password.isBlank()) {
-      alert(Alert.AlertType.WARNING, "Falta la contraseña", "Introduce la contraseña AES.");
+      alert(Alert.AlertType.WARNING, text("missing.password"), text("missing.password.help"));
       aesPassword.requestFocus();
       return;
     }
     if (output.isBlank()) {
-      alert(Alert.AlertType.WARNING, "Falta el destino", "Indica dónde guardar el resultado.");
+      alert(Alert.AlertType.WARNING, text("missing.output"), text("missing.output.help"));
       return;
     }
     Path in = selectedInput.toPath().toAbsolutePath().normalize(),
@@ -289,101 +376,99 @@ public final class DesktopController {
     if (in.equals(out)) {
       alert(
           Alert.AlertType.WARNING,
-          "Destino no válido",
-          "El resultado no puede sobrescribir el fichero original.");
+          text("invalid.output"),
+          text("error.original"));
       return;
     }
     if (Files.exists(out) && !confirmOverwrite(out)) return;
     ApiClient api = new ApiClient(settings.snapshot());
     beginOperation(
-        encrypt ? "Cifrando archivo…" : "Descifrando y verificando integridad…",
+        encrypt ? "status.encryptFile" : "status.decryptFile",
         () -> {
           // El servicio valida la integridad antes de publicar el resultado en disco.
           new FileOperationService(api, files).execute(in, out, password, encrypt);
-          return encrypt
-              ? "Archivo cifrado y guardado en " + out
-              : "Integridad verificada. Archivo recuperado en " + out;
+          return out;
         },
-        true);
+        value -> alert(Alert.AlertType.INFORMATION, text("operation.completed"),
+            text(encrypt ? "file.encrypted" : "file.decrypted", value)));
   }
 
   private void runVigenere(String key, String mode) {
     String text = plainText.getText();
     if (text.isEmpty()) {
       alert(
-          Alert.AlertType.WARNING, "Falta el texto", "Escribe un mensaje o abre un archivo .txt.");
+          Alert.AlertType.WARNING, text("missing.text"), text("missing.text.help"));
       plainText.requestFocus();
       return;
     }
     if (key == null || !key.matches("[A-Za-z]+")) {
-      alert(Alert.AlertType.WARNING, "Clave no válida", "La clave debe contener solo letras A–Z.");
+      alert(Alert.AlertType.WARNING, text("invalid.key"), text("error.INVALID_KEY"));
       return;
     }
     ApiClient api = new ApiClient(settings.snapshot());
     beginOperation(
-        mode.equals("encrypt") ? "Cifrando mensaje…" : "Descifrando mensaje…",
+        mode.equals("encrypt") ? "status.encryptText" : "status.decryptText",
         () -> api.vigenere(text, key, mode),
-        false,
         value -> resultText.setText(value));
   }
 
   private void loadText() {
     FileChooser chooser = new FileChooser();
-    chooser.setTitle("Abrir texto UTF-8");
-    chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Texto", "*.txt"));
+    chooser.setTitle(text("chooser.textOpen"));
+    chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(text("chooser.textFilter"), "*.txt"));
     File file = chooser.showOpenDialog(stage);
     if (file == null) return;
     try {
       plainText.setText(files.readText(file.toPath()));
-      setStatus("Texto cargado: " + file.getName());
+      setStatus("text.loaded", file.getName());
     } catch (Exception ex) {
-      showError("No se pudo leer el archivo", ex);
+      showError(text("error.read.title"), ex);
     }
   }
 
   private void saveText() {
     if (resultText.getText().isEmpty()) {
-      alert(Alert.AlertType.INFORMATION, "Sin resultado", "Primero cifra o descifra un mensaje.");
+      alert(Alert.AlertType.INFORMATION, text("missing.result"), text("missing.result.help"));
       return;
     }
     FileChooser chooser = new FileChooser();
-    chooser.setTitle("Guardar resultado UTF-8");
-    chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter("Texto", "*.txt"));
-    chooser.setInitialFileName("resultado.txt");
+    chooser.setTitle(text("chooser.textSave"));
+    chooser.getExtensionFilters().add(new FileChooser.ExtensionFilter(text("chooser.textFilter"), "*.txt"));
+    chooser.setInitialFileName(text("chooser.resultName"));
     File file = chooser.showSaveDialog(stage);
     if (file == null) return;
     if (Files.exists(file.toPath()) && !confirmOverwrite(file.toPath())) return;
     try {
       files.writeText(file.toPath(), resultText.getText());
-      setStatus("Resultado guardado: " + file.getName());
+      setStatus("text.saved", file.getName());
     } catch (Exception ex) {
-      showError("No se pudo guardar el resultado", ex);
+      showError(text("error.save.title"), ex);
     }
   }
 
-  /** La configuración candidata solo se guarda si la prueba HTTP tiene éxito. */
+  /** Probar guarda tras autenticar; Guardar permite conservar los ajustes sin prueba HTTP. */
   private void showSettings() {
     Dialog<ButtonType> dialog = new Dialog<>();
     dialog.initOwner(stage);
-    dialog.setTitle("Ajustes de conexión");
-    dialog.setHeaderText("Conexión con el servidor RunnersZ");
+    dialog.setTitle(text("settings.title"));
+    dialog.setHeaderText(text("settings.header"));
     TextField base = new TextField(settings.baseUrl());
-    accessible(base, AccessibleRole.TEXT_FIELD, "Dirección del servidor");
-    base.setPromptText("http://192.168.1.10:8000");
-    base.setAccessibleHelp("Dirección base, por ejemplo http://IP:8000. No incluyas /api/v1.");
+    accessible(base, AccessibleRole.TEXT_FIELD, "settings.server");
+    base.promptTextProperty().bind(words("settings.server.prompt"));
+    base.accessibleHelpProperty().bind(words("settings.server.help"));
     PasswordField token = new PasswordField();
-    accessible(token, AccessibleRole.PASSWORD_FIELD, "Token de API");
+    accessible(token, AccessibleRole.PASSWORD_FIELD, "settings.token");
     token.setText(settings.token());
-    token.setPromptText("Token de API");
-    token.setAccessibleHelp(
-        "Token Bearer configurado en el servidor. Se guarda en las preferencias locales.");
+    token.promptTextProperty().bind(words("settings.token"));
+    token.accessibleHelpProperty().bind(words("settings.token.help"));
     VBox form =
-        new VBox(10, fieldLabel("Dirección del servidor"), base, fieldLabel("Token de API"), token);
+        new VBox(10, fieldLabel("settings.server"), base, fieldLabel("settings.token"), token);
     form.setPadding(new Insets(12));
     dialog.getDialogPane().setContent(form);
-    ButtonType test = new ButtonType("Probar", ButtonBar.ButtonData.LEFT);
-    ButtonType save = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
+    ButtonType test = new ButtonType(text("settings.test"), ButtonBar.ButtonData.LEFT);
+    ButtonType save = new ButtonType(text("save"), ButtonBar.ButtonData.OK_DONE);
     dialog.getDialogPane().getButtonTypes().addAll(test, save, ButtonType.CANCEL);
+    translateButtons(dialog.getDialogPane());
     dialog
         .getDialogPane()
         .lookupButton(test)
@@ -395,24 +480,26 @@ public final class DesktopController {
                 SettingsStore candidate = new SettingsStore(base.getText().trim(), token.getText());
                 dialog.close();
                 beginOperation(
-                    "Comprobando conexión…",
+                    "status.connection",
                     () -> {
                       new ApiClient(candidate.snapshot()).checkAuth();
-                      return "Conexión y autenticación correctas. Ajustes guardados.";
+                      return text("settings.verified");
                     },
-                    false,
-                    value -> settings.update(base.getText(), token.getText()));
+                    value -> {
+                      settings.update(base.getText(), token.getText());
+                      alert(Alert.AlertType.INFORMATION, text("server.available"), text("settings.verified"));
+                    });
               } catch (Exception ex) {
-                alert(Alert.AlertType.ERROR, "Ajustes no válidos", ex.getMessage());
+                alert(Alert.AlertType.ERROR, text("settings.invalid"), I18n.errorMessage(ex));
               }
             });
     Optional<ButtonType> result = dialog.showAndWait();
     if (result.isPresent() && result.get() == save) {
       try {
         settings.update(base.getText().trim(), token.getText());
-        setStatus("Ajustes guardados localmente.");
+        setStatus("settings.saved");
       } catch (Exception ex) {
-        showError("No se pudieron guardar los ajustes", ex);
+        showError(text("settings.error.title"), ex);
       }
     }
   }
@@ -423,15 +510,10 @@ public final class DesktopController {
     T run() throws Exception;
   }
 
-  private <T> void beginOperation(String message, Work<T> work, boolean fileOperation) {
-    beginOperation(message, work, fileOperation, value -> {});
-  }
-
   /** Ejecuta red/disco en segundo plano; los callbacks de Task se ejecutan en JavaFX. */
   private <T> void beginOperation(
       String message,
       Work<T> work,
-      boolean fileOperation,
       java.util.function.Consumer<T> onSuccess) {
     setBusy(true, message);
     Task<T> task =
@@ -443,17 +525,13 @@ public final class DesktopController {
         };
     task.setOnSucceeded(
         e -> {
-          setBusy(false, "Listo");
+          setBusy(false, "status.ready");
           onSuccess.accept(task.getValue());
-          if (fileOperation)
-            alert(Alert.AlertType.INFORMATION, "Operación completada", task.getValue().toString());
-          else if (task.getValue() instanceof String s && s.startsWith("Conexión"))
-            alert(Alert.AlertType.INFORMATION, "Servidor disponible", s);
         });
     task.setOnFailed(
         e -> {
-          setBusy(false, "La operación no se completó.");
-          showError("No se pudo completar la operación", task.getException());
+          setBusy(false, "status.failed");
+          showError(text("error.operation.title"), task.getException());
         });
     worker.submit(task);
   }
@@ -462,26 +540,27 @@ public final class DesktopController {
     Alert alert =
         new Alert(
             Alert.AlertType.CONFIRMATION,
-            "Ya existe un archivo en:\n" + path + "\n¿Quieres reemplazarlo?",
+            text("confirm.body", path),
             ButtonType.CANCEL,
             ButtonType.OK);
     alert.initOwner(stage);
-    alert.setTitle("Confirmar reemplazo");
-    alert.setHeaderText("El destino ya existe");
+    alert.setTitle(text("confirm.title"));
+    alert.setHeaderText(text("confirm.header"));
+    translateButtons(alert.getDialogPane());
     return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
   }
 
   private void setBusy(boolean busy, String message) {
     progress.setVisible(busy);
-    status.setText(message);
+    setStatus(message);
     encryptButton.setDisable(busy);
     decryptButton.setDisable(busy);
     vigenereEncryptButton.setDisable(busy);
     vigenereDecryptButton.setDisable(busy);
   }
 
-  private void setStatus(String message) {
-    status.setText(message);
+  private void setStatus(String key, Object... arguments) {
+    status.textProperty().bind(words(key, arguments));
   }
 
   private void alert(Alert.AlertType type, String title, String message) {
@@ -491,29 +570,19 @@ public final class DesktopController {
     alert.setHeaderText(title);
     Label content =
         new Label(
-            message == null || message.isBlank() ? "Error sin información adicional." : message);
+            message == null || message.isBlank() ? text("error.unknown") : message);
     content.setWrapText(true);
     content.setMaxWidth(560);
     alert.getDialogPane().setContent(content);
     alert.getDialogPane().setMinWidth(620);
     alert.getDialogPane().setPrefWidth(620);
     ((Button) alert.getDialogPane().lookupButton(ButtonType.OK)).setMinWidth(100);
+    translateButtons(alert.getDialogPane());
     alert.showAndWait();
   }
 
   private void showError(String title, Throwable error) {
-    String message = null;
-    for (Throwable cause = error; cause != null; cause = cause.getCause()) {
-      if (cause.getMessage() != null && !cause.getMessage().isBlank()) {
-        message = cause.getMessage();
-        break;
-      }
-    }
-    if (message == null)
-      message =
-          "No se recibió información del error. Revisa el registro de la API y vuelve a"
-              + " intentarlo.";
-    alert(Alert.AlertType.ERROR, title, message);
+    alert(Alert.AlertType.ERROR, title, I18n.errorMessage(error));
   }
 
   /** Detiene las tareas pendientes cuando JavaFX cierra la aplicación. */

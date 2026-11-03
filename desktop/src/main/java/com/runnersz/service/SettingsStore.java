@@ -1,5 +1,6 @@
 package com.runnersz.service;
 
+import com.runnersz.utiles.I18n;
 import com.runnersz.model.ConnectionSettings;
 import java.util.prefs.Preferences;
 
@@ -60,15 +61,12 @@ public final class SettingsStore {
     try {
       java.net.URI uri = java.net.URI.create(url);
       if (uri.getHost() == null
-          || !(uri.getScheme().equals("http") || uri.getScheme().equals("https")))
-        throw new IllegalArgumentException(
-            "La dirección debe ser una URL HTTP(S), por ejemplo http://192.168.1.10:8000.");
+          || !("http".equals(uri.getScheme()) || "https".equals(uri.getScheme())))
+        throw I18n.invalid("error.url");
     } catch (IllegalArgumentException ex) {
-      throw new IllegalArgumentException(
-          "La dirección del servidor no es válida. Usa http://IP:puerto.", ex);
+      throw I18n.invalid("error.url");
     }
-    if (token == null || token.isBlank())
-      throw new IllegalArgumentException("Introduce el token de API configurado en el servidor.");
+    if (token == null || token.isBlank()) throw I18n.invalid("error.token");
   }
 
   private static String normalize(String value) {
