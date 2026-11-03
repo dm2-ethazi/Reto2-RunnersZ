@@ -48,7 +48,7 @@ namespace RunnersZ.Game {
 
   // Presentation uses a single aspect-preserving canvas and cached styles.
   GUIStyle heading, body, small, cipherStyle, fieldStyle, actionStyle, secondaryStyle, letterStyle, badgeStyle;
-  Texture2D rounded, stone, cloak; GUIStyle panelStyle; Font manuscriptFont;
+  PixelFantasyArt pixelArt; Texture2D rounded, stone, cloak; GUIStyle panelStyle; Font manuscriptFont;
   readonly Color ink=new Color(.035f,.055f,.095f);
   readonly Color muted=new Color(.57f,.65f,.73f);
   readonly Color gold=new Color(.79f,.62f,.36f);
@@ -57,8 +57,8 @@ namespace RunnersZ.Game {
    if(stylesReady)return;
    rounded=new Texture2D(32,32,TextureFormat.RGBA32,false);
    for(int y=0;y<32;y++)for(int x=0;x<32;x++){
-    float cx=Mathf.Clamp(x,8,23),cy=Mathf.Clamp(y,8,23);
-    rounded.SetPixel(x,y,new Color(1,1,1,Mathf.Clamp01(8-Mathf.Sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy)))));
+    float cx=Mathf.Clamp(x,2,29),cy=Mathf.Clamp(y,2,29);
+    rounded.SetPixel(x,y,new Color(1,1,1,Mathf.Clamp01(2-Mathf.Sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy)))));
    }
    rounded.Apply(); panelStyle=new GUIStyle();panelStyle.normal.background=rounded;panelStyle.border=new RectOffset(8,8,8,8);
    heading=new GUIStyle(GUI.skin.label){fontSize=34,fontStyle=FontStyle.Bold};
@@ -85,10 +85,10 @@ namespace RunnersZ.Game {
    cloak=new Texture2D(32,32,TextureFormat.RGBA32,false);
    for(int y=0;y<32;y++)for(int x=0;x<32;x++)cloak.SetPixel(x,y,new Color(1,1,1,Mathf.Abs(x-15.5f)<(31-y)*.44f+2?1:0));
    cloak.Apply();
-   stylesReady=true;
+   rounded.filterMode=FilterMode.Point;pixelArt=new PixelFantasyArt();stylesReady=true;
   }
   void Fill(Rect r,Color c,bool round=true){if(Event.current.type!=EventType.Repaint)return;var old=GUI.color;GUI.color=c;if(round)panelStyle.Draw(r,GUIContent.none,false,false,false,false);else GUI.DrawTexture(r,Texture2D.whiteTexture);GUI.color=old;}
-  void Label(Rect r,string value,GUIStyle style,Color? color=null){
+  void Label(Rect r,string value,GUIStyle style,Color? color=null){ if(style==heading||style==letterStyle||style==cipherStyle){pixelArt.Text(r,value,style.fontSize,style.alignment,color??style.normal.textColor);return;}
    Color old=GUI.contentColor,oldText=style.normal.textColor;GUI.contentColor=Color.white;if(color.HasValue)style.normal.textColor=color.Value;GUI.Label(r,value,style);style.normal.textColor=oldText;GUI.contentColor=old;
   }
   bool Button(Rect r,string value,bool primary=false){
@@ -128,23 +128,7 @@ namespace RunnersZ.Game {
    Line(x+w-18,y+h,x+w,y+h,edge);Line(x+w,y+h-18,x+w,y+h,edge);
   }
   void DrawSanctuary(){
-   GUI.DrawTexture(new Rect(0,0,1200,800),stone);
-   var silhouette=new Color(.025f,.037f,.06f,.9f);
-   for(int side=0;side<2;side++){
-    float x=side==0?6:1158;
-    Fill(new Rect(x,180,36,620),silhouette,false);
-    Fill(new Rect(x-6,170,48,12),new Color(.09f,.12f,.16f),false);
-    Fill(new Rect(x+5,190,2,590),new Color(.19f,.19f,.17f,.4f),false);
-    Line(x+18,120,x,170,new Color(.15f,.17f,.18f),2);
-    Line(x+18,120,x+36,170,new Color(.15f,.17f,.18f),2);
-   }
-   // Original line artwork: ruined towers, gate and a gilded ward.
-   for(int i=0;i<9;i++){
-    float x=555+i*70;float y=730-(i%3)*22;
-    Fill(new Rect(x,y,48,800-y),new Color(.025f,.035f,.054f),false);
-    Fill(new Rect(x,y-7,10,10),new Color(.025f,.035f,.054f),false);
-    Fill(new Rect(x+38,y-7,10,10),new Color(.025f,.035f,.054f),false);
-   }
+   GUI.DrawTexture(new Rect(0,0,1200,800),pixelArt.Background);
    Sigil(1075,53,24);
    Line(910,53,1030,53,new Color(.30f,.27f,.20f));
    Line(1120,53,1152,53,new Color(.30f,.27f,.20f));
@@ -156,11 +140,9 @@ namespace RunnersZ.Game {
    for(int i=1;i<5;i++)Line(x+w*i/5,y+16,x+w*i/5,y+h,new Color(.27f,.33f,.34f));
   }
   void DrawWraith(float x,float y){
-   var c=GUI.color;GUI.color=new Color(.42f,.27f,.26f);GUI.DrawTexture(new Rect(x-3,y+4,30,31),cloak);GUI.color=c;
-   Fill(new Rect(x+6,y,10,11),new Color(.16f,.15f,.17f),false);
-   Fill(new Rect(x+8,y+4,2,2),gold,false);Fill(new Rect(x+13,y+4,2,2),gold,false);
+   GUI.DrawTexture(new Rect(Mathf.Round(x/3)*3,Mathf.Round(y/3)*3,36,36),pixelArt.Wraith);
   }
-  void OnDestroy(){
+  void OnDestroy(){ if(pixelArt!=null)pixelArt.Dispose();
    if(rounded!=null)Destroy(rounded);if(stone!=null)Destroy(stone);if(cloak!=null)Destroy(cloak);
    if(manuscriptFont!=null)Destroy(manuscriptFont);
   }
