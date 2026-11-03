@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -8,7 +8,9 @@ namespace RunnersZ.Game {
  // Original procedural pixel artwork; all textures use nearest-neighbour sampling.
  public sealed class PixelFantasyArt : IDisposable {
   public readonly Texture2D Background;
+  public readonly Texture2D Arena;
   public readonly Texture2D Wraith;
+  public readonly Texture2D Door;
   readonly Dictionary<char,Texture2D> glyphs=new Dictionary<char,Texture2D>();
   const int W=400,H=267;
   readonly Color32[] pixels=new Color32[W*H];
@@ -63,6 +65,7 @@ namespace RunnersZ.Game {
     for(int r=1;r<4;r++)Box(x-r,139+r*5,r*2+1,1,C(51,45,35));
    }
    Background=Texture(W,H,pixels);
+   Arena=LoadAsset("background.png",Background);
    string[] sprite={
     "       oo       ","      oooo      ","     oddddo     ","     odggdo     ",
     "     oddddo     ","    osssssso    ","    osassaso    ","   osassssaso   ",
@@ -72,7 +75,8 @@ namespace RunnersZ.Game {
    var colors=new Dictionary<char,Color32>{{'o',C(11,16,24)},{'d',C(28,32,39)},{'g',C(202,160,80)},{'s',C(67,48,50)},{'a',C(94,61,57)}};
    var sp=new Color32[16*16];
    for(int y=0;y<16;y++)for(int x=0;x<16;x++)if(x<sprite[y].Length&&colors.ContainsKey(sprite[y][x]))sp[(15-y)*16+x]=colors[sprite[y][x]];
-   Wraith=Texture(16,16,sp);
+   Wraith=LoadAsset("enemy.png",Texture(16,16,sp));
+   Door=LoadAsset("door.png",Texture(16,16,sp));
    string[] rows={
     "A:0E11111F111111","B:1E11111E11111E","C:0E11101010110E","D:1E11111111111E",
     "E:1F10101E10101F","F:1F10101E101010","G:0E11101711110F","H:1111111F111111",
@@ -92,6 +96,12 @@ namespace RunnersZ.Game {
     for(int y=0;y<7;y++){int bits=int.Parse(row.Substring(2+y*2,2),NumberStyles.HexNumber);for(int x=0;x<5;x++)if((bits&(1<<(4-x)))!=0)gp[(6-y)*5+x]=new Color32(255,255,255,255);}
     glyphs[row[0]]=Texture(5,7,gp);
    }
+  }
+  static Texture2D LoadAsset(string name,Texture2D fallback){
+   string resourceName=System.IO.Path.GetFileNameWithoutExtension(name);
+   var loaded=Resources.Load<Texture2D>(resourceName);
+   if(loaded==null) return fallback;
+   loaded.filterMode=FilterMode.Point; loaded.wrapMode=TextureWrapMode.Clamp; return loaded;
   }
   static Texture2D Texture(int w,int h,Color32[] data){
    var t=new Texture2D(w,h,TextureFormat.RGBA32,false){filterMode=FilterMode.Point,wrapMode=TextureWrapMode.Clamp};
@@ -126,6 +136,6 @@ namespace RunnersZ.Game {
    }
    GUI.color=old;
   }
-  public void Dispose(){UnityEngine.Object.Destroy(Background);UnityEngine.Object.Destroy(Wraith);foreach(var t in glyphs.Values)UnityEngine.Object.Destroy(t);}
+  public void Dispose(){UnityEngine.Object.Destroy(Background);UnityEngine.Object.Destroy(Arena);UnityEngine.Object.Destroy(Wraith);UnityEngine.Object.Destroy(Door);foreach(var t in glyphs.Values)UnityEngine.Object.Destroy(t);}
  }
 }

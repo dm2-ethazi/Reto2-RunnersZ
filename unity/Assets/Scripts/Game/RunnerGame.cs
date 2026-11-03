@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using RunnersZ.Logic;
 namespace RunnersZ.Game {
@@ -47,7 +47,7 @@ namespace RunnersZ.Game {
 
 
   // Presentation uses a single aspect-preserving canvas and cached styles.
-  GUIStyle heading, body, small, cipherStyle, fieldStyle, actionStyle, secondaryStyle, letterStyle, badgeStyle;
+  GUIStyle heading, body, feedbackStyle, small, cipherStyle, fieldStyle, actionStyle, secondaryStyle, letterStyle, badgeStyle;
   PixelFantasyArt pixelArt; Texture2D rounded, stone, cloak; GUIStyle panelStyle; Font manuscriptFont;
   readonly Color ink=new Color(.035f,.055f,.095f);
   readonly Color muted=new Color(.57f,.65f,.73f);
@@ -64,6 +64,7 @@ namespace RunnersZ.Game {
    heading=new GUIStyle(GUI.skin.label){fontSize=34,fontStyle=FontStyle.Bold};
    heading.normal.textColor=Color.white;
    body=new GUIStyle(GUI.skin.label){fontSize=18,wordWrap=true};body.normal.textColor=Color.white;
+   feedbackStyle=new GUIStyle(body){alignment=TextAnchor.MiddleRight,wordWrap=false};
    small=new GUIStyle(body){fontSize=14};small.normal.textColor=muted;
    cipherStyle=new GUIStyle(body){fontSize=26,fontStyle=FontStyle.Bold,alignment=TextAnchor.MiddleLeft};
    actionStyle=new GUIStyle(GUI.skin.button){fontSize=17,fontStyle=FontStyle.Bold,border=new RectOffset(8,8,8,8)};
@@ -129,18 +130,32 @@ namespace RunnersZ.Game {
   }
   void DrawSanctuary(){
    GUI.DrawTexture(new Rect(0,0,1200,800),pixelArt.Background);
+   // El arte nuevo ocupa solo el carril inferior se�alado en la interfaz.
+   if(started){
+    Rect lane=new Rect(48,590,1104,90);
+    // Uniform scaling: crop vertically around the ground, never squash the art.
+    float uvHeight=Mathf.Min(1f,lane.height*pixelArt.Arena.width/(lane.width*pixelArt.Arena.height));
+    float uvBottom=Mathf.Clamp(0.19f,0f,1f-uvHeight);
+    GUI.DrawTextureWithTexCoords(lane,pixelArt.Arena,new Rect(0f,uvBottom,1f,uvHeight),true);
+   }
    Sigil(1075,53,24);
    Line(910,53,1030,53,new Color(.30f,.27f,.20f));
    Line(1120,53,1152,53,new Color(.30f,.27f,.20f));
   }
   void DrawGate(float x,float y,float w,float h){
-   var c=new Color(.34f,.47f,.49f);
-   Fill(new Rect(x,y+12,7,h-12),c,false);Fill(new Rect(x+w-7,y+12,7,h-12),c,false);
-   Line(x,y+12,x+w/2,y,c,3);Line(x+w/2,y,x+w,y+12,c,3);
-   for(int i=1;i<5;i++)Line(x+w*i/5,y+16,x+w*i/5,y+h,new Color(.27f,.33f,.34f));
+   // The gate is the collision target at the right edge of the lane.
+   const float gateSize=120f, gateBottom=680f;
+   GUI.DrawTexture(new Rect(1088f-gateSize*0.5f,gateBottom-gateSize,gateSize,gateSize),pixelArt.Door,ScaleMode.ScaleToFit,true);
   }
   void DrawWraith(float x,float y){
-   GUI.DrawTexture(new Rect(Mathf.Round(x/3)*3,Mathf.Round(y/3)*3,36,36),pixelArt.Wraith);
+   int frame=Mathf.FloorToInt(Time.time*8f)%8;
+   float bob=Mathf.Sin(Time.time*8f)*2f;
+   // Crop only the empty vertical margins of the 1536x864 sheet.
+   // All eight frames share a 192x336 window, preserving their proportions.
+   Rect uv=new Rect(frame/8f,264f/864f,1f/8f,336f/864f);
+   const float frameWidth=32f, frameHeight=56f, groundY=677f;
+   float left=Mathf.Round((x-frameWidth*0.5f)/3f)*3f;
+   GUI.DrawTextureWithTexCoords(new Rect(left,groundY-frameHeight+bob,frameWidth,frameHeight),pixelArt.Wraith,uv,true);
   }
   void OnDestroy(){ if(pixelArt!=null)pixelArt.Dispose();
    if(rounded!=null)Destroy(rounded);if(stone!=null)Destroy(stone);if(cloak!=null)Destroy(cloak);
@@ -212,15 +227,15 @@ namespace RunnersZ.Game {
    GUI.enabled=previous;
    Label(new Rect(325,526,824,56),string.IsNullOrEmpty(hint)?"Cada pista revela parte del mensaje y recupera pares ocultos.":"Pista: "+hint,small);
    GUI.enabled=!manuscriptOpen;
-   Label(new Rect(50,588,1100,40),feedback,body);
+   Label(new Rect(650,682,502,24),feedback,feedbackStyle);
 
-   Fill(new Rect(48,671,1104,3),new Color(.20f,.31f,.35f),false);
    Label(new Rect(50,682,1000,25),"LLEGADA DE ENEMIGOS",small);
-   DrawGate(1092,626,43,45);
    foreach(float x in enemies){
     float px=58+x*1030;
     DrawWraith(px,635+Mathf.Sin(x*80)*4);
    }
+   // Draw the gate last so the collision target remains visible at the finish.
+   DrawGate(1092,626,43,45);
    if(Button(new Rect(48,735,185,42),"Reiniciar"))Begin(difficulty);
    if(Button(new Rect(250,735,225,42),"Cambiar dificultad")){started=false;enemies.Clear();}
    if(Button(new Rect(1002,735,150,42),"Salir"))Application.Quit();
