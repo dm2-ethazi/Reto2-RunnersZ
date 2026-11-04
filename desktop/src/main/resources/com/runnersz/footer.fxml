@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" spacing="10" alignment="CENTER_LEFT" styleClass="footer"><children><ProgressIndicator fx:id="progress" visible="false" maxWidth="20" maxHeight="20"/><Label fx:id="status" styleClass="status-text"/></children></HBox>
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" spacing="10" alignment="CENTER_LEFT" styleClass="footer">
+    <children>
+        <ProgressIndicator fx:id="progress" visible="false" maxWidth="20" maxHeight="20" />
+        <Label fx:id="status" styleClass="status-text" />
+    </children>
+</HBox>

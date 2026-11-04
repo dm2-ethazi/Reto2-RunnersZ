@@ -1,4 +1,35 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<Tab xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" closable="false"><content><ScrollPane fitToWidth="true" styleClass="content-scroll"><content><VBox spacing="18" styleClass="content"><children><Label fx:id="vigenereTitle" styleClass="section-title"/><Label fx:id="vigenereIntro" styleClass="muted" wrapText="true"/><VBox spacing="12" styleClass="card"><children><Label fx:id="textInputLabel" styleClass="field-label"/><TextArea fx:id="plainText" wrapText="true" prefRowCount="8"/><Button fx:id="loadText"/><Label fx:id="keyLabel" styleClass="field-label"/><TextField fx:id="key"/><HBox spacing="10"><children><Button fx:id="vigenereEncryptButton" styleClass="primary-button"/><Button fx:id="vigenereDecryptButton"/></children></HBox><Label fx:id="resultLabel" styleClass="field-label"/><TextArea fx:id="resultText" editable="false" wrapText="true" prefRowCount="8"/><Button fx:id="saveText"/></children></VBox></children></VBox></content></ScrollPane></content></Tab>
+<Tab xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" closable="false">
+    <content>
+        <ScrollPane fitToWidth="true" styleClass="content-scroll">
+            <content>
+                <VBox spacing="18" styleClass="content">
+                    <children>
+                        <Label fx:id="vigenereTitle" styleClass="section-title" />
+                        <Label fx:id="vigenereIntro" styleClass="muted" wrapText="true" />
+                        <VBox spacing="12" styleClass="card">
+                            <children>
+                                <Label fx:id="textInputLabel" styleClass="field-label" />
+                                <TextArea fx:id="plainText" wrapText="true" prefRowCount="8" />
+                                <Button fx:id="loadText" />
+                                <Label fx:id="keyLabel" styleClass="field-label" />
+                                <TextField fx:id="key" />
+                                <HBox spacing="10">
+                                    <children>
+                                        <Button fx:id="vigenereEncryptButton" styleClass="primary-button" />
+                                        <Button fx:id="vigenereDecryptButton" />
+                                    </children>
+                                </HBox>
+                                <Label fx:id="resultLabel" styleClass="field-label" />
+                                <TextArea fx:id="resultText" editable="false" wrapText="true" prefRowCount="8" />
+                                <Button fx:id="saveText" />
+                            </children>
+                        </VBox>
+                    </children>
+                </VBox>
+            </content>
+        </ScrollPane>
+    </content>
+</Tab>

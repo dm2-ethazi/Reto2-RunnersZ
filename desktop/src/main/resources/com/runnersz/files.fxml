@@ -1,4 +1,40 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<Tab xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" closable="false"><content><VBox spacing="18" styleClass="content"><children><Label fx:id="filesTitle" styleClass="section-title"/><Label fx:id="filesIntro" styleClass="muted" wrapText="true"/><VBox spacing="14" styleClass="card"><children><Label fx:id="inputLabel" styleClass="field-label"/><HBox spacing="10"><children><TextField fx:id="inputPath" editable="false" HBox.hgrow="ALWAYS"/><Button fx:id="chooseInput"/></children></HBox><Label fx:id="outputLabel" styleClass="field-label"/><HBox spacing="10"><children><TextField fx:id="outputPath" editable="false" HBox.hgrow="ALWAYS"/><Button fx:id="chooseOutput"/></children></HBox><Label fx:id="passwordLabel" styleClass="field-label"/><PasswordField fx:id="aesPassword"/><Label fx:id="filesNote" styleClass="helper" wrapText="true"/></children></VBox><HBox spacing="12"><children><Button fx:id="encryptButton" styleClass="primary-button"/><Button fx:id="decryptButton"/></children></HBox></children></VBox></content></Tab>
+<Tab xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" closable="false">
+    <content>
+        <VBox spacing="18" styleClass="content">
+            <children>
+                <Label fx:id="filesTitle" styleClass="section-title" />
+                <Label fx:id="filesIntro" styleClass="muted" wrapText="true" />
+                <VBox spacing="14" styleClass="card">
+                    <children>
+                        <Label fx:id="inputLabel" styleClass="field-label" />
+                        <HBox spacing="10">
+                            <children>
+                                <TextField fx:id="inputPath" editable="false" HBox.hgrow="ALWAYS" />
+                                <Button fx:id="chooseInput" />
+                            </children>
+                        </HBox>
+                        <Label fx:id="outputLabel" styleClass="field-label" />
+                        <HBox spacing="10">
+                            <children>
+                                <TextField fx:id="outputPath" editable="false" HBox.hgrow="ALWAYS" />
+                                <Button fx:id="chooseOutput" />
+                            </children>
+                        </HBox>
+                        <Label fx:id="passwordLabel" styleClass="field-label" />
+                        <PasswordField fx:id="aesPassword" />
+                        <Label fx:id="filesNote" styleClass="helper" wrapText="true" />
+                    </children>
+                </VBox>
+                <HBox spacing="12">
+                    <children>
+                        <Button fx:id="encryptButton" styleClass="primary-button" />
+                        <Button fx:id="decryptButton" />
+                    </children>
+                </HBox>
+            </children>
+        </VBox>
+    </content>
+</Tab>
