@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-  DJ1: el contrato §3.4 asume HTTP en red local y la IP del PC cambia,
-  así que se permite el tráfico en claro solo para el sandbox de desarrollo.
-  Mejora futura: migrar a HTTPS.
--->
 <network-security-config>
-    <base-config cleartextTrafficPermitted="true" />
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">runnersz-api.onrender.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
 </network-security-config>

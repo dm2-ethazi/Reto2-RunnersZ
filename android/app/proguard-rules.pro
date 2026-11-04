@@ -1,39 +1,28 @@
-# RunnersZ / CipherSprint — ProGuard rules (Contrato Técnico v2.0)
-# Ofuscación para dificultar ingeniería inversa (nivel alto de seguridad)
+# CipherSprint: ofuscación de release con R8.
+# El token no se guarda como literal: se reconstruye desde fragmentos enmascarados.
 
--keep class com.runnersz.reto2.android.** { *; }
--keepnames class com.runnersz.reto2.android.** { *; }
--keepclassmembernames class com.runnersz.reto2.android.** { *; }
+-repackageclasses 'com.runnersz.reto2.android.a'
+-allowaccessmodification
+-overloadaggressively
+-renamesourcefileattribute SourceFile
 
-# Retrofit + Gson + OkHttp
--keep class com.squareup.okhttp3.** { *; }
--keep interface com.squareup.okhttp3.** { *; }
--keep class com.squareup.retrofit2.** { *; }
--keep class com.google.gson.** { *; }
--keep class com.google.gson.stream.** { *; }
-
-# AndroidX Security (EncryptedSharedPreferences)
--keep class androidx.security.crypto.** { *; }
-
-# AndroidX
--keep class androidx.** { *; }
-
-# Preserve entry points
--keep public class * extends android.app.Application
--keep public class * extends android.app.Activity
--keep public class * extends android.app.Service
--keep public class * extends android.content.BroadcastReceiver
--keep public class * extends android.content.ContentProvider
-
-# Preserve Parcelable
--keep class * implements android.os.Parcelable {
-    public static final android.os.Parcelable$Creator *;
+# Elimina trazas de depuración del binario de release.
+-assumenosideeffects class android.util.Log {
+    public static boolean isLoggable(java.lang.String, int);
+    public static int v(...);
+    public static int d(...);
+    public static int i(...);
+    public static int w(...);
+    public static int e(...);
 }
 
-# No ofuscar modelos de datos de la API
--keep class com.runnersz.reto2.android.api.{ *; }
+# Componentes declarados en el manifiesto.
+-keep public class com.runnersz.reto2.android.SplashActivity { *; }
+-keep public class com.runnersz.reto2.android.MainActivity { *; }
 
--dontwarn androidx.security.**
--dontwarn com.squareup.okhttp3.**
--dontwarn com.squareup.retrofit2.**
+# OkHttp y plataforma.
+-dontwarn okhttp3.**
 -dontwarn okio.**
+-dontwarn org.conscrypt.**
+-dontwarn org.bouncycastle.**
+-dontwarn org.openjsse.**
