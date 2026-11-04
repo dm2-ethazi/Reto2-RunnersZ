@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.BorderPane?>
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" styleClass="app-root"><top><fx:include source="header.fxml"/></top><center><TabPane fx:id="mainTabs" styleClass="main-tabs"><tabs><fx:include source="files.fxml"/><fx:include source="vigenere.fxml"/></tabs></TabPane></center><bottom><fx:include source="footer.fxml"/></bottom></BorderPane>

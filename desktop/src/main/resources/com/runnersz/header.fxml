@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<HBox xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" spacing="16" alignment="CENTER_LEFT" styleClass="header"><children><VBox spacing="4" HBox.hgrow="ALWAYS"><children><Label text="RUNNERSZ" styleClass="brand"/><Label fx:id="subtitle" styleClass="eyebrow" wrapText="true"/></children></VBox><ComboBox fx:id="language"/><Button fx:id="settingsButton"/></children></HBox>
