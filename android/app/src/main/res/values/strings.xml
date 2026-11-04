@@ -1,93 +1,60 @@
 <resources>
-    <!-- Nombre app -->
     <string name="app_name">CipherSprint</string>
+    <string name="header_subtitle">Cifrado Seguro · Hogwarts V2</string>
+    <string name="a11y_secure_connection">Conexión protegida</string>
 
-    <!-- Navegación inferior -->
-    <string name="title_orden">Orden / Order</string>
-    <string name="title_imagen">Imagen / Image</string>
-    <string name="title_ajustes">Ajustes / Settings</string>
-    <string name="menu_orden">Orden</string>
-    <string name="menu_imagen">Imagen</string>
-    <string name="menu_ajustes">Ajustes</string>
+    <string name="home_welcome_title">Bienvenido a CipherSprint</string>
+    <string name="home_welcome_body">Cliente oficial para descifrado de órdenes y streaming de imágenes.</string>
+    <string name="btn_test_api">Probar API</string>
+    <string name="home_status_label">Estado del cliente:</string>
+    <string name="home_status_checking">Comprobando conexión…</string>
+    <string name="home_status_ok">API responde correctamente</string>
+    <string name="row_order">Orden (César 1-25)</string>
+    <string name="row_image">Imagen (AES Multipart)</string>
+    <string name="row_settings">Ajustes de Servidor</string>
 
-    -- Pantalla Orden (César) --
-    <string name="orden_label_texto">Texto cifrado / Cipher text:</string>
-    <string name="orden_hint_texto">Pegá el texto cifrado o cargá un .txt...</string>
-    <string name="orden_label_desplazamiento">Desplazamiento César / Caesar shift:</string>
-    <string name="orden_hint_desplazamiento">1 a 25</string>
-    <string name="orden_btn_descifrar">Descifrar orden / Decrypt order</string>
-    <string name="orden_label_resultado">Texto plano / Plain text:</string>
-    <string name="orden_hint_resultado">El resultado aparecerá aquí...</string>
-    <string name="orden_error_texto">Ingresá un texto válido</string>
-    <string name="orden_error_shift">El desplazamiento debe ser un número del 1 al 25</string>
-    <string name="orden_exito">Orden descifrada / Order decrypted</string>
-    <string name="orden_error_api">Error al comunicarse con la API</string>
+    <string name="nav_order">Orden</string>
+    <string name="nav_image">Imagen</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="nav_home">Inicio</string>
+    <string name="back">Volver</string>
 
-    -- Pantalla Imagen (AES) --
-    <string name="imagen_label_archivo">Archivo .enc / .enc file:</string>
-    <string name="imagen_btn_seleccionar">Seleccionar archivo / Choose file</string>
-    <string name="imagen_label_clave">Clave AES / AES key:</string>
-    <string name="imagen_hint_clave">Contraseña para descifrar</string>
-    <string name="imagen_btn_descifrar">Descifrar imagen / Decrypt image</string>
-    <string name="imagen_label_estado">Estado / Status:</string>
-    <string name="imagen_estado_listo">Listo / Ready</string>
-    <string name="imagen_estado_procesando">Procesando / Processing...</string>
-    <string name="imagen_exito">Imagen descifrada / Image decrypted</string>
-    <string name="imagen_error_seleccion">Seleccioná un archivo .enc primero</string>
-    <string name="imagen_error_clave">Ingresá una clave AES válida</string>
-    <string name="imagen_error_api">Error al descifrar la imagen</string>
-    <string name="imagen_integridad_verificada">Integridad verificada / Integrity verified</string>
-    <string name="imagen_integridad_fallida">Integridad fallida / Integrity failed</string>
+    <string name="order_title">Orden - Descifrar César</string>
+    <string name="order_text_label">Texto cifrado:</string>
+    <string name="order_text_hint">Escribe o pega el texto cifrado</string>
+    <string name="order_default_text">Dwdtxh Ñá! 2026</string>
+    <string name="order_shift_label">Desplazamiento (1-25):</string>
+    <string name="order_shift_hint">3</string>
+    <string name="order_default_shift">3</string>
+    <string name="btn_decrypt_order">Descifrar orden</string>
+    <string name="order_decrypting">Descifrando…</string>
+    <string name="result_label">Resultado:</string>
+    <string name="order_empty_text">Introduce el texto cifrado</string>
+    <string name="order_file_too_large">El archivo de texto supera 1 MiB</string>
 
-    -- Pantalla Ajustes --
-    <string name="ajustes_label_direccion">Dirección del servidor / Server address:</string>
-    <string name="ajustes_hint_direccion">Ej: 192.168.1.50:8000</string>
-    <string name="ajustes_label_token">Token Bearer / Bearer token:</string>
-    <string name="ajustes_hint_token">Tu token de la API...</string>
-    <string name="ajustes_btn_guardar">Guardar configuración / Save config</string>
-    <string name="ajustes_btn_probar">Probar conexión / Test connection</string>
-    <string name="ajustes_config_guardada">Configuración guardada / Config saved</string>
-    <string name="ajustes_config_no_guardada">Configuración no guardada / Config not saved</string>
-    <string name="ajustes_api_ok">API responde correctamente / API OK</string>
-    <string name="ajustes_api_error">La API no responde / API error</string>
-    <string name="ajustes_token_invalido">Token inválido / Invalid token</string>
-    <string name="ajustes_seguridad">Seguridad / Security:</string>
-    <string name="ajustes_seguridad_alto">Nivel: Alto / Level: High</string>
-    <string name="ajustes_tiempo_espera">Tiempo de espera: 120 s máx. / Timeout: 120 s max.</string>
+    <string name="image_title">Imagen - Descifrar AES</string>
+    <string name="image_file_label">Archivo .enc:</string>
+    <string name="image_no_file">Ningún archivo seleccionado</string>
+    <string name="image_demo_file">image.png.enc (vector de prueba)</string>
+    <string name="image_aes_key_label">Clave AES:</string>
+    <string name="image_aes_key_hint">Contraseña para descifrar</string>
+    <string name="btn_decrypt_image">Descifrar imagen</string>
+    <string name="image_processing">Procesando…</string>
+    <string name="image_decrypting">Descifrando imagen…</string>
+    <string name="image_integrity_ok">Integridad verificada</string>
+    <string name="image_empty_key">Introduce la clave AES</string>
+    <string name="image_no_file_error">Selecciona un archivo .enc</string>
+    <string name="image_corrupt">La imagen descifrada no se pudo abrir</string>
+    <string name="image_select_file">Seleccionar archivo .enc</string>
 
-    -- General --
-    <string name="msg_cargando">Cargando / Loading...</string>
-    <string name="msg_error">Error / Error</string>
-    <string name="msg_exito">Éxito / Success</string>
-    <string name="btn_aceptar">Aceptar / OK</string>
-    <string name="btn_cancelar">Cancelar / Cancel</string>
-    <string name="msg_sin_config">No hay configuración de servidor. Ir a Ajustes.</string>
-    <string name="msg_config_requerida">Configurá dirección y token en Ajustes primero</string>
-    <string name="btn_reintentar">Reintentar / Retry</string>
-
-    -- Errores específicos del servidor --
-    <string name="error_unauthorized">Token no válido. Revisá los ajustes: %s</string>
-    <string name="error_empty_password">Contraseña vacía / Empty password</string>
-    <string name="error_empty_file">El archivo está vacío / File is empty</string>
-    <string name="error_file_too_large">Archivo demasiado grande / File too large</string>
-    <string name="error_decrypt_failed">Clave incorrecta o fichero dañado / Decrypt failed</string>
-    <string name="error_invalid_key">Clave inválida / Invalid key</string>
-    <string name="error_invalid_shift">Desplazamiento inválido / Invalid shift</string>
-    <string name="error_internal_error">Error interno del servidor / Internal error</string>
-
-    <!-- Content descriptions (accesibilidad / TalkBack) -->
-    <string name="a11y_btn_descifrar_orden">Botón descifrar orden César</string>
-    <string name="a11y_btn_descifrar_imagen">Botón descifrar imagen AES</string>
-    <string name="a11y_btn_probar_conexion">Botón probar conexión con la API</string>
-    <string name="a11y_btn_guardar_config">Botón guardar configuración</string>
-    <string name="a11y_campo_texto_cifrado">Campo de texto cifrado</string>
-    <string name="a11y_campo_desplazamiento">Campo desplazamiento César 1-25</string>
-    <string name="a11y_campo_archivo_enc">Campo archivo .enc</string>
-    <string name="a11y_campo_clave_aes">Campo clave AES</string>
-    <string name="a11y_campo_direccion_servidor">Campo dirección del servidor IP:puerto</string>
-    <string name="a11y_campo_token">Campo token Bearer de la API</string>
-    <string name="a11y_resultado_texto">Resultado del descifrado de texto</string>
-    <string name="a11y_estado_operacion">Estado de la operación actual</string>
-    <string name="a11y_imagen_descifrada">Imagen descifrada mostrada en pantalla</string>
-
+    <string name="settings_title">Ajustes de Servidor</string>
+    <string name="settings_server_label">Servidor:</string>
+    <string name="settings_token_label">Token Bearer:</string>
+    <string name="settings_token_mask">••••••••••••••••</string>
+    <string name="settings_token_note">Integrado en la app · no visible ni editable</string>
+    <string name="btn_test_connection">Probar conexión</string>
+    <string name="settings_security_title">Protección activa</string>
+    <string name="settings_security_body">Conexión HTTPS obligatoria\nToken reconstruido en memoria y nunca guardado en el dispositivo</string>
+    <string name="settings_testing">Comprobando conexión…</string>
+    <string name="settings_ok">Conexión correcta con la API</string>
 </resources>

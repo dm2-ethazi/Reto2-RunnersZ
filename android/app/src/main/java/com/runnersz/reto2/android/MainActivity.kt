@@ -2,94 +2,211 @@ package com.runnersz.reto2.android
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
-import android.widget.Toast
+import android.provider.OpenableColumns
+import android.view.View
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
-import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.runnersz.reto2.android.api.TokenManager
-import com.runnersz.reto2.android.security.RootEmulatorDetector
-import com.runnersz.reto2.android.ui.ajustes.AjustesFragment
-import com.runnersz.reto2.android.ui.imagen.ImagenFragment
-import com.runnersz.reto2.android.ui.orden.OrdenFragment
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
+import androidx.fragment.app.Fragment
+import com.runnersz.reto2.android.data.ApiConfig
+import com.runnersz.reto2.android.ui.HomeFragment
+import com.runnersz.reto2.android.ui.ImageFragment
+import com.runnersz.reto2.android.ui.OrderFragment
+import com.runnersz.reto2.android.ui.SettingsFragment
+import java.io.File
+import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var bottomNavigation: BottomNavigationView
+    private enum class Tab { INICIO, ORDEN, IMAGEN, AJUSTES }
+
+    private var currentTab = Tab.INICIO
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Inicializar configuración cifrada (token + servidor)
-        TokenManager.init(this)
-        TokenManager.applyConfigToApi()
-
-        // Verificar entorno inseguro (nivel alto)
-        val detector = RootEmulatorDetector
-        if (detector.isEnvironmentUnsafe(this)) {
-            // Nivel alto: solo se registra, no se bloquea para permitir pruebas en emulador
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        WindowCompat.getInsetsController(window, window.decorView).apply {
+            isAppearanceLightStatusBars = false
+            isAppearanceLightNavigationBars = false
         }
+        applyInsets()
+        setupNavigation()
 
-        bottomNavigation = findViewById(R.id.bottom_navigation)
-
-        bottomNavigation.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.nav_orden -> loadFragment(OrdenFragment())
-                R.id.nav_imagen -> loadFragment(ImagenFragment())
-                R.id.nav_ajustes -> loadFragment(AjustesFragment())
-                else -> false
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (currentTab != Tab.INICIO) {
+                    goHome()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
             }
-        }
+        })
 
-        // Cargar primera pantalla por defecto
         if (savedInstanceState == null) {
-            loadFragment(OrdenFragment())
+            showTab(Tab.INICIO)
+            handleIncomingIntent(intent)
+        } else {
+            currentTab = Tab.entries.getOrElse(savedInstanceState.getInt(KEY_TAB)) { Tab.INICIO }
+            paintNavigation(currentTab)
         }
-
-        // Manejar intención de "Compartir" (recibir .txt o .png.enc desde otra app)
-        handleShareIntent(intent)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        handleShareIntent(intent)
+        setIntent(intent)
+        handleIncomingIntent(intent)
     }
 
-    private fun handleShareIntent(intent: Intent) {
-        val action = intent.action
-        val type = intent.type
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putInt(KEY_TAB, currentTab.ordinal)
+        super.onSaveInstanceState(outState)
+    }
 
-        if (Intent.ACTION_SEND == action && type != null) {
-            val uri: Uri? = intent.getParcelableExtra(Intent.EXTRA_STREAM)
-            if (uri != null) {
-                // Enviar al fragmento activo según el tipo de archivo
-                val mime = contentResolver.getType(uri)
-                if (mime != null && (mime.startsWith("image/") || type.endsWith(".enc") || type.endsWith(".png.enc"))) {
-                    // Ir a pestaña Imagen
-                    bottomNavigation.selectedItemId = R.id.nav_imagen
-                    // El fragmento ImagenFragment recibirá el URI a través de un método estático o shared preference
-                    // Por simplicidad, guardamos en un archivo temporal accesible
-                    val editor = getSharedPreferences("cipher_sprint_share", MODE_PRIVATE).edit()
-                    editor.putString("shared_uri", uri.toString())
-                    editor.apply()
-                    Toast.makeText(this, "Archivo recibido. Ve a pestaña Imagen para descifrar.", Toast.LENGTH_LONG).show()
-                } else if (mime != null && (mime.startsWith("text/") || type.endsWith(".txt"))) {
-                    // Ir a pestaña Orden
-                    bottomNavigation.selectedItemId = R.id.nav_orden
-                    val editor = getSharedPreferences("cipher_sprint_share", MODE_PRIVATE).edit()
-                    editor.putString("shared_uri", uri.toString())
-                    editor.apply()
-                    Toast.makeText(this, "Archivo recibido. Ve a pestaña Orden para descifrar.", Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(this, "Tipo de archivo no soportado: $mime", Toast.LENGTH_LONG).show()
-                }
-            }
+    fun goHome() = showTab(Tab.INICIO)
+
+    fun goToOrder() = showTab(Tab.ORDEN)
+
+    fun goToImage() = showTab(Tab.IMAGEN)
+
+    fun goToSettings() = showTab(Tab.AJUSTES)
+
+    private fun setupNavigation() {
+        findViewById<View>(R.id.navInicio).setOnClickListener { showTab(Tab.INICIO) }
+        findViewById<View>(R.id.navOrden).setOnClickListener { showTab(Tab.ORDEN) }
+        findViewById<View>(R.id.navImagen).setOnClickListener { showTab(Tab.IMAGEN) }
+        findViewById<View>(R.id.navAjustes).setOnClickListener { showTab(Tab.AJUSTES) }
+    }
+
+    private fun showTab(tab: Tab, fragment: Fragment = createFragment(tab)) {
+        currentTab = tab
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.contenedor, fragment, tab.name)
+            .commit()
+        paintNavigation(tab)
+    }
+
+    private fun createFragment(tab: Tab): Fragment = when (tab) {
+        Tab.INICIO -> HomeFragment()
+        Tab.ORDEN -> OrderFragment()
+        Tab.IMAGEN -> ImageFragment()
+        Tab.AJUSTES -> SettingsFragment()
+    }
+
+    private fun paintNavigation(tab: Tab) {
+        setNavItem(R.id.navInicio, R.id.navInicioIcon, R.id.navInicioLabel, tab == Tab.INICIO)
+        setNavItem(R.id.navOrden, R.id.navOrdenIcon, R.id.navOrdenLabel, tab == Tab.ORDEN)
+        setNavItem(R.id.navImagen, R.id.navImagenIcon, R.id.navImagenLabel, tab == Tab.IMAGEN)
+        setNavItem(R.id.navAjustes, R.id.navAjustesIcon, R.id.navAjustesLabel, tab == Tab.AJUSTES)
+    }
+
+    private fun setNavItem(itemId: Int, iconId: Int, labelId: Int, active: Boolean) {
+        val color = ContextCompat.getColor(
+            this,
+            if (active) R.color.gold else R.color.nav_inactive,
+        )
+        findViewById<ImageView>(iconId).setColorFilter(color)
+        findViewById<TextView>(labelId).setTextColor(color)
+        findViewById<View>(itemId).isSelected = active
+    }
+
+    private fun applyInsets() {
+        val header = findViewById<View>(R.id.header)
+        val bottomNav = findViewById<View>(R.id.bottomNav)
+
+        ViewCompat.setOnApplyWindowInsetsListener(header) { view, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            view.updatePadding(
+                left = dp(20),
+                top = bars.top + dp(16),
+                right = dp(20),
+                bottom = dp(16),
+            )
+            insets
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(bottomNav) { view, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+            view.updatePadding(bottom = bars.bottom)
+            insets
         }
     }
 
-    private fun loadFragment(fragment: androidx.fragment.app.Fragment): Boolean {
-        return supportFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
-            .commit() > 0
+    private fun handleIncomingIntent(intent: Intent?) {
+        val uri = when (intent?.action) {
+            Intent.ACTION_SEND -> streamUri(intent)
+            Intent.ACTION_VIEW -> intent.data
+            else -> null
+        } ?: return
+
+        val name = displayName(uri) ?: uri.lastPathSegment ?: "archivo"
+        val mime = contentResolver.getType(uri).orEmpty()
+        val local = copyToCache(uri, name) ?: return
+
+        val isImage = mime.startsWith("image/") || name.endsWith(".enc", ignoreCase = true)
+        if (isImage) {
+            showTab(Tab.IMAGEN, ImageFragment.newInstance(local.absolutePath, name))
+        } else {
+            showTab(Tab.ORDEN, OrderFragment.newInstance(local.absolutePath, name))
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun streamUri(intent: Intent): Uri? =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM, Uri::class.java)
+        } else {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM)
+        }
+
+    private fun displayName(uri: Uri): String? = try {
+        contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
+            ?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (index >= 0) cursor.getString(index) else null
+                } else {
+                    null
+                }
+            }
+    } catch (_: Exception) {
+        null
+    }
+
+    private fun copyToCache(uri: Uri, name: String): File? {
+        return try {
+            val safeName = File(name).name.ifBlank { "archivo" }
+            val destination = File(cacheDir, "in-${System.currentTimeMillis()}-$safeName")
+            val stream = contentResolver.openInputStream(uri) ?: return null
+            stream.use { input ->
+                FileOutputStream(destination).use { output -> input.copyTo(output) }
+            }
+
+            if (destination.length() > ApiConfig.MAX_UPLOAD_BYTES) {
+                destination.delete()
+                null
+            } else {
+                destination
+            }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun dp(value: Int): Int =
+        (value * resources.displayMetrics.density).toInt()
+
+    companion object {
+        private const val KEY_TAB = "tab_actual"
     }
 }

@@ -1,20 +1,17 @@
 <resources>
-    <!-- Paleta Hogwarts (Contrato Técnico 9.1) -->
-    <color name="color_azul_hogwarts">#1B2A41</color>
-    <color name="color_pergamino">#E8DCC6</color>
-    <color name="color_oro_magico">#C9A96A</color>
-    <color name="color_piedra_castillo">#2E2E33</color>
-    <color name="color_madera_antigua">#4A3520</color>
-
-    <color name="color_primary">#1B2A41</color>
-    <color name="color_primary_dark">#0E1A28</color>
-    <color name="color_accent">#C9A96A</color>
-    <color name="color_background">#E8DCC6</color>
-    <color name="color_surface">#FFFFFF</color>
-    <color name="color_text_primary">#1B2A41</color>
-    <color name="color_text_secondary">#4A3520</color>
-    <color name="color_error">#EF4444</color>
-    <color name="color_success">#10B981</color>
-    <color name="color_border">#2E2E33</color>
-
+    <color name="navy">#1B2A41</color>
+    <color name="navy_dark">#121E2E</color>
+    <color name="navy_light">#2A3A52</color>
+    <color name="gold">#C9A96A</color>
+    <color name="gold_dark">#B39150</color>
+    <color name="cream">#F0E4D0</color>
+    <color name="cream_dark">#E3D2B8</color>
+    <color name="white">#FFFFFF</color>
+    <color name="ink">#1B2A41</color>
+    <color name="muted">#6D6355</color>
+    <color name="header_muted">#D8DEE8</color>
+    <color name="nav_inactive">#8FA0B5</color>
+    <color name="green">#1F8F62</color>
+    <color name="red">#B23A32</color>
+    <color name="white_12">#1FFFFFFF</color>
 </resources>
