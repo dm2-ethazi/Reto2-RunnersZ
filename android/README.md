@@ -1,72 +1,119 @@
-# RunnersZ Android
+# CipherSprint Android
 
-Author: Jairo (@jairoben). Revisión: Alain. Rama: feature/android-v2.
-Contrato principal: Contrato_Tecnico_RunnersZ_v2.docx (28/10/2026).
-Seguimiento: issue #42, PR #39.
+Autor: Jairo (@jairoben). Revisión: Alain. Rama: `feature/android`.
+Cliente Android del Reto 2 RunnersZ. Esta versión sustituye la suite anterior
+por la aplicación CipherSprint de cuatro pestañas.
 
 ## Qué hace
 
-Cliente nativo Kotlin, minSdk 26 / targetSdk 35. No cifra localmente:
-Imagen sube un .png.enc y la contraseña a la API multipart; solo acepta
-resultados con X-Integrity: verified y muestra el bitmap escalado.
-Orden abre TXT UTF-8 o admite texto escrito; valida desplazamiento 1..25,
-envía JSON a César y muestra el campo result.
-Ajustes guarda dirección y token en preferencias privadas y prueba autenticación.
-Recibe archivos por Abrir con o Compartir; la navegación conserva acceso a Ajustes.
+Aplicación nativa Kotlin, `minSdk 26`, `targetSdk 35`, `versionName 2.0.0`.
+No descifra localmente: las operaciones se delegan en la API oficial por HTTPS.
+
+- **Inicio**: bienvenida, botón **Probar API**, estado de conexión y accesos a
+  Orden, Imagen y Ajustes. La comprobación se lanza automáticamente al abrir.
+- **Orden**: descifrado César con texto y desplazamiento por defecto
+  (`Dwdtxh Ñá! 2026`, desplazamiento `3`). Acepta texto escrito o un TXT UTF-8
+  de hasta 1 MiB recibido por *Abrir con* / *Compartir*. Valida el rango 1..25.
+- **Imagen**: descifrado AES multipart. Incluye el vector de prueba
+  `image.png.enc` y la clave de demostración precargada. Permite seleccionar
+  otro `.enc`, exige `X-Integrity: verified` y muestra la vista previa.
+- **Ajustes**: servidor fijo de solo lectura, token enmascarado y botón
+  **Probar conexión**. No hay campos editables ni botón de guardado.
+- **Navegación**: barra inferior Orden / Imagen / Ajustes / Inicio y filas de
+  acceso rápido en Inicio. Recibe archivos mediante `ACTION_SEND` y
+  `ACTION_VIEW` (texto, imagen u octet-stream).
 
 ## Estructura
 
-- app/src/main/.../data: ApiClient asíncrono OkHttp, resultados y preferencias.
-- app/src/main/.../domain: dirección, errores y desplazamiento.
-- app/src/main/.../ui: Imagen, Orden y Ajustes.
-- MainActivity: navegación y recepción de intents.
-- app/src/main/res: navegación, estilos y tipografías Inter/Open Sans.
-- app/src/test: JUnit, Robolectric y servidor HTTP de pruebas.
-- licenses: licencias OFL de las fuentes.
-- gradle/wrapper: Gradle 8.9, sin instalación global necesaria.
+- `app/src/main/java/.../MainActivity.kt`: navegación, insets e intents.
+- `app/src/main/java/.../SplashActivity.kt`: splash breve de arranque.
+- `app/src/main/java/.../data`: cliente OkHttp, configuración y resultados.
+- `app/src/main/java/.../domain`: validación César y mensajes de error.
+- `app/src/main/java/.../security`: reconstrucción del token por fragmentos.
+- `app/src/main/java/.../ui`: Inicio, Orden, Imagen y Ajustes.
+- `app/src/main/assets/demo/image.png.enc`: vector AES de demostración.
+- `app/src/main/res`: cabecera, layouts, navegación, colores y textos.
+- `app/src/test`: 4 suites JUnit/Robolectric con 10 pruebas.
+- `gradle/wrapper`: Gradle 8.9; no requiere instalación global.
+
+## API utilizada
+
+Base fija: `https://runnersz-api.onrender.com/api/v1`.
+
+- `GET /auth/check`: valida el Bearer; respuesta correcta `204`.
+- `POST /text/caesar`: JSON `{text, shift, mode:"decrypt"}`; devuelve `result`.
+- `POST /files/decrypt`: multipart `file` + `password`; exige
+  `X-Integrity: verified` y devuelve la imagen descifrada.
+- Los errores del backend usan `{"code":"...","message":"..."}`.
+
+El cliente usa OkHttp con timeout de llamada de 120 s, sin reintentos
+automáticos. Las peticiones se ejecutan fuera del hilo de UI.
+
+## Seguridad
+
+- El token no aparece como literal en el código: se reconstruye en memoria a
+  partir de tres fragmentos enmascarados con XOR (`CredentialA/B/C`).
+- Solo se usa para la cabecera `Authorization`; no se guarda en preferencias,
+  ni en backups, ni se muestra en la UI o en logs.
+- En Ajustes se muestra únicamente una máscara y la nota de que está integrado.
+- Release con R8 full mode, `minifyEnabled`, `shrinkResources`, reempaquetado de
+  clases y eliminación de llamadas a `Log`.
+- `allowBackup=false`, reglas de extracción que excluyen preferencias, archivos
+  y bases de datos, y `usesCleartextTraffic=false`.
+- El servidor está fijado en código; no puede cambiarse desde la app para
+  enviar el token a otro host.
+- La red solo confía en las CA del sistema. **No se implementó certificate
+  pinning**: un dispositivo comprometido con una CA de usuario instalada podría
+  interceptar el tráfico.
+
+### Límite importante
+
+Ningún secreto distribuido dentro de un APK es 100 % indescifrable. Un atacante
+que controle el dispositivo puede instrumentar el proceso, leer la memoria en
+tiempo de ejecución o reconstruir los fragmentos; la ofuscación y R8 elevan el
+coste, pero no convierten el token en matemáticamente imposible de extraer.
+
+La solución fuerte para producción es no distribuir el token: usar un proxy
+propio que autentique al usuario y emita credenciales efímeras, o un flujo de
+login con tokens de corta duración y revocación. Este cliente mantiene el token
+integrado porque es un requisito de la demo, no una garantía absoluta.
+
+El APK de entrega se firma con la **clave debug** para poder instalarlo. Antes
+de publicar en una tienda hay que generar un keystore de producción y custodiarlo
+fuera del repositorio; el manifest release no es debuggable.
 
 ## Compilar y probar
 
-Desde android/, con JDK 21 y SDK Android 35:
+Desde `android/`, con JDK 21 y SDK Android 35:
 
-    gradlew.bat testDebugUnitTest assembleDebug
-    gradlew.bat jacocoTestReport jacocoCoverageVerification
+```bash
+JAVA_HOME="C:/Program Files/Eclipse Adoptium/jdk-21.0.12.101-hotspot" \
+  sh ./gradlew --no-daemon testDebugUnitTest assembleRelease
+```
 
-Linux: sustituir gradlew.bat por ./gradlew.
-Definir ANDROID_HOME o sdk.dir en local.properties (archivo local, no subir).
-APK: app/build/outputs/apk/debug/app-debug.apk.
-Informe: app/build/reports/jacoco/jacocoTestReport/.
-El umbral JaCoCo es 80%; no se rebaja para dar un resultado positivo.
+En Windows también puede usarse `gradlew.bat`; en Linux, `./gradlew`.
+El JDK del sistema debe ser 21: Gradle 8.9 no admite JDK 25.
 
-## Uso
-
-1. Abrir Ajustes, indicar IP:puerto del servidor y token.
-2. Guardar y Probar; el servidor debe responder 204 en /api/v1/auth/check.
-3. Imagen: seleccionar archivo, introducir contraseña y pulsar Descifrar.
-4. Orden: escribir o abrir TXT, indicar desplazamiento y Descifrar orden.
-5. Un error conserva la aplicación abierta para corregir y reintentar.
-
-En emulador, 10.0.2.2 accede al PC anfitrión. En móvil real usar su IP LAN.
-El servidor es una dependencia externa del módulo: debe ofrecer los endpoints
-v2. No se incluye ni se modifica el backend en esta rama.
-
-## Protección y límites
-
-- El original se lee sin modificar. Subida desde copia privada con buffer 64 KiB.
-- La copia temporal se borra al salir de Imagen. La contraseña no se persiste.
-- Máximo de entrada Imagen: 100 MiB; TXT: 1 MiB. Bitmap reducido a 2048 px.
-- Token en preferencias privadas con backup desactivado, sin cifrado adicional.
-- HTTP LAN permitido por contrato: usar solamente red de demo controlada.
-- Solicitudes OkHttp fuera del hilo UI, timeout 120 s, sin reintentos automáticos.
-- Respuestas y pantallas no registran token ni contraseña en logs.
-- TalkBack, 48 dp, fuentes escalables y estados textuales; revisar en dispositivo.
+- APK generado: `app/build/outputs/apk/release/app-release.apk`.
+- Copia de entrega: `C:\Users\dm2\Desktop\CipherSprint.apk`.
+- SHA-256 de la copia: `f3865aff25f3a2696727c84f74030545de60a47e705a7194f7206a169b7cf6c6`.
+- Tamaño: 2.518.310 bytes.
 
 ## Validación
 
-Consultar docs/validacion-android.md para resultados realmente ejecutados.
-Una compilación local no equivale a revisión aprobada ni CI verde.
+Consultar [`docs/validacion-android.md`](docs/validacion-android.md) para los
+resultados realmente ejecutados, las capturas y los límites.
+
+Resumen: `BUILD SUCCESSFUL`, 10 tests en 4 suites, 0 fallos, y verificación
+manual en el emulador `emulator-5556` contra la API real desplegada.
 
 ## Capturas del emulador
-- [Ajustes](docs/evidencias/ajustes.png)
-- [Imagen](docs/evidencias/imagen.png)
-- [Orden](docs/evidencias/orden.png)
+
+- [Inicio](docs/evidencias/01_inicio.png)
+- [Orden](docs/evidencias/02_orden.png)
+- [Orden con resultado](docs/evidencias/03_orden_resultado.png)
+- [Imagen](docs/evidencias/04_imagen.png)
+- [Imagen con integridad verificada](docs/evidencias/05_imagen_resultado.png)
+- [Ajustes](docs/evidencias/06_ajustes.png)
+- [Ajustes con conexión correcta](docs/evidencias/07_ajustes_ok.png)
+- [Inicio final](docs/evidencias/08_inicio_final.png)
