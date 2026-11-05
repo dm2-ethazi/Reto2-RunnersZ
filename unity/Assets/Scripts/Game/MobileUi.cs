@@ -59,8 +59,9 @@ namespace RunnersZ.Game {
   public float TopBarHeight{get{return Mathf.Max(Touch,Heading+8f);}}
   public float TickHeight{get{return Mathf.Max(4f,Mathf.Round(Body*.18f));}}
   public float CipherPanelHeight{get{return Mathf.Round(Cipher*2.3f+Small+44f);}}
-  public float RestHeight{get{return Mathf.Round(Body*2.4f);}}
-  public float SidePanelHeight{get{return Small+9f+ActionHeight*4f+Gap*3.4f+RestHeight+Pad*2f;}}
+  // Dos lineas para pista y dos para el aviso: con una sola se cortaba el texto.
+  public float RestHeight{get{return Mathf.Round(Body*4.6f);}}
+  public float SidePanelHeight{get{return Small+9f+ActionHeight*4f+Gap*3.8f+RestHeight+Pad*2f;}}
   public float ArenaMinimum{get{return Mathf.Max(ActionHeight*1.5f,180f);}}
   public float GameHeight{
    get{
@@ -151,9 +152,10 @@ namespace RunnersZ.Game {
    cursor=Hint.yMax+gap;
    float bottomY=side.yMax-action;
    float rest=Mathf.Max(0f,bottomY-gap-cursor);
-   float half=Mathf.Max(0f,rest*.5f);
+   float split=gap*.4f;
+   float half=Mathf.Max(0f,(rest-split)*.5f);
    HintText=new Rect(side.x,cursor,side.width,half);
-   Feedback=new Rect(side.x,cursor+half,side.width,Mathf.Max(0f,rest-half));
+   Feedback=new Rect(side.x,cursor+half+split,side.width,Mathf.Max(0f,rest-half-split));
    var bottom=UiSplit.Columns(new Rect(side.x,bottomY,side.width,action),gap*.8f,2);
    Restart=bottom[0]; Menu=bottom[1];
    Outcome=UiSplit.Inset(Arena,f.Pad*1.2f);

@@ -284,11 +284,11 @@ namespace RunnersZ.Game {
    GUI.enabled=previous&&HintsRemaining>0;
    if(Button(l.Hint,"Pista \u00b7 "+HintsRemaining+" restantes"))UseHint();
    GUI.enabled=previous;
-   Label(l.HintText,string.IsNullOrEmpty(hint)?"Cada pista revela parte del mensaje y recupera pares ocultos.":"Pista: "+hint,small);
+   Label(l.HintText,string.IsNullOrEmpty(hint)?"Cada pista revela parte del mensaje.":"Pista: "+hint,small);
    Label(l.Feedback,feedback,feedbackStyle,State==GameState.Derrota?danger:cream);
 
    if(Button(l.Restart,"Reiniciar"))Begin(difficulty);
-   if(Button(l.Menu,"Cambiar dificultad")){started=false;enemies.Clear();}
+   if(Button(l.Menu,"Dificultad")){started=false;enemies.Clear();}
 
    if(!playing)DrawOutcome(l.Outcome);
   }
@@ -312,8 +312,9 @@ namespace RunnersZ.Game {
    Frame(area,new Color(.045f,.07f,.105f));
    Rect inner=UiSplit.Inset(area,Mathf.Round(frame.Body*.6f));
    Label(new Rect(inner.x,inner.y,inner.width,frame.Small+6f),"LLEGADA DE ENEMIGOS",small,gold);
-   float laneH=Mathf.Clamp(inner.height*.52f,frame.Body*3.4f,Mathf.Max(frame.Body*3.4f,inner.height-frame.Small-18f));
-   Rect lane=new Rect(inner.x,inner.y+Mathf.Max(0f,inner.height-laneH),inner.width,Mathf.Max(0f,laneH));
+   // El carril ocupa toda la arena: el arte se recorta por UV, nunca se deforma.
+   float captionH=frame.Small+10f;
+   Rect lane=new Rect(inner.x,inner.y+captionH,inner.width,Mathf.Max(0f,inner.height-captionH));
    if(lane.width<8f||lane.height<8f)return;
    float uvHeight=Mathf.Min(1f,lane.height*pixelArt.Arena.width/(lane.width*pixelArt.Arena.height));
    float uvBottom=Mathf.Clamp(.19f,0f,1f-uvHeight);

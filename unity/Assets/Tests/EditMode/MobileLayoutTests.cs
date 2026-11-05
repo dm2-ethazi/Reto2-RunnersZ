@@ -22,7 +22,8 @@ public class MobileLayoutTests {
   new Device("tablet alta densidad",2560f,1920f,320f,0f),
   new Device("portatil 1080p",1920f,1080f,96f,0f),
   new Device("ventana pequena",1280f,720f,213f,0f),
-  new Device("ultra apaisado",2400f,900f,420f,0f),
+  new Device("movil 21:9",2520f,1080f,420f,0f),
+  new Device("monitor ultra apaisado",3440f,1440f,109f,0f),
   // 640 dpi sobre 1080p serian 3,4 pulgadas: no existe como telefono, pero sirve
   // para comprobar que el layout degrada sin solaparse en vez de romperse.
   new Device("densidad extrema",2340f,1080f,640f,0f,false),
