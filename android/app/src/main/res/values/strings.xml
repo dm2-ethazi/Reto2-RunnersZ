@@ -11,11 +11,9 @@
     <string name="home_status_ok">API responde correctamente</string>
     <string name="row_order">Orden (César 1-25)</string>
     <string name="row_image">Imagen (AES Multipart)</string>
-    <string name="row_settings">Ajustes de Servidor</string>
 
     <string name="nav_order">Orden</string>
     <string name="nav_image">Imagen</string>
-    <string name="nav_settings">Ajustes</string>
     <string name="nav_home">Inicio</string>
     <string name="back">Volver</string>
 
@@ -47,14 +45,4 @@
     <string name="image_corrupt">La imagen descifrada no se pudo abrir</string>
     <string name="image_select_file">Seleccionar archivo .enc</string>
 
-    <string name="settings_title">Ajustes de Servidor</string>
-    <string name="settings_server_label">Servidor:</string>
-    <string name="settings_token_label">Token Bearer:</string>
-    <string name="settings_token_mask">••••••••••••••••</string>
-    <string name="settings_token_note">Integrado en la app · no visible ni editable</string>
-    <string name="btn_test_connection">Probar conexión</string>
-    <string name="settings_security_title">Protección activa</string>
-    <string name="settings_security_body">Conexión HTTPS obligatoria\nToken reconstruido en memoria y nunca guardado en el dispositivo</string>
-    <string name="settings_testing">Comprobando conexión…</string>
-    <string name="settings_ok">Conexión correcta con la API</string>
 </resources>

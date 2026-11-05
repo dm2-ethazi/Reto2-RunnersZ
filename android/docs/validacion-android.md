@@ -1,6 +1,6 @@
 # Validación Android — CipherSprint
 
-Autor: Jairo. Fecha: 2026-11-04. Rama: `feature/android`.
+Autor: Jairo. Fecha: 2026-11-05. Rama: `feature/android`.
 Paquete: `com.runnersz.reto2.android`. Versión: `2.0.0` (`versionCode 2`).
 
 ## Entorno de ejecución
@@ -43,8 +43,8 @@ hubiera medido.
 
 - Ruta de build: `android/app/build/outputs/apk/release/app-release.apk`.
 - Copia en el Escritorio: `C:\Users\dm2\Desktop\CipherSprint.apk`.
-- Tamaño: 2.518.310 bytes.
-- SHA-256: `f3865aff25f3a2696727c84f74030545de60a47e705a7194f7206a169b7cf6c6`.
+- Tamaño: 2.509.866 bytes.
+- SHA-256: `a7386b7eb1c7453ee31f25e6a8fc54249fa393e43daa9f41491a879981d95eea`.
 - Release con R8 full mode, recursos reducidos y sin `debuggable`.
 - Firmado con la clave **debug** para permitir la instalación de demo; no es
   una firma de producción.
@@ -53,8 +53,7 @@ hubiera medido.
 
 Servidor: `https://runnersz-api.onrender.com/api/v1`. Token integrado en la app.
 
-- `GET /auth/check`: `204`, mostrado como «API responde correctamente» en Inicio
-  y «Conexión correcta con la API» en Ajustes.
+- `GET /auth/check`: `204`, mostrado como «API responde correctamente» en Inicio.
 - `POST /text/caesar`: entrada `Dwdtxh Ñá! 2026`, desplazamiento `3`; resultado
   mostrado `Ataque Ñá! 2026`.
 - `POST /files/decrypt`: vector `image.png.enc` con clave de demostración;
@@ -66,22 +65,19 @@ estuviera mostrando otra aplicación.
 
 ## Evidencias
 
-- `evidencias/01_inicio.png`: Inicio con estado correcto.
+- `evidencias/01_inicio.png`: Inicio con estado correcto y tres pestañas.
 - `evidencias/02_orden.png`: formulario César con valores por defecto.
 - `evidencias/03_orden_resultado.png`: «Ataque Ñá! 2026».
 - `evidencias/04_imagen.png`: vector de prueba y clave AES.
 - `evidencias/05_imagen_resultado.png`: «Integridad verificada» y vista previa.
-- `evidencias/06_ajustes.png`: servidor fijo y token enmascarado.
-- `evidencias/07_ajustes_ok.png`: «Conexión correcta con la API».
-- `evidencias/08_inicio_final.png`: Inicio final con la API disponible.
 
 ## Comprobaciones de seguridad realizadas
 
 - Búsqueda del literal del token en el código fuente: sin coincidencias.
 - El token se reconstruye en memoria desde tres arrays enmascarados y solo se
   usa en la cabecera `Authorization`.
-- Ajustes muestra una máscara; no hay preferencias, backup ni extracción del
-  token.
+- La app no muestra el token en ninguna pantalla; no hay preferencias, backup
+  ni extracción del token.
 - `usesCleartextTraffic=false` y `network_security_config` solo permiten HTTPS
   con CA del sistema.
 - Host de API fijado en `ApiConfig.BASE_URL`; no editable desde la UI.
@@ -101,4 +97,4 @@ estuviera mostrando otra aplicación.
   baja.
 - La disponibilidad y el formato de la API dependen del backend desplegado; si
   cambia el contrato o se rota el token, hay que actualizar el cliente.
-- No se hizo push ni se abrió PR en esta fase.
+- Los cambios están publicados en `origin/feature/android`; no se abrió PR.

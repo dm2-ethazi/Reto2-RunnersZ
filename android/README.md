@@ -2,7 +2,7 @@
 
 Autor: Jairo (@jairoben). Revisión: Alain. Rama: `feature/android`.
 Cliente Android del Reto 2 RunnersZ. Esta versión sustituye la suite anterior
-por la aplicación CipherSprint de cuatro pestañas.
+por la aplicación CipherSprint de tres pestañas.
 
 ## Qué hace
 
@@ -10,16 +10,14 @@ Aplicación nativa Kotlin, `minSdk 26`, `targetSdk 35`, `versionName 2.0.0`.
 No descifra localmente: las operaciones se delegan en la API oficial por HTTPS.
 
 - **Inicio**: bienvenida, botón **Probar API**, estado de conexión y accesos a
-  Orden, Imagen y Ajustes. La comprobación se lanza automáticamente al abrir.
+  Orden e Imagen. La comprobación se lanza automáticamente al abrir.
 - **Orden**: descifrado César con texto y desplazamiento por defecto
   (`Dwdtxh Ñá! 2026`, desplazamiento `3`). Acepta texto escrito o un TXT UTF-8
   de hasta 1 MiB recibido por *Abrir con* / *Compartir*. Valida el rango 1..25.
 - **Imagen**: descifrado AES multipart. Incluye el vector de prueba
   `image.png.enc` y la clave de demostración precargada. Permite seleccionar
   otro `.enc`, exige `X-Integrity: verified` y muestra la vista previa.
-- **Ajustes**: servidor fijo de solo lectura, token enmascarado y botón
-  **Probar conexión**. No hay campos editables ni botón de guardado.
-- **Navegación**: barra inferior Orden / Imagen / Ajustes / Inicio y filas de
+- **Navegación**: barra inferior Orden / Imagen / Inicio y filas de
   acceso rápido en Inicio. Recibe archivos mediante `ACTION_SEND` y
   `ACTION_VIEW` (texto, imagen u octet-stream).
 
@@ -30,7 +28,7 @@ No descifra localmente: las operaciones se delegan en la API oficial por HTTPS.
 - `app/src/main/java/.../data`: cliente OkHttp, configuración y resultados.
 - `app/src/main/java/.../domain`: validación César y mensajes de error.
 - `app/src/main/java/.../security`: reconstrucción del token por fragmentos.
-- `app/src/main/java/.../ui`: Inicio, Orden, Imagen y Ajustes.
+- `app/src/main/java/.../ui`: Inicio, Orden e Imagen.
 - `app/src/main/assets/demo/image.png.enc`: vector AES de demostración.
 - `app/src/main/res`: cabecera, layouts, navegación, colores y textos.
 - `app/src/test`: 4 suites JUnit/Robolectric con 10 pruebas.
@@ -55,7 +53,7 @@ automáticos. Las peticiones se ejecutan fuera del hilo de UI.
   partir de tres fragmentos enmascarados con XOR (`CredentialA/B/C`).
 - Solo se usa para la cabecera `Authorization`; no se guarda en preferencias,
   ni en backups, ni se muestra en la UI o en logs.
-- En Ajustes se muestra únicamente una máscara y la nota de que está integrado.
+- La app no muestra el token en ninguna pantalla ni permite editarlo.
 - Release con R8 full mode, `minifyEnabled`, `shrinkResources`, reempaquetado de
   clases y eliminación de llamadas a `Log`.
 - `allowBackup=false`, reglas de extracción que excluyen preferencias, archivos
@@ -96,8 +94,8 @@ El JDK del sistema debe ser 21: Gradle 8.9 no admite JDK 25.
 
 - APK generado: `app/build/outputs/apk/release/app-release.apk`.
 - Copia de entrega: `C:\Users\dm2\Desktop\CipherSprint.apk`.
-- SHA-256 de la copia: `f3865aff25f3a2696727c84f74030545de60a47e705a7194f7206a169b7cf6c6`.
-- Tamaño: 2.518.310 bytes.
+- SHA-256 de la copia: `a7386b7eb1c7453ee31f25e6a8fc54249fa393e43daa9f41491a879981d95eea`.
+- Tamaño: 2.509.866 bytes.
 
 ## Validación
 
@@ -114,6 +112,3 @@ manual en el emulador `emulator-5556` contra la API real desplegada.
 - [Orden con resultado](docs/evidencias/03_orden_resultado.png)
 - [Imagen](docs/evidencias/04_imagen.png)
 - [Imagen con integridad verificada](docs/evidencias/05_imagen_resultado.png)
-- [Ajustes](docs/evidencias/06_ajustes.png)
-- [Ajustes con conexión correcta](docs/evidencias/07_ajustes_ok.png)
-- [Inicio final](docs/evidencias/08_inicio_final.png)

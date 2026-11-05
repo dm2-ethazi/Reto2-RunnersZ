@@ -24,9 +24,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         view.findViewById<View>(R.id.rowImage).setOnClickListener {
             (activity as? MainActivity)?.goToImage()
         }
-        view.findViewById<View>(R.id.rowSettings).setOnClickListener {
-            (activity as? MainActivity)?.goToSettings()
-        }
 
         checkApi()
     }

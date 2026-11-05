@@ -20,13 +20,12 @@ import com.runnersz.reto2.android.data.ApiConfig
 import com.runnersz.reto2.android.ui.HomeFragment
 import com.runnersz.reto2.android.ui.ImageFragment
 import com.runnersz.reto2.android.ui.OrderFragment
-import com.runnersz.reto2.android.ui.SettingsFragment
 import java.io.File
 import java.io.FileOutputStream
 
 class MainActivity : AppCompatActivity() {
 
-    private enum class Tab { INICIO, ORDEN, IMAGEN, AJUSTES }
+    private enum class Tab { INICIO, ORDEN, IMAGEN }
 
     private var currentTab = Tab.INICIO
 
@@ -79,13 +78,10 @@ class MainActivity : AppCompatActivity() {
 
     fun goToImage() = showTab(Tab.IMAGEN)
 
-    fun goToSettings() = showTab(Tab.AJUSTES)
-
     private fun setupNavigation() {
         findViewById<View>(R.id.navInicio).setOnClickListener { showTab(Tab.INICIO) }
         findViewById<View>(R.id.navOrden).setOnClickListener { showTab(Tab.ORDEN) }
         findViewById<View>(R.id.navImagen).setOnClickListener { showTab(Tab.IMAGEN) }
-        findViewById<View>(R.id.navAjustes).setOnClickListener { showTab(Tab.AJUSTES) }
     }
 
     private fun showTab(tab: Tab, fragment: Fragment = createFragment(tab)) {
@@ -100,14 +96,12 @@ class MainActivity : AppCompatActivity() {
         Tab.INICIO -> HomeFragment()
         Tab.ORDEN -> OrderFragment()
         Tab.IMAGEN -> ImageFragment()
-        Tab.AJUSTES -> SettingsFragment()
     }
 
     private fun paintNavigation(tab: Tab) {
         setNavItem(R.id.navInicio, R.id.navInicioIcon, R.id.navInicioLabel, tab == Tab.INICIO)
         setNavItem(R.id.navOrden, R.id.navOrdenIcon, R.id.navOrdenLabel, tab == Tab.ORDEN)
         setNavItem(R.id.navImagen, R.id.navImagenIcon, R.id.navImagenLabel, tab == Tab.IMAGEN)
-        setNavItem(R.id.navAjustes, R.id.navAjustesIcon, R.id.navAjustesLabel, tab == Tab.AJUSTES)
     }
 
     private fun setNavItem(itemId: Int, iconId: Int, labelId: Int, active: Boolean) {
