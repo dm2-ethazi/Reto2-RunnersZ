@@ -7,7 +7,11 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import java.util.prefs.PreferencesFactory;
 
-/** Preferencias en memoria para que las pruebas no toquen el registro del usuario. */
+/**
+ * Preferencias en memoria para que las pruebas no toquen el registro del usuario.
+ *
+ * @author RunnersZ
+ */
 public final class MemoryPreferencesFactory implements PreferencesFactory {
   private static final MemoryNode USER = new MemoryNode(null, "");
   private static final MemoryNode SYSTEM = new MemoryNode(null, "");

@@ -9,7 +9,11 @@ import java.util.prefs.Preferences;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-/** Pruebas de los ajustes: valores vacíos por defecto, normalización y validación. */
+/**
+ * Pruebas de los ajustes: valores vacíos por defecto, normalización y validación.
+ *
+ * @author RunnersZ
+ */
 class SettingsStoreTest {
   private Preferences node;
 

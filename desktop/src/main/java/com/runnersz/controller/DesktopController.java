@@ -55,6 +55,8 @@ import javafx.util.Duration;
 /**
  * Controlador de la ventana declarada en {@code desktop.fxml}. Traduce eventos en operaciones y
  * actualiza los controles desde el hilo de JavaFX; la red y el disco viven en servicios.
+ *
+ * @author RunnersZ
  */
 public final class DesktopController {
   private static final String MIB = "%.1f MiB";
@@ -120,10 +122,20 @@ public final class DesktopController {
   @FXML private Label progressLabel;
   @FXML private Button cancelButton;
 
-  /** Enlaza la ventana y los servicios que dependen de ella. */
+  /**
+   * Enlaza la ventana y los servicios que dependen de ella.
+   *
+   * @param stage ventana principal que usan los diálogos y los selectores de archivos
+   */
   public void attach(Stage stage) {
     this.stage = stage;
   }
+
+  /**
+   * Registra la acción que recarga la vista al cambiar de idioma.
+   *
+   * @param handler consumidor que recibe el estado del formulario ya relleno
+   */
 
   public void setLanguageHandler(Consumer<UiState> handler) {
     this.languageHandler = handler;
@@ -184,7 +196,11 @@ public final class DesktopController {
     setStatus(settings.isConfigured() ? "status.ready" : "status.initial");
   }
 
-  /** Restaura el formulario cuando cambia el idioma y se recarga la vista. */
+  /**
+   * Restaura el formulario cuando cambia el idioma y se recarga la vista.
+   *
+   * @param state valores que había escrito el usuario, o {@code null} en el primer arranque
+   */
   public void applyState(UiState state) {
     if (state == null) return;
     inputPath.setText(state.inputPath());
@@ -200,6 +216,11 @@ public final class DesktopController {
     tabs.getSelectionModel().select(Math.max(0, Math.min(state.tab(), tabs.getTabs().size() - 1)));
   }
 
+  /**
+   * Copia el contenido actual del formulario para poder reconstruir la vista.
+   *
+   * @return instantánea inmutable de los campos visibles
+   */
   public UiState snapshot() {
     return new UiState(
         inputPath.getText(),

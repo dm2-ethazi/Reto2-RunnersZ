@@ -11,7 +11,11 @@ import java.util.ResourceBundle;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
-/** Catálogos UTF-8 y preferencia de idioma. No depende de JavaFX ni traduce datos del usuario. */
+/**
+ * Catálogos UTF-8 y preferencia de idioma. No depende de JavaFX ni traduce datos del usuario.
+ *
+ * @author RunnersZ
+ */
 public final class I18n {
   private static final String BUNDLE = "com.runnersz.i18n.messages";
   private static final String NODE = "/com/runnersz";
@@ -39,6 +43,13 @@ public final class I18n {
     return ResourceBundle.getBundle(BUNDLE, locale);
   }
 
+  /**
+   * Traduce una clave del catálogo activo.
+   *
+   * @param key clave del catálogo
+   * @param arguments valores para los marcadores {0}, {1}…
+   * @return el texto formateado en el idioma activo
+   */
   public static String text(String key, Object... arguments) {
     Locale current = locale;
     String pattern = ResourceBundle.getBundle(BUNDLE, current).getString(key);
@@ -65,6 +76,12 @@ public final class I18n {
     return new TranslatedArgument(key);
   }
 
+  /**
+   * Traduce un fallo sin mostrar mensajes nativos del sistema operativo.
+   *
+   * @param error excepción original, posiblemente envuelta
+   * @return mensaje entendible en el idioma activo
+   */
   public static String errorMessage(Throwable error) {
     for (Throwable cause = error; cause != null; cause = cause.getCause()) {
       if (cause instanceof TranslatedFailure || cause instanceof TranslatedArgument) {

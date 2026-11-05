@@ -29,6 +29,8 @@ import java.util.concurrent.Flow;
  *
  * <p>Los ficheros se envían y se reciben en bloques de 64 KiB: el consumo de memoria no depende del
  * tamaño del archivo y el progreso refleja bytes reales transferidos.
+ *
+ * @author RunnersZ
  */
 public final class ApiClient {
   /** Límite del contrato (§7.2): ninguna petición puede esperar más de dos minutos. */
@@ -50,6 +52,11 @@ public final class ApiClient {
           .followRedirects(HttpClient.Redirect.NORMAL)
           .build();
 
+  /**
+   * Crea el cliente con una instantánea de la configuración.
+   *
+   * @param settings dirección y token que se usarán en todas las peticiones
+   */
   public ApiClient(ConnectionSettings settings) {
     this.settings = settings;
   }

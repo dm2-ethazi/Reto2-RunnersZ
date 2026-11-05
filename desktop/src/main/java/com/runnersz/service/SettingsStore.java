@@ -9,6 +9,8 @@ import java.util.prefs.Preferences;
 /**
  * Lee, valida y guarda los ajustes de conexión del usuario. No hay dirección ni token escritos en
  * el código: ambos se configuran desde Ajustes. La contraseña AES nunca pasa por esta clase.
+ *
+ * @author RunnersZ
  */
 public final class SettingsStore {
   private static final String NODE = "/com/runnersz";
@@ -43,10 +45,20 @@ public final class SettingsStore {
     return new ConnectionSettings(baseUrl, token);
   }
 
+  /**
+   * Dirección base configurada, sin barra final ni {@code /api/v1}.
+   *
+   * @return la dirección, o cadena vacía si aún no se ha configurado
+   */
   public String baseUrl() {
     return baseUrl;
   }
 
+  /**
+   * Token Bearer configurado.
+   *
+   * @return el token, o cadena vacía si aún no se ha configurado
+   */
   public String token() {
     return token;
   }
@@ -56,6 +68,13 @@ public final class SettingsStore {
     return !baseUrl.isBlank() && !token.isBlank();
   }
 
+  /**
+   * Valida y guarda los ajustes en las preferencias locales.
+   *
+   * @param baseUrl dirección base del servidor
+   * @param token token Bearer de la API
+   * @throws IllegalArgumentException si la dirección o el token no son válidos
+   */
   public void update(String baseUrl, String token) {
     String normalized = normalize(baseUrl);
     String cleanToken = token == null ? "" : token.trim();

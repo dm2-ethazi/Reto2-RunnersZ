@@ -11,7 +11,11 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Pruebas del acceso a disco: temporales, publicación y textos. */
+/**
+ * Pruebas del acceso a disco: temporales, publicación y textos.
+ *
+ * @author RunnersZ
+ */
 class FileServiceTest {
   @TempDir Path dir;
 

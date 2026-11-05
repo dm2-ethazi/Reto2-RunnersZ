@@ -10,13 +10,28 @@ import java.nio.file.StandardCopyOption;
 /**
  * Acceso a disco compartido por AES, Vigenère y César. La salida se prepara en un temporal junto al
  * destino: un fallo previo a moverlo no publica un fichero incompleto.
+ *
+ * @author RunnersZ
  */
 public final class FileService {
-  /** El formato de los mensajes del contrato es UTF-8. */
+  /**
+   * El formato de los mensajes del contrato es UTF-8.
+   *
+   * @param source fichero de texto que se lee
+   * @return contenido completo del fichero
+   * @throws IOException si el fichero no existe o no se puede leer
+   */
   public String readText(Path source) throws IOException {
     return Files.readString(source, StandardCharsets.UTF_8);
   }
 
+  /**
+   * Guarda el texto de forma atómica: se escribe en un temporal y se publica al final.
+   *
+   * @param destination fichero de salida
+   * @param text contenido que se guarda
+   * @throws IOException si no se puede escribir
+   */
   public void writeText(Path destination, String text) throws IOException {
     Path temporary = prepareTemporary(destination);
     try {
@@ -27,7 +42,13 @@ public final class FileService {
     }
   }
 
-  /** Crea el directorio de destino si falta y devuelve un temporal en la misma unidad. */
+  /**
+   * Crea el directorio de destino si falta y devuelve un temporal en la misma unidad.
+   *
+   * @param destination ruta final que se quiere escribir
+   * @return fichero temporal que el llamador debe publicar o borrar
+   * @throws IOException si no se puede crear el directorio o el temporal
+   */
   public Path prepareTemporary(Path destination) throws IOException {
     Path target = destination.toAbsolutePath().normalize();
     Path parent = target.getParent();
@@ -50,7 +71,11 @@ public final class FileService {
     }
   }
 
-  /** Limpieza de temporales; nunca oculta el error original. */
+  /**
+   * Limpieza de temporales; nunca oculta el error original.
+   *
+   * @param path fichero que se intenta borrar; puede ser {@code null}
+   */
   public void deleteQuietly(Path path) {
     if (path == null) return;
     try {

@@ -19,7 +19,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Pruebas del adaptador HTTP: rutas, token, multipart por bloques, integridad y errores. */
+/**
+ * Pruebas del adaptador HTTP: rutas, token, multipart por bloques, integridad y errores.
+ *
+ * @author RunnersZ
+ */
 class ApiClientTest {
   @TempDir Path dir;
 

@@ -3,6 +3,10 @@ package com.runnersz.model;
 /**
  * Datos inmutables de una conexión. No representan la contraseña AES. No se imprimen ni registran:
  * contienen el token de autenticación.
+ *
+ * @param baseUrl dirección base del servidor, sin {@code /api/v1}
+ * @param token token Bearer de la API
+ * @author RunnersZ
  */
 public record ConnectionSettings(String baseUrl, String token) {
   @Override

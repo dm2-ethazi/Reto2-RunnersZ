@@ -8,17 +8,35 @@ import java.nio.file.Path;
 /**
  * Caso de uso de ficheros: validar → transferir a un temporal → publicar. No depende de JavaFX y no
  * implementa algoritmos criptográficos.
+ *
+ * @author RunnersZ
  */
 public final class FileOperationService {
   private final ApiClient api;
   private final FileService files;
 
+  /**
+   * Crea el caso de uso con el cliente HTTP y el acceso a disco indicados.
+   *
+   * @param api cliente de la API del servidor
+   * @param files servicio de temporales y publicación
+   */
   public FileOperationService(ApiClient api, FileService files) {
     this.api = api;
     this.files = files;
   }
 
-  /** Solo publica la salida cuando la API ha completado todas sus validaciones. */
+  /**
+   * Solo publica la salida cuando la API ha completado todas sus validaciones.
+   *
+   * @param input fichero que se envía al servidor
+   * @param output destino del resultado
+   * @param password contraseña AES de la operación
+   * @param encrypt {@code true} para cifrar, {@code false} para descifrar
+   * @param progress aviso de bytes transferidos
+   * @throws java.io.IOException si falla la API, una validación o el disco
+   * @throws InterruptedException si la operación se cancela
+   */
   public void execute(
       Path input, Path output, String password, boolean encrypt, ApiClient.Progress progress)
       throws IOException, InterruptedException {

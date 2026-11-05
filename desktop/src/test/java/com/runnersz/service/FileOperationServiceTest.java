@@ -18,7 +18,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-/** Pruebas del caso de uso de ficheros y del acceso a disco. */
+/**
+ * Pruebas del caso de uso de ficheros y del acceso a disco.
+ *
+ * @author RunnersZ
+ */
 class FileOperationServiceTest {
   @TempDir Path dir;
 

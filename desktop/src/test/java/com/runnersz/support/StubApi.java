@@ -7,7 +7,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Servidor HTTP local que imita la API para probar el cliente sin Docker ni red externa. */
+/**
+ * Servidor HTTP local que imita la API para probar el cliente sin Docker ni red externa.
+ *
+ * @author RunnersZ
+ */
 public final class StubApi implements AutoCloseable {
   /** Petición recibida, con las cabeceras que valida el cliente. */
   public record Request(

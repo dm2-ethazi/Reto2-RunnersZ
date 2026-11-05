@@ -15,6 +15,8 @@ import javafx.stage.Stage;
 /**
  * Ciclo de vida de JavaFX. Carga la vista FXML, registra las tipografías empaquetadas y reconstruye
  * la escena cuando cambia el idioma, conservando lo que el usuario había escrito.
+ *
+ * @author RunnersZ
  */
 public final class Main extends Application {
   private static final String[] FONTS = {
@@ -77,6 +79,11 @@ public final class Main extends Application {
     if (controller != null) controller.stop();
   }
 
+  /**
+   * Arranca la aplicación JavaFX.
+   *
+   * @param args argumentos de la línea de órdenes; no se interpretan
+   */
   public static void main(String[] args) {
     launch(args);
   }
