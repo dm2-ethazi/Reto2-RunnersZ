@@ -147,13 +147,23 @@ namespace RunnersZ.Game {
    const float gateSize=120f, gateBottom=680f;
    GUI.DrawTexture(new Rect(1088f-gateSize*0.5f,gateBottom-gateSize,gateSize,gateSize),pixelArt.Door,ScaleMode.ScaleToFit,true);
   }
+  // Sheet espaciado 2656x944: cada frame queda aislado en una ventana de 220x340,
+  // asi el recorte no arrastra restos del frame anterior ni del siguiente.
+  static readonly Rect[] WraithFrames={
+   new Rect(0.027108f,0.324153f,0.082831f,0.360169f), // x72  y298
+   new Rect(0.152108f,0.328390f,0.082831f,0.360169f), // x404 y294
+   new Rect(0.271837f,0.325212f,0.082831f,0.360169f), // x722 y297
+   new Rect(0.395331f,0.325212f,0.082831f,0.360169f), // x1050 y297
+   new Rect(0.519202f,0.324153f,0.082831f,0.360169f), // x1379 y298
+   new Rect(0.641566f,0.320975f,0.082831f,0.360169f), // x1704 y301
+   new Rect(0.761295f,0.322034f,0.082831f,0.360169f), // x2022 y300
+   new Rect(0.890060f,0.324153f,0.082831f,0.360169f), // x2364 y298
+  };
   void DrawWraith(float x,float y){
    int frame=Mathf.FloorToInt(Time.time*8f)%8;
    float bob=Mathf.Sin(Time.time*8f)*2f;
-   // Crop only the empty vertical margins of the 1536x864 sheet.
-   // All eight frames share a 192x336 window, preserving their proportions.
-   Rect uv=new Rect(frame/8f,264f/864f,1f/8f,336f/864f);
-   const float frameWidth=32f, frameHeight=56f, groundY=677f;
+   Rect uv=WraithFrames[frame];
+   const float frameWidth=36f, frameHeight=56f, groundY=677f;
    float left=Mathf.Round((x-frameWidth*0.5f)/3f)*3f;
    GUI.DrawTextureWithTexCoords(new Rect(left,groundY-frameHeight+bob,frameWidth,frameHeight),pixelArt.Wraith,uv,true);
   }
