@@ -24,8 +24,8 @@
     <top>
         <HBox styleClass="header" spacing="18" alignment="CENTER_LEFT">
             <VBox spacing="2">
-                <Label styleClass="brand" text="%brand.name"/>
-                <Label styleClass="eyebrow" text="%brand.subtitle"/>
+                <Label fx:id="brandName" styleClass="brand" text="%brand.name"/>
+                <Label fx:id="brandSubtitle" styleClass="eyebrow" text="%brand.subtitle"/>
             </VBox>
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="connectionChip" styleClass="chip"/>
@@ -40,14 +40,15 @@
 
             <Tab text="%tab.files">
                 <content>
-                    <ScrollPane fitToWidth="true" styleClass="content-scroll" hbarPolicy="NEVER">
+                    <ScrollPane fx:id="filesScroll" fitToWidth="true" styleClass="content-scroll"
+                                hbarPolicy="NEVER">
                         <content>
                             <VBox styleClass="content" spacing="18">
-                                <Label styleClass="section-title" text="%files.title"/>
-                                <Label styleClass="muted" text="%files.intro" wrapText="true"/>
+                                <Label fx:id="filesTitle" styleClass="section-title" text="%files.title"/>
+                                <Label fx:id="filesIntro" styleClass="muted" text="%files.intro" wrapText="true"/>
 
                                 <VBox fx:id="fileCard" styleClass="card" spacing="12">
-                                    <Label styleClass="field-label" text="%files.input"/>
+                                    <Label fx:id="inputLabel" styleClass="field-label" text="%files.input"/>
                                     <HBox spacing="10">
                                         <TextField fx:id="inputPath" editable="false" promptText="%files.input.prompt"
                                                    accessibleHelp="%files.input.help" HBox.hgrow="ALWAYS"/>
@@ -55,7 +56,7 @@
                                                 accessibleText="%files.choose.help"/>
                                     </HBox>
 
-                                    <Label styleClass="field-label" text="%files.output"/>
+                                    <Label fx:id="outputLabel" styleClass="field-label" text="%files.output"/>
                                     <HBox spacing="10">
                                         <TextField fx:id="outputPath" editable="false" promptText="%files.output.prompt"
                                                    accessibleHelp="%files.output.help" HBox.hgrow="ALWAYS"/>
@@ -63,7 +64,7 @@
                                                 accessibleText="%files.saveAs.help"/>
                                     </HBox>
 
-                                    <Label styleClass="field-label" text="%files.password"/>
+                                    <Label fx:id="passwordLabel" styleClass="field-label" text="%files.password"/>
                                     <HBox spacing="10" alignment="CENTER_LEFT">
                                         <StackPane HBox.hgrow="ALWAYS">
                                             <PasswordField fx:id="passwordField" promptText="%files.password.prompt"
@@ -75,8 +76,9 @@
                                         <ToggleButton fx:id="showPassword" minHeight="36"/>
                                     </HBox>
 
-                                    <Label styleClass="helper" text="%files.note" wrapText="true"/>
-                                    <Label styleClass="drop-hint" text="%files.drop" wrapText="true"/>
+                                    <Label fx:id="filesNote" styleClass="helper" text="%files.note" wrapText="true"/>
+                                    <Label fx:id="dropHint" styleClass="drop-hint" text="%files.drop"
+                                           wrapText="true"/>
                                 </VBox>
 
                                 <HBox spacing="12" alignment="CENTER_LEFT">
@@ -95,14 +97,15 @@
 
             <Tab text="%tab.vigenere">
                 <content>
-                    <ScrollPane fitToWidth="true" styleClass="content-scroll" hbarPolicy="NEVER">
+                    <ScrollPane fx:id="vigenereScroll" fitToWidth="true" styleClass="content-scroll"
+                                hbarPolicy="NEVER">
                         <content>
                             <VBox styleClass="content" spacing="18">
-                                <Label styleClass="section-title" text="%vigenere.title"/>
-                                <Label styleClass="muted" text="%vigenere.intro" wrapText="true"/>
+                                <Label fx:id="vigenereTitle" styleClass="section-title" text="%vigenere.title"/>
+                                <Label fx:id="vigenereIntro" styleClass="muted" text="%vigenere.intro" wrapText="true"/>
 
                                 <VBox styleClass="card" spacing="12">
-                                    <Label styleClass="field-label" text="%text.input"/>
+                                    <Label fx:id="textInputLabel" styleClass="field-label" text="%text.input"/>
                                     <TextArea fx:id="plainText" prefRowCount="6" wrapText="true"
                                               promptText="%text.prompt" accessibleHelp="%text.help"/>
                                     <HBox spacing="10" alignment="CENTER_LEFT">
@@ -113,7 +116,7 @@
                                         <Button fx:id="swapTextButton" text="%text.swap" onAction="#handleSwapText"/>
                                     </HBox>
 
-                                    <Label styleClass="field-label" text="%vigenere.key"/>
+                                    <Label fx:id="keyLabel" styleClass="field-label" text="%vigenere.key"/>
                                     <TextField fx:id="keyField" promptText="%vigenere.key.prompt"
                                                accessibleHelp="%vigenere.key.help"/>
 
@@ -126,7 +129,7 @@
                                                 accessibleHelp="%vigenere.decrypt.help"/>
                                     </HBox>
 
-                                    <Label styleClass="field-label" text="%result"/>
+                                    <Label fx:id="vigenereResultLabel" styleClass="field-label" text="%result"/>
                                     <TextArea fx:id="vigenereResult" prefRowCount="6" wrapText="true"
                                               editable="false" promptText="%result.prompt" styleClass="mono"/>
                                     <HBox spacing="10" alignment="CENTER_LEFT">
@@ -142,21 +145,22 @@
 
             <Tab text="%tab.caesar">
                 <content>
-                    <ScrollPane fitToWidth="true" styleClass="content-scroll" hbarPolicy="NEVER">
+                    <ScrollPane fx:id="caesarScroll" fitToWidth="true" styleClass="content-scroll"
+                                hbarPolicy="NEVER">
                         <content>
                             <VBox styleClass="content" spacing="18">
-                                <Label styleClass="section-title" text="%caesar.title"/>
-                                <Label styleClass="muted" text="%caesar.intro" wrapText="true"/>
+                                <Label fx:id="caesarTitle" styleClass="section-title" text="%caesar.title"/>
+                                <Label fx:id="caesarIntro" styleClass="muted" text="%caesar.intro" wrapText="true"/>
 
                                 <VBox styleClass="card" spacing="12">
-                                    <Label styleClass="field-label" text="%text.input"/>
+                                    <Label fx:id="caesarInputLabel" styleClass="field-label" text="%text.input"/>
                                     <TextArea fx:id="caesarText" prefRowCount="6" wrapText="true"
                                               promptText="%text.prompt" accessibleHelp="%caesar.text.help"/>
                                     <HBox spacing="10" alignment="CENTER_LEFT">
                                         <Button fx:id="caesarOpenButton" text="%text.open" onAction="#handleOpenText"/>
                                         <Label fx:id="caesarCounter" styleClass="helper"/>
                                         <Region HBox.hgrow="ALWAYS"/>
-                                        <Label styleClass="field-label" text="%caesar.shift"/>
+                                        <Label fx:id="caesarShiftLabel" styleClass="field-label" text="%caesar.shift"/>
                                         <Spinner fx:id="shiftSpinner" prefWidth="100" editable="false"/>
                                     </HBox>
 
@@ -169,7 +173,7 @@
                                                 accessibleHelp="%caesar.decrypt.help"/>
                                     </HBox>
 
-                                    <Label styleClass="field-label" text="%result"/>
+                                    <Label fx:id="caesarResultLabel" styleClass="field-label" text="%result"/>
                                     <TextArea fx:id="caesarResult" prefRowCount="6" wrapText="true"
                                               editable="false" promptText="%result.prompt" styleClass="mono"/>
                                     <HBox spacing="10" alignment="CENTER_LEFT">

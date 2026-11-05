@@ -244,6 +244,18 @@
 }
 .progress-indicator { -fx-progress-color: -rz-gold; }
 
+/* ------------------------------------------------------------------ ayuda */
+
+.tooltip {
+    -fx-background-color: -rz-navy;
+    -fx-text-fill: #F6EFDE;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: 12px;
+    -fx-background-radius: 6;
+    -fx-padding: 6 10;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 8, 0, 0, 2);
+}
+
 /* ---------------------------------------------------------------- diálogos */
 
 .dialog-pane { -fx-background-color: -rz-parchment; }

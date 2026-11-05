@@ -42,6 +42,7 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.control.ToggleButton;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
@@ -105,6 +106,28 @@ public final class DesktopController {
   @FXML private Button copyTextButton;
   @FXML private Button swapTextButton;
   @FXML private Label textCounter;
+  @FXML private Label dropHint;
+  @FXML private ScrollPane filesScroll;
+  @FXML private ScrollPane vigenereScroll;
+  @FXML private ScrollPane caesarScroll;
+  @FXML private Label brandName;
+  @FXML private Label brandSubtitle;
+  @FXML private Label filesTitle;
+  @FXML private Label filesIntro;
+  @FXML private Label inputLabel;
+  @FXML private Label outputLabel;
+  @FXML private Label passwordLabel;
+  @FXML private Label filesNote;
+  @FXML private Label vigenereTitle;
+  @FXML private Label vigenereIntro;
+  @FXML private Label textInputLabel;
+  @FXML private Label keyLabel;
+  @FXML private Label vigenereResultLabel;
+  @FXML private Label caesarTitle;
+  @FXML private Label caesarIntro;
+  @FXML private Label caesarInputLabel;
+  @FXML private Label caesarShiftLabel;
+  @FXML private Label caesarResultLabel;
 
   @FXML private TextArea caesarText;
   @FXML private Spinner<Integer> shiftSpinner;
@@ -182,6 +205,7 @@ public final class DesktopController {
     updateCounter("", textCounter);
     updateCounter("", caesarCounter);
 
+    installTooltips();
     configureDropTarget();
     progressBar.setVisible(false);
     progressBar.setManaged(false);
@@ -201,6 +225,89 @@ public final class DesktopController {
    *
    * @param state valores que había escrito el usuario, o {@code null} en el primer arranque
    */
+  /**
+   * Añade la ayuda emergente a cada control: se muestra al pasar el ratón y al enfocar con el
+   * teclado. Se reinstala al recargar la vista, así que sigue el idioma activo.
+   */
+  private void installTooltips() {
+    tip(connectionChip, "chip.help");
+    tip(languageBox, "language.help");
+    tip(settingsButton, "settings.open.help");
+    tip(inputPath, "files.input.help");
+    tip(browseInput, "files.choose.help");
+    tip(outputPath, "files.output.help");
+    tip(browseOutput, "files.saveAs.help");
+    tip(passwordField, "files.password.help");
+    tip(passwordPlain, "files.password.help");
+    tip(showPassword, "password.show.help");
+    tip(encryptButton, "files.encrypt.help");
+    tip(decryptButton, "files.decrypt.help");
+    tip(dropHint, "files.drop.help");
+    tip(plainText, "text.help");
+    tip(openTextButton, "text.open.help");
+    tip(textCounter, "text.counter.help");
+    tip(swapTextButton, "text.swap.help");
+    tip(keyField, "vigenere.key.help");
+    tip(vigenereEncryptButton, "vigenere.encrypt.help");
+    tip(vigenereDecryptButton, "vigenere.decrypt.help");
+    tip(vigenereResult, "vigenere.result.help");
+    tip(saveTextButton, "text.save.help");
+    tip(copyTextButton, "copy.help");
+    tip(caesarText, "caesar.text.help");
+    tip(shiftSpinner, "caesar.shift.help");
+    tip(caesarEncryptButton, "caesar.encrypt.help");
+    tip(caesarDecryptButton, "caesar.decrypt.help");
+    tip(caesarResult, "caesar.result.help");
+    tip(caesarOpenButton, "text.open.help");
+    tip(caesarSaveButton, "text.save.help");
+    tip(caesarCopyButton, "copy.help");
+    tip(caesarCounter, "text.counter.help");
+    tip(toast, "status.help");
+    tip(statusLabel, "status.help");
+    tip(progressLabel, "progress.help");
+    tip(progressBar, "progress.help");
+    tip(cancelButton, "cancelOperation.help");
+    tip(tabs, "tabs.help");
+    tip(filesScroll, "scroll.help");
+    tip(vigenereScroll, "scroll.help");
+    tip(caesarScroll, "scroll.help");
+    tip(brandName, "app.title");
+    tip(brandSubtitle, "app.title");
+    tip(filesTitle, "files.intro");
+    tip(filesIntro, "files.intro");
+    tip(inputLabel, "files.input.help");
+    tip(outputLabel, "files.output.help");
+    tip(passwordLabel, "files.password.help");
+    tip(filesNote, "files.password.help");
+    tip(vigenereTitle, "vigenere.intro");
+    tip(vigenereIntro, "vigenere.intro");
+    tip(textInputLabel, "text.help");
+    tip(keyLabel, "vigenere.key.help");
+    tip(vigenereResultLabel, "vigenere.result.help");
+    tip(caesarTitle, "caesar.intro");
+    tip(caesarIntro, "caesar.intro");
+    tip(caesarInputLabel, "caesar.text.help");
+    tip(caesarShiftLabel, "caesar.shift.help");
+    tip(caesarResultLabel, "caesar.result.help");
+    String[] tabKeys = {"tab.files.help", "tab.vigenere.help", "tab.caesar.help"};
+    for (int i = 0; i < tabs.getTabs().size() && i < tabKeys.length; i++) {
+      tabs.getTabs().get(i).setTooltip(tooltip(tabKeys[i]));
+    }
+  }
+
+  private Tooltip tooltip(String key) {
+    Tooltip tooltip = new Tooltip(text(key));
+    tooltip.setWrapText(true);
+    tooltip.setMaxWidth(340);
+    tooltip.setShowDelay(Duration.millis(350));
+    tooltip.setHideDelay(Duration.millis(120));
+    return tooltip;
+  }
+
+  private void tip(javafx.scene.control.Control control, String key) {
+    if (control != null) control.setTooltip(tooltip(key));
+  }
+
   public void applyState(UiState state) {
     if (state == null) return;
     inputPath.setText(state.inputPath());
@@ -517,6 +624,12 @@ public final class DesktopController {
     translate(dialog.getDialogPane());
     Button testButton = (Button) dialog.getDialogPane().lookupButton(test);
     Button saveButton = (Button) dialog.getDialogPane().lookupButton(save);
+    Button cancelButton = (Button) dialog.getDialogPane().lookupButton(ButtonType.CANCEL);
+    tip(base, "settings.server.help");
+    tip(token, "settings.token.help");
+    tip(testButton, "settings.test.help");
+    tip(saveButton, "save.help");
+    tip(cancelButton, "cancel.help");
 
     testButton.addEventFilter(
         ActionEvent.ACTION,

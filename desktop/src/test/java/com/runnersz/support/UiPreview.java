@@ -4,12 +4,16 @@ import com.runnersz.utiles.I18n;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Control;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
@@ -74,6 +78,7 @@ public final class UiPreview {
     stage.setScene(scene);
     stage.show();
     checkSettings(scene);
+    checkTooltips(scene);
     TabPane tabs = (TabPane) scene.lookup("#tabs");
     for (int i = 0; i < 3; i++) {
       if (tabs != null) tabs.getSelectionModel().select(i);
@@ -83,6 +88,38 @@ public final class UiPreview {
       save(image, "target/ui-" + (i + 1) + ".png");
     }
     stage.hide();
+  }
+
+  /** Lista los controles visibles que se han quedado sin ayuda emergente. */
+  private static void checkTooltips(Scene scene) {
+    List<String> missing = new ArrayList<>();
+    collect(scene.getRoot(), missing);
+    TabPane tabs = (TabPane) scene.lookup("#tabs");
+    if (tabs != null) {
+      for (int i = 0; i < tabs.getTabs().size(); i++) {
+        if (tabs.getTabs().get(i).getTooltip() == null) missing.add("tab " + i);
+      }
+    }
+    if (missing.isEmpty()) {
+      System.out.println("tooltips: todos los controles tienen ayuda");
+    } else {
+      System.out.println("tooltips: faltan " + missing.size() + " -> " + missing);
+    }
+  }
+
+  private static void collect(Node node, List<String> missing) {
+    if (node instanceof Control control
+        && control.getTooltip() == null
+        && !(control.getParent() instanceof Control)
+        && !control.getStyleClass().contains("scroll-bar")
+        && !control.getStyleClass().contains("list-cell")
+        && !control.getStyleClass().contains("tab-label")) {
+      String style = String.join(".", control.getStyleClass());
+      missing.add(style + "#" + (control.getId() == null ? "?" : control.getId()));
+    }
+    if (node instanceof Parent parent) {
+      for (Node child : parent.getChildrenUnmodifiable()) collect(child, missing);
+    }
   }
 
   /** Pulsa Ajustes de verdad y comprueba que el diálogo llega a abrirse. */
