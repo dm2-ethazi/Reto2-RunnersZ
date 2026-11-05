@@ -8,32 +8,40 @@ import java.nio.file.NoSuchFileException;
 import java.text.MessageFormat;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 /** Catálogos UTF-8 y preferencia de idioma. No depende de JavaFX ni traduce datos del usuario. */
 public final class I18n {
-  private static final Preferences PREFS = Preferences.userRoot().node("/org/example");
-  private static volatile Locale locale = supported(PREFS.get("language", "es"));
+  private static final String BUNDLE = "com.runnersz.i18n.messages";
+  private static final String NODE = "/com/runnersz";
+  private static final Preferences PREFS = Preferences.userRoot().node(NODE);
+  private static volatile Locale locale = supported(read());
 
   private I18n() {}
 
-  public static Locale locale() { return locale; }
+  public static Locale locale() {
+    return locale;
+  }
 
   public static void setLanguage(String language) {
     locale = supported(language);
     PREFS.put("language", locale.getLanguage());
+    try {
+      PREFS.flush();
+    } catch (BackingStoreException ignored) {
+      // La preferencia se guarda igualmente al cerrar la aplicación.
+    }
   }
 
-  private static Locale supported(String language) {
-    return Locale.forLanguageTag(switch (language) {
-      case "eu", "en" -> language;
-      default -> "es";
-    });
+  /** Catálogo del idioma activo; lo usa el cargador de FXML. */
+  public static ResourceBundle bundle() {
+    return ResourceBundle.getBundle(BUNDLE, locale);
   }
 
   public static String text(String key, Object... arguments) {
     Locale current = locale;
-    String pattern = ResourceBundle.getBundle("com.runnersz.i18n.messages", current).getString(key);
+    String pattern = ResourceBundle.getBundle(BUNDLE, current).getString(key);
     return new MessageFormat(pattern, current).format(arguments);
   }
 
@@ -47,7 +55,10 @@ public final class I18n {
   }
 
   private record Detail(String key) {
-    @Override public String toString() { return text(key); }
+    @Override
+    public String toString() {
+      return text(key);
+    }
   }
 
   public static IllegalArgumentException invalid(String key) {
@@ -56,8 +67,9 @@ public final class I18n {
 
   public static String errorMessage(Throwable error) {
     for (Throwable cause = error; cause != null; cause = cause.getCause()) {
-      if (cause instanceof TranslatedFailure || cause instanceof TranslatedArgument)
+      if (cause instanceof TranslatedFailure || cause instanceof TranslatedArgument) {
         return cause.getMessage();
+      }
       if (cause instanceof AccessDeniedException) return text("error.access");
       if (cause instanceof NoSuchFileException) return text("error.notFound");
       if (cause instanceof InvalidPathException) return text("error.path");
@@ -67,19 +79,54 @@ public final class I18n {
     return text("error.generic");
   }
 
+  private static String read() {
+    String value = PREFS.get("language", null);
+    if (value != null) return value;
+    try {
+      Preferences legacy = Preferences.userRoot().node("/org/example");
+      return legacy.get("language", "es");
+    } catch (IllegalStateException ex) {
+      return "es";
+    }
+  }
+
+  private static Locale supported(String language) {
+    return Locale.forLanguageTag(
+        switch (language == null ? "" : language) {
+          case "eu", "en" -> language;
+          default -> "es";
+        });
+  }
+
   private static final class TranslatedFailure extends IOException {
+    private static final long serialVersionUID = 1L;
+
     private final String key;
-    private final Object[] arguments;
+    private final transient Object[] arguments;
+
     private TranslatedFailure(String key, Object[] arguments) {
       this.key = key;
       this.arguments = arguments.clone();
     }
-    @Override public String getMessage() { return text(key, arguments); }
+
+    @Override
+    public String getMessage() {
+      return text(key, arguments);
+    }
   }
 
   private static final class TranslatedArgument extends IllegalArgumentException {
+    private static final long serialVersionUID = 1L;
+
     private final String key;
-    private TranslatedArgument(String key) { this.key = key; }
-    @Override public String getMessage() { return text(key); }
+
+    private TranslatedArgument(String key) {
+      this.key = key;
+    }
+
+    @Override
+    public String getMessage() {
+      return text(key);
+    }
   }
 }

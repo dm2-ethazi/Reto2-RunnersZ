@@ -1,19 +1,199 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.ProgressBar?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleButton?>
 <?import javafx.scene.layout.BorderPane?>
-<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" styleClass="app-root">
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="com.runnersz.controller.DesktopController" styleClass="app-root">
+
     <top>
-        <fx:include source="header.fxml" />
+        <HBox styleClass="header" spacing="18" alignment="CENTER_LEFT">
+            <VBox spacing="2">
+                <Label styleClass="brand" text="%brand.name"/>
+                <Label styleClass="eyebrow" text="%brand.subtitle"/>
+            </VBox>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Label fx:id="connectionChip" styleClass="chip"/>
+            <ComboBox fx:id="languageBox" prefWidth="130"/>
+            <Button fx:id="settingsButton" styleClass="ghost-button" text="%settings.open"
+                    onAction="#handleSettings" minHeight="36"/>
+        </HBox>
     </top>
+
     <center>
-        <TabPane fx:id="mainTabs" styleClass="main-tabs">
-            <tabs>
-                <fx:include source="files.fxml" />
-                <fx:include source="vigenere.fxml" />
-            </tabs>
+        <TabPane fx:id="tabs" styleClass="main-tabs" tabClosingPolicy="UNAVAILABLE">
+
+            <Tab text="%tab.files">
+                <content>
+                    <ScrollPane fitToWidth="true" styleClass="content-scroll" hbarPolicy="NEVER">
+                        <content>
+                            <VBox styleClass="content" spacing="18">
+                                <Label styleClass="section-title" text="%files.title"/>
+                                <Label styleClass="muted" text="%files.intro" wrapText="true"/>
+
+                                <VBox fx:id="fileCard" styleClass="card" spacing="12">
+                                    <Label styleClass="field-label" text="%files.input"/>
+                                    <HBox spacing="10">
+                                        <TextField fx:id="inputPath" editable="false" promptText="%files.input.prompt"
+                                                   accessibleHelp="%files.input.help" HBox.hgrow="ALWAYS"/>
+                                        <Button fx:id="browseInput" text="%files.choose" onAction="#handleChooseInput"
+                                                accessibleText="%files.choose.help"/>
+                                    </HBox>
+
+                                    <Label styleClass="field-label" text="%files.output"/>
+                                    <HBox spacing="10">
+                                        <TextField fx:id="outputPath" editable="false" promptText="%files.output.prompt"
+                                                   accessibleHelp="%files.output.help" HBox.hgrow="ALWAYS"/>
+                                        <Button fx:id="browseOutput" text="%files.saveAs" onAction="#handleChooseOutput"
+                                                accessibleText="%files.saveAs.help"/>
+                                    </HBox>
+
+                                    <Label styleClass="field-label" text="%files.password"/>
+                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                        <StackPane HBox.hgrow="ALWAYS">
+                                            <PasswordField fx:id="passwordField" promptText="%files.password.prompt"
+                                                           accessibleHelp="%files.password.help"/>
+                                            <TextField fx:id="passwordPlain" visible="false" managed="false"
+                                                       promptText="%files.password.prompt"
+                                                       accessibleHelp="%files.password.help"/>
+                                        </StackPane>
+                                        <ToggleButton fx:id="showPassword" minHeight="36"/>
+                                    </HBox>
+
+                                    <Label styleClass="helper" text="%files.note" wrapText="true"/>
+                                    <Label styleClass="drop-hint" text="%files.drop" wrapText="true"/>
+                                </VBox>
+
+                                <HBox spacing="12" alignment="CENTER_LEFT">
+                                    <Button fx:id="encryptButton" styleClass="primary-button" text="%files.encrypt"
+                                            mnemonicParsing="true" onAction="#handleEncrypt" minHeight="38"
+                                            accessibleHelp="%files.encrypt.help"/>
+                                    <Button fx:id="decryptButton" text="%files.decrypt" mnemonicParsing="true"
+                                            onAction="#handleDecrypt" minHeight="38"
+                                            accessibleHelp="%files.decrypt.help"/>
+                                </HBox>
+                            </VBox>
+                        </content>
+                    </ScrollPane>
+                </content>
+            </Tab>
+
+            <Tab text="%tab.vigenere">
+                <content>
+                    <ScrollPane fitToWidth="true" styleClass="content-scroll" hbarPolicy="NEVER">
+                        <content>
+                            <VBox styleClass="content" spacing="18">
+                                <Label styleClass="section-title" text="%vigenere.title"/>
+                                <Label styleClass="muted" text="%vigenere.intro" wrapText="true"/>
+
+                                <VBox styleClass="card" spacing="12">
+                                    <Label styleClass="field-label" text="%text.input"/>
+                                    <TextArea fx:id="plainText" prefRowCount="6" wrapText="true"
+                                              promptText="%text.prompt" accessibleHelp="%text.help"/>
+                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                        <Button fx:id="openTextButton" text="%text.open" onAction="#handleOpenText"
+                                                accessibleText="%text.open.help"/>
+                                        <Label fx:id="textCounter" styleClass="helper"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Button fx:id="swapTextButton" text="%text.swap" onAction="#handleSwapText"/>
+                                    </HBox>
+
+                                    <Label styleClass="field-label" text="%vigenere.key"/>
+                                    <TextField fx:id="keyField" promptText="%vigenere.key.prompt"
+                                               accessibleHelp="%vigenere.key.help"/>
+
+                                    <HBox spacing="12">
+                                        <Button fx:id="vigenereEncryptButton" styleClass="primary-button"
+                                                text="%vigenere.encrypt" onAction="#handleVigenereEncrypt" minHeight="38"
+                                                accessibleHelp="%vigenere.encrypt.help"/>
+                                        <Button fx:id="vigenereDecryptButton" text="%vigenere.decrypt"
+                                                onAction="#handleVigenereDecrypt" minHeight="38"
+                                                accessibleHelp="%vigenere.decrypt.help"/>
+                                    </HBox>
+
+                                    <Label styleClass="field-label" text="%result"/>
+                                    <TextArea fx:id="vigenereResult" prefRowCount="6" wrapText="true"
+                                              editable="false" promptText="%result.prompt" styleClass="mono"/>
+                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                        <Button fx:id="saveTextButton" text="%text.save" onAction="#handleSaveText"/>
+                                        <Button fx:id="copyTextButton" text="%copy" onAction="#handleCopyResult"/>
+                                    </HBox>
+                                </VBox>
+                            </VBox>
+                        </content>
+                    </ScrollPane>
+                </content>
+            </Tab>
+
+            <Tab text="%tab.caesar">
+                <content>
+                    <ScrollPane fitToWidth="true" styleClass="content-scroll" hbarPolicy="NEVER">
+                        <content>
+                            <VBox styleClass="content" spacing="18">
+                                <Label styleClass="section-title" text="%caesar.title"/>
+                                <Label styleClass="muted" text="%caesar.intro" wrapText="true"/>
+
+                                <VBox styleClass="card" spacing="12">
+                                    <Label styleClass="field-label" text="%text.input"/>
+                                    <TextArea fx:id="caesarText" prefRowCount="6" wrapText="true"
+                                              promptText="%text.prompt" accessibleHelp="%caesar.text.help"/>
+                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                        <Button fx:id="caesarOpenButton" text="%text.open" onAction="#handleOpenText"/>
+                                        <Label fx:id="caesarCounter" styleClass="helper"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
+                                        <Label styleClass="field-label" text="%caesar.shift"/>
+                                        <Spinner fx:id="shiftSpinner" prefWidth="100" editable="false"/>
+                                    </HBox>
+
+                                    <HBox spacing="12">
+                                        <Button fx:id="caesarEncryptButton" styleClass="primary-button"
+                                                text="%caesar.encrypt" onAction="#handleCaesarEncrypt" minHeight="38"
+                                                accessibleHelp="%caesar.encrypt.help"/>
+                                        <Button fx:id="caesarDecryptButton" text="%caesar.decrypt"
+                                                onAction="#handleCaesarDecrypt" minHeight="38"
+                                                accessibleHelp="%caesar.decrypt.help"/>
+                                    </HBox>
+
+                                    <Label styleClass="field-label" text="%result"/>
+                                    <TextArea fx:id="caesarResult" prefRowCount="6" wrapText="true"
+                                              editable="false" promptText="%result.prompt" styleClass="mono"/>
+                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                        <Button fx:id="caesarSaveButton" text="%text.save" onAction="#handleSaveText"/>
+                                        <Button fx:id="caesarCopyButton" text="%copy" onAction="#handleCopyResult"/>
+                                    </HBox>
+                                </VBox>
+                            </VBox>
+                        </content>
+                    </ScrollPane>
+                </content>
+            </Tab>
         </TabPane>
     </center>
+
     <bottom>
-        <fx:include source="footer.fxml" />
+        <VBox styleClass="footer-box">
+            <Label fx:id="toast" styleClass="toast" wrapText="true" visible="false" managed="false"/>
+            <HBox styleClass="footer" spacing="12" alignment="CENTER_LEFT">
+                <Label fx:id="statusLabel" styleClass="status-text" HBox.hgrow="ALWAYS"/>
+                <Label fx:id="progressLabel" styleClass="progress-label"/>
+                <ProgressBar fx:id="progressBar" prefWidth="170" maxWidth="170" minHeight="10"/>
+                <Button fx:id="cancelButton" text="%cancelOperation" onAction="#handleCancel"/>
+            </HBox>
+        </VBox>
     </bottom>
 </BorderPane>

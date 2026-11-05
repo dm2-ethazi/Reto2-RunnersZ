@@ -1,22 +1,32 @@
 package com.runnersz.service;
 
-import com.runnersz.utiles.I18n;
 import com.runnersz.model.ConnectionSettings;
+import com.runnersz.utiles.I18n;
+import java.net.URI;
+import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 
 /**
- * Lee, valida y guarda los ajustes de conexión del usuario. La contraseña AES nunca pasa por esta
- * clase ni se almacena en preferencias.
+ * Lee, valida y guarda los ajustes de conexión del usuario. No hay dirección ni token escritos en
+ * el código: ambos se configuran desde Ajustes. La contraseña AES nunca pasa por esta clase.
  */
 public final class SettingsStore {
+  private static final String NODE = "/com/runnersz";
+  private static final String LEGACY = "/org/example";
+
   private final Preferences preferences;
   private String baseUrl;
   private String token;
 
   public SettingsStore() {
-    // Conserva el nodo histórico para no perder los ajustes al cambiar de paquete.
-    preferences = Preferences.userRoot().node("/org/example");
-    baseUrl = normalize(preferences.get("server", "http://localhost:8000"));
+    this(Preferences.userRoot().node(NODE), true);
+  }
+
+  /** Constructor de pruebas: comparte el nodo indicado y no migra nada. */
+  SettingsStore(Preferences preferences, boolean migrate) {
+    this.preferences = preferences;
+    if (migrate) migrateLegacy();
+    baseUrl = normalize(preferences.get("server", ""));
     token = preferences.get("token", "");
   }
 
@@ -25,7 +35,7 @@ public final class SettingsStore {
     preferences = null;
     this.baseUrl = normalize(baseUrl);
     this.token = token == null ? "" : token.trim();
-    validate();
+    validate(this.baseUrl, this.token);
   }
 
   /** Instantánea de los ajustes: una operación en curso no cambia al editar Ajustes. */
@@ -41,6 +51,11 @@ public final class SettingsStore {
     return token;
   }
 
+  /** Sin dirección o sin token no se puede llamar a la API. */
+  public boolean isConfigured() {
+    return !baseUrl.isBlank() && !token.isBlank();
+  }
+
   public void update(String baseUrl, String token) {
     String normalized = normalize(baseUrl);
     String cleanToken = token == null ? "" : token.trim();
@@ -50,19 +65,38 @@ public final class SettingsStore {
     if (preferences != null) {
       preferences.put("server", normalized);
       preferences.put("token", cleanToken);
+      flush(preferences);
     }
   }
 
-  private void validate() {
-    validate(baseUrl, token);
+  private void migrateLegacy() {
+    try {
+      if (preferences.keys().length > 0) return;
+      Preferences legacy = Preferences.userRoot().node(LEGACY);
+      if (legacy.keys().length == 0) return;
+      for (String key : legacy.keys()) preferences.put(key, legacy.get(key, ""));
+      flush(preferences);
+    } catch (BackingStoreException | IllegalStateException ignored) {
+      // La migración es una comodidad: si falla, el usuario vuelve a escribir los ajustes.
+    }
+  }
+
+  private static void flush(Preferences preferences) {
+    try {
+      preferences.flush();
+    } catch (BackingStoreException ignored) {
+      // Las preferencias se guardan igualmente al cerrar la aplicación.
+    }
   }
 
   private static void validate(String url, String token) {
+    if (url == null || url.isBlank()) throw I18n.invalid("error.url");
     try {
-      java.net.URI uri = java.net.URI.create(url);
+      URI uri = URI.create(url);
       if (uri.getHost() == null
-          || !("http".equals(uri.getScheme()) || "https".equals(uri.getScheme())))
+          || !("http".equals(uri.getScheme()) || "https".equals(uri.getScheme()))) {
         throw I18n.invalid("error.url");
+      }
     } catch (IllegalArgumentException ex) {
       throw I18n.invalid("error.url");
     }

@@ -1,14 +1,13 @@
 package com.runnersz.service;
 
 import com.runnersz.utiles.I18n;
-import com.runnersz.model.FileResult;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Caso de uso de ficheros: lectura → API → escritura. No depende de JavaFX y no implementa
- * algoritmos criptográficos.
+ * Caso de uso de ficheros: validar → transferir a un temporal → publicar. No depende de JavaFX y no
+ * implementa algoritmos criptográficos.
  */
 public final class FileOperationService {
   private final ApiClient api;
@@ -20,20 +19,26 @@ public final class FileOperationService {
   }
 
   /** Solo publica la salida cuando la API ha completado todas sus validaciones. */
-  public void execute(Path input, Path output, String password, boolean encrypt)
+  public void execute(
+      Path input, Path output, String password, boolean encrypt, ApiClient.Progress progress)
       throws IOException, InterruptedException {
     Path source = input.toAbsolutePath().normalize();
     Path target = output.toAbsolutePath().normalize();
+
+    if (Files.isDirectory(target)) throw I18n.failure("error.outputDirectory");
     // isSameFile cubre también enlaces y variantes de una misma ruta existente.
     if (source.equals(target) || (Files.exists(target) && Files.isSameFile(source, target))) {
       throw I18n.failure("error.original");
     }
-    byte[] bytes = files.readBytes(source);
-    if (bytes.length == 0) {
-      throw I18n.failure("error.emptyFile");
+    if (!Files.isRegularFile(source)) throw I18n.failure("error.notFound");
+    if (Files.size(source) == 0) throw I18n.failure("error.emptyFile");
+
+    Path temporary = files.prepareTemporary(target);
+    try {
+      api.transferFile(source, temporary, password, encrypt, progress);
+      files.publish(temporary, target);
+    } finally {
+      files.deleteQuietly(temporary);
     }
-    FileResult result =
-        api.fileOperation(bytes, source.getFileName().toString(), password, encrypt);
-    files.writeBytes(target, result.bytes());
   }
 }
