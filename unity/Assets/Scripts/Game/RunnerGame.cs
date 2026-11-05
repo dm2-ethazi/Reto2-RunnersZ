@@ -252,12 +252,16 @@ namespace RunnersZ.Game {
   void DrawGame(){
    var l=gameLayout;
    bool playing=State==GameState.EnCurso;
+   // Con el manuscrito abierto la partida queda de fondo: sin foco ni clics, para
+   // que ningun control de debajo se lleve el toque ni habra el teclado.
+   bool uiEnabled=!manuscriptOpen;
    Frame(l.TopBar,surface);
    Label(l.Title,"RUNNERS Z",heading);
    Label(l.StatRound,"RONDA "+Round+" / 3",small);
    Label(l.StatLives,"VIDAS "+Lives+" / 3",small,Lives<=1?danger:(Color?)null);
    Label(l.StatScore,"PUNTOS "+Score,small);
-   if(Button(l.Manuscript,"Manuscrito",true))manuscriptOpen=true;
+   GUI.enabled=uiEnabled;
+   if(Button(l.Manuscript,"Manuscrito",true)){manuscriptOpen=true;CloseKeyboard();}
 
    float segment=l.Ticks.width/3f;
    float gapTick=Mathf.Max(4f,frame.Gap*.5f);
@@ -271,7 +275,7 @@ namespace RunnersZ.Game {
 
    Frame(l.SidePanel,surface);
    Label(l.FieldLabel,"02 / ESCRIBE EL MENSAJE DESCIFRADO",small);
-   GUI.enabled=playing;
+   GUI.enabled=playing&&uiEnabled;
    GUI.SetNextControlName("answer");
    var bg=GUI.backgroundColor;GUI.backgroundColor=new Color(.16f,.22f,.31f);
    answer=GUI.TextField(l.Field,answer,160,fieldStyle);
@@ -280,7 +284,7 @@ namespace RunnersZ.Game {
    bool previous=GUI.enabled;GUI.enabled=previous&&canSubmit;
    if(Button(l.Submit,"Validar respuesta",true)){Submit(answer);GUI.FocusControl(null);CloseKeyboard();}
    GUI.enabled=previous;
-   if(playing&&canSubmit&&GUI.GetNameOfFocusedControl()=="answer"&&Event.current.type==EventType.KeyDown&&Event.current.keyCode==KeyCode.Return){Submit(answer);Event.current.Use();}
+   if(!manuscriptOpen&&playing&&canSubmit&&GUI.GetNameOfFocusedControl()=="answer"&&Event.current.type==EventType.KeyDown&&Event.current.keyCode==KeyCode.Return){Submit(answer);Event.current.Use();}
    GUI.enabled=previous&&HintsRemaining>0;
    if(Button(l.Hint,"Pista \u00b7 "+HintsRemaining+" restantes"))UseHint();
    GUI.enabled=previous;
@@ -291,6 +295,7 @@ namespace RunnersZ.Game {
    if(Button(l.Menu,"Dificultad")){started=false;enemies.Clear();}
 
    if(!playing)DrawOutcome(l.Outcome);
+   GUI.enabled=true;
   }
 
   // Soltar el control cerrando el teclado tactil sin depender de la plataforma.
@@ -341,12 +346,14 @@ namespace RunnersZ.Game {
 
   void DrawManuscript(){
    var l=manuscriptLayout;
+   // La partida queda deshabilitada mientras la ventana esta abierta, asi que no
+   // hace falta ninguna capa que la tape: la capa a pantalla completa se quedaba
+   // el clic de los botones de esta misma ventana y dejaba vivo el campo de texto.
+   GUI.enabled=true;
    Fill(new Rect(0f,0f,frame.Width,frame.Height),new Color(0f,0f,0f,.78f),false);
-   // Boton invisible a pantalla completa: bloquea los controles de debajo.
-   GUI.Button(new Rect(0f,0f,frame.Width,frame.Height),GUIContent.none,GUIStyle.none);
    Frame(l.Window,new Color(.045f,.065f,.10f));
    Label(l.Title,"El archivo de los juramentos",heading,cream);
-   if(Button(l.Close,"Cerrar")){manuscriptOpen=false;return;}
+   if(Button(l.Close,"Cerrar")){manuscriptOpen=false;CloseKeyboard();return;}
    Label(l.Subtitle,"JUEGO EN PAUSA  \u00b7  "+DifficultyName()+"  \u00b7  Desplazamiento +"+wheel.Offset+"  /  Ocultas: "+wheel.HiddenCount,small,gold);
    Frame(l.Banner,panel);
    Label(l.BannerText,VisibleCipher,cipherStyle,cream);

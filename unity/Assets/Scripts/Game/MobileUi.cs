@@ -243,8 +243,10 @@ namespace RunnersZ.Game {
 
   public ManuscriptLayout(UiFrame f){
    Frame=f;
-   float m=f.Margin, g=f.Gap;
-   Window=new Rect(f.ContentX,m,f.ContentWidth,Mathf.Max(0f,f.Height-2f*m));
+   float g=f.Gap;
+   // Casi todo el lienzo: asi no asoma ningun control de la partida por detras.
+   float pad=f.Margin*.5f;
+   Window=new Rect(pad,pad,Mathf.Max(0f,f.Width-2f*pad),Mathf.Max(0f,f.Height-2f*pad));
    Rect inner=UiSplit.Inset(Window,f.Pad*.85f);
    float headerH=Mathf.Max(f.Touch,f.Heading+8f);
    Header=new Rect(inner.x,inner.y,inner.width,headerH);
@@ -256,7 +258,9 @@ namespace RunnersZ.Game {
    Banner=new Rect(inner.x,bannerY,inner.width,Mathf.Round(f.Cipher*1.7f+18f));
    BannerText=UiSplit.Inset(Banner,f.Body*.5f);
 
-   float footerH=f.ActionHeight+8f+f.Small;
+   // El pie lleva hasta dos lineas: con una sola se cortaban los textos largos.
+   float footerTextH=Mathf.Round(f.Body*2.1f);
+   float footerH=f.ActionHeight+10f+footerTextH;
    float wheelY=Banner.yMax+g*.6f;
    float wheelH=Mathf.Max(0f,inner.yMax-footerH-12f-wheelY);
    WheelArea=new Rect(inner.x,wheelY,inner.width,wheelH);
@@ -272,7 +276,7 @@ namespace RunnersZ.Game {
    float buttonsY=inner.yMax-footerH;
    var buttons=UiSplit.Columns(new Rect(inner.x,buttonsY,inner.width,f.ActionHeight),g*.8f,4);
    Back=buttons[0]; Next=buttons[1]; Hint=buttons[2]; Reset=buttons[3];
-   Footer=new Rect(inner.x,buttonsY+f.ActionHeight+6f,inner.width,f.Small);
+   Footer=new Rect(inner.x,buttonsY+f.ActionHeight+10f,inner.width,footerTextH);
   }
 
   public float GroupTop(int group){return WheelArea.y+group*(CellHeight*2f+RowGap+GroupGap);}
