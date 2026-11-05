@@ -9,16 +9,20 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.TabPane;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.WritableImage;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import javax.imageio.ImageIO;
 
 /**
  * Herramienta de desarrollo: carga la vista real y guarda una captura de cada pestaña. No forma
  * parte de las pruebas automáticas; se ejecuta a mano para revisar el diseño.
+ *
+ * @author RunnersZ
  */
 public final class UiPreview {
   private static final String[] FONTS = {
@@ -69,6 +73,7 @@ public final class UiPreview {
     Stage stage = new Stage();
     stage.setScene(scene);
     stage.show();
+    checkSettings(scene);
     TabPane tabs = (TabPane) scene.lookup("#tabs");
     for (int i = 0; i < 3; i++) {
       if (tabs != null) tabs.getSelectionModel().select(i);
@@ -78,6 +83,28 @@ public final class UiPreview {
       save(image, "target/ui-" + (i + 1) + ".png");
     }
     stage.hide();
+  }
+
+  /** Pulsa Ajustes de verdad y comprueba que el diálogo llega a abrirse. */
+  private static void checkSettings(Scene scene) {
+    Button settings = (Button) scene.lookup("#settingsButton");
+    if (settings == null) {
+      System.out.println("settings: boton no encontrado");
+      return;
+    }
+    Platform.runLater(
+        () -> {
+          for (Window window : Window.getWindows()) {
+            if (window instanceof Stage dialog
+                && dialog.isShowing()
+                && dialog != scene.getWindow()) {
+              System.out.println("settings: dialogo abierto -> " + dialog.getTitle());
+              dialog.close();
+            }
+          }
+        });
+    settings.fire();
+    System.out.println("settings: clic gestionado sin excepcion");
   }
 
   private static void save(WritableImage image, String path) throws Exception {

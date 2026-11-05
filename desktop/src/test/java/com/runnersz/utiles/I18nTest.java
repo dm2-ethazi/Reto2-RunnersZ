@@ -19,7 +19,11 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
-/** Pruebas de los catálogos: paridad entre idiomas, claves de FXML y errores traducidos. */
+/**
+ * Pruebas de los catálogos: paridad entre idiomas, claves de FXML y errores traducidos.
+ *
+ * @author RunnersZ
+ */
 class I18nTest {
   private static final String BUNDLE = "com.runnersz.i18n.messages";
 
@@ -67,6 +71,25 @@ class I18nTest {
     assertEquals("3 karaktere", I18n.text("text.counter", 3));
     I18n.setLanguage("en");
     assertEquals("3 characters", I18n.text("text.counter", 3));
+  }
+
+  @Test
+  void lasClavesDeLosDialogosExisten() {
+    for (String key :
+        List.of(
+            "save",
+            "cancel",
+            "ok",
+            "close",
+            "retry",
+            "goSettings",
+            "cancelOperation",
+            "copy",
+            "chooser.textSave",
+            "settings.test",
+            "settings.required.body")) {
+      assertFalse(I18n.text(key).isBlank(), key);
+    }
   }
 
   @Test
