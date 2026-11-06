@@ -58,7 +58,7 @@ namespace RunnersZ.Game {
   }
 
   UiFrame frame; GameLayout gameLayout; MenuLayout menuLayout; ManuscriptLayout manuscriptLayout;
-  GUIStyle heading, body, feedbackStyle, small, cipherStyle, fieldStyle, actionStyle, secondaryStyle, letterStyle;
+  GUIStyle heading, body, feedbackStyle, small, cipherStyle, fieldStyle, actionStyle, secondaryStyle, letterStyle, titleStyle, statStyle;
   PixelFantasyArt pixelArt; Texture2D rounded; GUIStyle panelStyle; Font manuscriptFont;
   readonly Color ink=new Color(.035f,.055f,.095f);
   readonly Color muted=new Color(.57f,.65f,.73f);
@@ -93,6 +93,9 @@ namespace RunnersZ.Game {
    letterStyle=new GUIStyle(body){fontStyle=FontStyle.Bold,alignment=TextAnchor.MiddleCenter,wordWrap=false};
    manuscriptFont=LoadManuscriptFont();
    if(manuscriptFont!=null){heading.font=manuscriptFont;cipherStyle.font=manuscriptFont;letterStyle.font=manuscriptFont;}
+   // Titulo y marcador van centrados en su recuadro y con cuerpo mayor que el resto de la barra.
+   titleStyle=new GUIStyle(heading){alignment=TextAnchor.MiddleCenter};
+   statStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter};
    pixelArt=new PixelFantasyArt(); stylesReady=true;
   }
 
@@ -107,6 +110,8 @@ namespace RunnersZ.Game {
 
   void ApplyMetrics(){
    heading.fontSize=Mathf.RoundToInt(frame.Heading);
+   titleStyle.fontSize=Mathf.RoundToInt(frame.Heading*1.24f);
+   statStyle.fontSize=Mathf.RoundToInt(frame.Body*.95f);
    body.fontSize=Mathf.RoundToInt(frame.Body);
    small.fontSize=Mathf.RoundToInt(frame.Small);
    cipherStyle.fontSize=Mathf.RoundToInt(frame.Cipher);
@@ -255,9 +260,9 @@ namespace RunnersZ.Game {
    // que ningun control de debajo se lleve el toque ni habra el teclado.
    bool uiEnabled=!manuscriptOpen;
    Frame(l.TopBar,surface);
-   Label(l.Title,"RUNNERS Z",heading);
-   Label(l.StatRound,"RONDA "+Round+" / 3",small);
-   Label(l.StatLives,"VIDAS "+Lives+" / 3",small,Lives<=1?danger:(Color?)null);
+   Label(l.Title,"RUNNERS Z",titleStyle);
+   Label(l.StatRound,"RONDA "+Round+" / 3",statStyle);
+   Label(l.StatLives,"VIDAS "+Lives+" / 3",statStyle,Lives<=1?danger:(Color?)null);
    GUI.enabled=uiEnabled;
    if(Button(l.Manuscript,"Manuscrito",true)){manuscriptOpen=true;CloseKeyboard();}
 
