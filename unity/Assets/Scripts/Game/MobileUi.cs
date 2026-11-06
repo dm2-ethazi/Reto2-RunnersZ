@@ -102,7 +102,7 @@ namespace RunnersZ.Game {
   public readonly UiFrame Frame;
   public readonly Rect TopBar, Ticks, CipherPanel, Arena, SidePanel;
   public readonly Rect Title, Hud, Manuscript;
-  public readonly Rect StatRound, StatLives, StatScore;
+  public readonly Rect StatRound, StatLives;
   public readonly Rect CipherLabel, CipherText;
   public readonly Rect FieldLabel, Field, Submit, Hint, HintText, Feedback, Restart, Menu;
   public readonly Rect Outcome;
@@ -131,8 +131,8 @@ namespace RunnersZ.Game {
    float titleW=Mathf.Clamp(bar.width*.32f,200f,420f);
    Title=new Rect(bar.x,bar.y,titleW,bar.height);
    Hud=new Rect(Title.xMax+g,bar.y,Mathf.Max(0f,Manuscript.x-g-(Title.xMax+g)),bar.height);
-   var stats=UiSplit.Columns(Hud,g*.6f,3);
-   StatRound=stats[0]; StatLives=stats[1]; StatScore=stats[2];
+   var stats=UiSplit.Columns(Hud,g*.6f,2);
+   StatRound=stats[0]; StatLives=stats[1];
 
    Rect cipher=UiSplit.Inset(CipherPanel,f.Pad);
    CipherLabel=new Rect(cipher.x,cipher.y,cipher.width,f.Small+9f);
@@ -163,7 +163,7 @@ namespace RunnersZ.Game {
 
   public IEnumerable<Rect> Blocks{get{yield return TopBar;yield return Ticks;yield return CipherPanel;yield return Arena;yield return SidePanel;}}
   public IEnumerable<Rect> TopBlocks{get{yield return Title;yield return Hud;yield return Manuscript;}}
-  public IEnumerable<Rect> StatBlocks{get{yield return StatRound;yield return StatLives;yield return StatScore;}}
+  public IEnumerable<Rect> StatBlocks{get{yield return StatRound;yield return StatLives;}}
   public IEnumerable<Rect> CipherBlocks{get{yield return CipherLabel;yield return CipherText;}}
   public IEnumerable<Rect> SideBlocks{
    get{yield return FieldLabel;yield return Field;yield return Submit;yield return Hint;

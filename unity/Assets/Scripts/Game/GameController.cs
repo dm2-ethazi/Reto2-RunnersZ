@@ -6,7 +6,7 @@ namespace RunnersZ.Game {
   [SerializeField] GameObject encryptedMessage; [SerializeField] GameObject stateLabel; [SerializeField] GameObject answerInput;
   [SerializeField] string expectedMessage="OPEN THE DOOR"; [SerializeField] int shift=3;
   readonly GameSession session=new GameSession(); MessageRound round; bool subscribed;
-  public GameState State=>session.State; public int Score=>session.Score;
+  public GameState State=>session.State;
   void Awake(){round=new MessageRound();if(door!=null){door.Hit+=OnDoorHit;subscribed=true;}ResetRound();}
   void OnDestroy(){if(subscribed&&door!=null)door.Hit-=OnDoorHit;}
   public void ValidateAnswer(){if(session.State!=GameState.EnCurso)return;var answer=answerInput==null?"":(answerInput.GetComponent<UnityEngine.UI.InputField>()?.text ?? "");if(round.Submit(answer,expectedMessage)){session.Correct();SetState("VICTORIA");if(enemy!=null)enemy.enabled=false;}else SetState("Respuesta incorrecta");}

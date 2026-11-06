@@ -7,7 +7,6 @@ namespace RunnersZ.Game {
   public Difficulty difficulty = Difficulty.Easy;
   public GameState State { get; private set; }
   public int Round { get; private set; }
-  public int Score { get; private set; }
   public int Lives { get; private set; }
   public int HintsRemaining { get; private set; }
   public string Message { get; private set; }
@@ -16,7 +15,7 @@ namespace RunnersZ.Game {
   AlphabetWheel wheel; bool manuscriptOpen; PhraseBank bank; DifficultyConfig config; int shift, spawned; float clock; string answer="", hint="", feedback=""; bool started, backPressed;
   public void Begin(Difficulty selected) {
    difficulty=selected; config=new DifficultyConfig(selected); bank=new PhraseBank(System.Environment.TickCount);
-   State=GameState.EnCurso; Round=1; Score=0; Lives=3; started=true; PrepareRound();
+   State=GameState.EnCurso; Round=1; Lives=3; started=true; PrepareRound();
   }
   void PrepareRound() {
    wheel=new AlphabetWheel(difficulty); manuscriptOpen=false; Message=bank.Next(difficulty); shift=Random.Range(1,26); Cipher=Caesar.Transform(Message,shift);
@@ -30,12 +29,12 @@ namespace RunnersZ.Game {
     for(int i=0;i<enemies.Count;i++) enemies[i]=Mathf.Min(1,enemies[i]+.12f);
     return false;
    }
-   Score+=100; if(Round==3){State=GameState.Victoria;feedback="Has protegido la puerta.";enemies.Clear();}
+   if(Round==3){State=GameState.Victoria;feedback="Has protegido la puerta.";enemies.Clear();}
    else {Round++;PrepareRound();} return true;
   }
   public string UseHint() {
    if(State!=GameState.EnCurso || HintsRemaining<=0) return hint;
-   if(wheel!=null) { int letters=difficulty==Difficulty.Hard?14:4; for(int i=0;i<letters;i++)wheel.RevealHint(); } int used=config.Hints-HintsRemaining+1; HintsRemaining--; Score=Mathf.Max(0,Score-50);
+   if(wheel!=null) { int letters=difficulty==Difficulty.Hard?14:4; for(int i=0;i<letters;i++)wheel.RevealHint(); } int used=config.Hints-HintsRemaining+1; HintsRemaining--;
    var words=Message.Split(' '); hint=string.Join(" ",words,0,Mathf.Min(used,words.Length)); return hint;
   }
   void Awake(){
@@ -258,7 +257,6 @@ namespace RunnersZ.Game {
    Label(l.Title,"RUNNERS Z",heading);
    Label(l.StatRound,"RONDA "+Round+" / 3",small);
    Label(l.StatLives,"VIDAS "+Lives+" / 3",small,Lives<=1?danger:(Color?)null);
-   Label(l.StatScore,"PUNTOS "+Score,small);
    GUI.enabled=uiEnabled;
    if(Button(l.Manuscript,"Manuscrito",true)){manuscriptOpen=true;CloseKeyboard();}
 
@@ -311,7 +309,7 @@ namespace RunnersZ.Game {
    Rect buttonRect=new Rect(inner.x,inner.yMax-buttonH,Mathf.Min(inner.width,frame.ActionHeight*5.2f),buttonH);
    Rect bodyRect=new Rect(inner.x,titleRect.yMax+4f,inner.width,Mathf.Max(0f,buttonRect.y-8f-(titleRect.yMax+4f)));
    Label(titleRect,State==GameState.Victoria?"\u00a1Puerta protegida!":"La puerta ha ca\u00eddo",heading);
-   Label(bodyRect,"Puntos: "+Score+"\n"+(State==GameState.Victoria?"Has descifrado los tres mensajes.":"Prueba los pares del manuscrito y vuelve a intentarlo."),body);
+   Label(bodyRect,(State==GameState.Victoria?"Has descifrado los tres mensajes.":"Prueba los pares del manuscrito y vuelve a intentarlo."),body);
    // El panel se dibuja con la partida ya detenida, asi que GUI.enabled llegaba en
    // false y el boton salia bloqueado. Ahora devuelve al selector de dificultad.
    GUI.enabled=!manuscriptOpen;
