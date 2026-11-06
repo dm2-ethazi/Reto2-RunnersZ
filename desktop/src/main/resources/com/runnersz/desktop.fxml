@@ -132,10 +132,18 @@
                                     <HBox spacing="12">
                                         <Button fx:id="vigenereEncryptButton" styleClass="primary-button"
                                                 text="%vigenere.encrypt" onAction="#handleVigenereEncrypt" minHeight="38"
-                                                accessibleHelp="%vigenere.encrypt.help"/>
+                                                accessibleHelp="%vigenere.encrypt.help">
+                                            <graphic>
+                                                <FontIcon iconLiteral="fas-lock" iconSize="15"/>
+                                            </graphic>
+                                        </Button>
                                         <Button fx:id="vigenereDecryptButton" text="%vigenere.decrypt"
                                                 onAction="#handleVigenereDecrypt" minHeight="38"
-                                                accessibleHelp="%vigenere.decrypt.help"/>
+                                                accessibleHelp="%vigenere.decrypt.help">
+                                            <graphic>
+                                                <FontIcon iconLiteral="fas-lock-open" iconSize="15"/>
+                                            </graphic>
+                                        </Button>
                                     </HBox>
 
                                     <Label fx:id="vigenereResultLabel" styleClass="field-label" text="%result"/>
@@ -176,10 +184,18 @@
                                     <HBox spacing="12">
                                         <Button fx:id="caesarEncryptButton" styleClass="primary-button"
                                                 text="%caesar.encrypt" onAction="#handleCaesarEncrypt" minHeight="38"
-                                                accessibleHelp="%caesar.encrypt.help"/>
+                                                accessibleHelp="%caesar.encrypt.help">
+                                            <graphic>
+                                                <FontIcon iconLiteral="fas-lock" iconSize="15"/>
+                                            </graphic>
+                                        </Button>
                                         <Button fx:id="caesarDecryptButton" text="%caesar.decrypt"
                                                 onAction="#handleCaesarDecrypt" minHeight="38"
-                                                accessibleHelp="%caesar.decrypt.help"/>
+                                                accessibleHelp="%caesar.decrypt.help">
+                                            <graphic>
+                                                <FontIcon iconLiteral="fas-lock-open" iconSize="15"/>
+                                            </graphic>
+                                        </Button>
                                     </HBox>
 
                                     <Label fx:id="caesarResultLabel" styleClass="field-label" text="%result"/>
