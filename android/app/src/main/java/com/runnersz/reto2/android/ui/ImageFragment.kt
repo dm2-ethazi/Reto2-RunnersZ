@@ -19,6 +19,9 @@ import com.runnersz.reto2.android.data.ApiResult
 import java.io.File
 import java.io.FileOutputStream
 
+/**
+ * @author jairoben
+ */
 class ImageFragment : Fragment(R.layout.fragment_image) {
 
     private var selectedFile: File? = null

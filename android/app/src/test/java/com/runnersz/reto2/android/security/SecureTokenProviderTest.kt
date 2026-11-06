@@ -4,6 +4,9 @@ import java.security.MessageDigest
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
+/**
+ * @author jairoben
+ */
 class SecureTokenProviderTest {
 
     @Test

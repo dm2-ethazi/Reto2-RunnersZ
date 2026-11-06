@@ -11,15 +11,17 @@ No descifra localmente: las operaciones se delegan en la API oficial por HTTPS.
 
 - **Inicio**: bienvenida, botón **Probar API**, estado de conexión y accesos a
   Orden e Imagen. La comprobación se lanza automáticamente al abrir.
-- **Orden**: descifrado César con texto y desplazamiento por defecto
-  (`Dwdtxh Ñá! 2026`, desplazamiento `3`). Acepta texto escrito o un TXT UTF-8
-  de hasta 1 MiB recibido por *Abrir con* / *Compartir*. Valida el rango 1..25.
+- **Orden**: descifrado César con campos vacíos y pistas. El usuario introduce
+  el texto y un desplazamiento válido de 1 a 25. Acepta texto escrito o un TXT
+  UTF-8 de hasta 1 MiB recibido por *Abrir con* / *Compartir*.
 - **Imagen**: descifrado AES multipart. Incluye el vector de prueba
   `image.png.enc` y la clave de demostración precargada. Permite seleccionar
   otro `.enc`, exige `X-Integrity: verified` y muestra la vista previa.
 - **Navegación**: barra inferior Orden / Imagen / Inicio y filas de
   acceso rápido en Inicio. Recibe archivos mediante `ACTION_SEND` y
   `ACTION_VIEW` (texto, imagen u octet-stream).
+- **Interfaz adaptativa**: variantes vertical y horizontal, cabecera compacta
+  al girar y márgenes seguros para notch y barra de navegación.
 
 ## Estructura
 
@@ -94,8 +96,8 @@ El JDK del sistema debe ser 21: Gradle 8.9 no admite JDK 25.
 
 - APK generado: `app/build/outputs/apk/release/app-release.apk`.
 - Copia de entrega: `C:\Users\dm2\Desktop\CipherSprint.apk`.
-- SHA-256 de la copia: `a7386b7eb1c7453ee31f25e6a8fc54249fa393e43daa9f41491a879981d95eea`.
-- Tamaño: 2.509.866 bytes.
+- SHA-256 de la copia: `96cd2cc1688371250cdf3bef8dd4ef736effe63178778cd28381d42dba16e409`.
+- Tamaño: 2.515.286 bytes.
 
 ## Validación
 
@@ -112,3 +114,5 @@ manual en el emulador `emulator-5556` contra la API real desplegada.
 - [Orden con resultado](docs/evidencias/03_orden_resultado.png)
 - [Imagen](docs/evidencias/04_imagen.png)
 - [Imagen con integridad verificada](docs/evidencias/05_imagen_resultado.png)
+- [Orden en horizontal](docs/evidencias/06_horizontal_orden.png)
+- [Imagen en horizontal](docs/evidencias/07_horizontal_imagen.png)

@@ -1,5 +1,8 @@
 package com.runnersz.reto2.android.domain
 
+/**
+ * @author jairoben
+ */
 object ShiftValidator {
     const val MENSAJE = "El desplazamiento debe ser un número entero entre 1 y 25"
 

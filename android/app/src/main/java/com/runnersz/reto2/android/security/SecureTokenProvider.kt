@@ -6,7 +6,8 @@ package com.runnersz.reto2.android.security
  * No hay ningún literal del token en el DEX ni en recursos. R8 renombra y compacta
  * estas clases en release. El resultado solo se usa para construir la cabecera
  * Authorization de la petición y nunca se escribe en preferencias, logs ni UI.
- */
+  * @author jairoben
+*/
 object SecureTokenProvider {
 
     private const val TOKEN_LENGTH = 20

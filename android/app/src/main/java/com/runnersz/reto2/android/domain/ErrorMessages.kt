@@ -1,7 +1,13 @@
 package com.runnersz.reto2.android.domain
 
+/**
+ * @author jairoben
+ */
 data class ErrorMensaje(val texto: String)
 
+/**
+ * @author jairoben
+ */
 object ErrorMessages {
     const val SIN_CONEXION = "No se pudo conectar con el servidor"
 

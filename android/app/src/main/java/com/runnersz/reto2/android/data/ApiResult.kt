@@ -2,6 +2,9 @@ package com.runnersz.reto2.android.data
 
 import com.runnersz.reto2.android.domain.ErrorMensaje
 
+/**
+ * @author jairoben
+ */
 sealed class ApiResult<out T> {
     data class Success<out T>(
         val data: T,

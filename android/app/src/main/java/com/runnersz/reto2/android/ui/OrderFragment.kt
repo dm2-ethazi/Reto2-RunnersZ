@@ -14,6 +14,9 @@ import com.runnersz.reto2.android.data.ApiResult
 import com.runnersz.reto2.android.domain.ShiftValidator
 import java.io.File
 
+/**
+ * @author jairoben
+ */
 class OrderFragment : Fragment(R.layout.fragment_order) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

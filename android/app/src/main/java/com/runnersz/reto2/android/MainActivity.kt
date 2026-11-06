@@ -1,6 +1,7 @@
 package com.runnersz.reto2.android
 
 import android.content.Intent
+import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -23,6 +24,9 @@ import com.runnersz.reto2.android.ui.OrderFragment
 import java.io.File
 import java.io.FileOutputStream
 
+/**
+ * @author jairoben
+ */
 class MainActivity : AppCompatActivity() {
 
     private enum class Tab { INICIO, ORDEN, IMAGEN }
@@ -117,21 +121,52 @@ class MainActivity : AppCompatActivity() {
     private fun applyInsets() {
         val header = findViewById<View>(R.id.header)
         val bottomNav = findViewById<View>(R.id.bottomNav)
+        val content = findViewById<View>(R.id.contenedor)
+        val subtitle = findViewById<View>(R.id.headerSubtitle)
+        val horizontal = resources.getDimensionPixelSize(R.dimen.header_padding_horizontal)
+        val vertical = resources.getDimensionPixelSize(R.dimen.header_padding_vertical)
+
+        subtitle.visibility = if (
+            resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+        ) {
+            View.GONE
+        } else {
+            View.VISIBLE
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(header) { view, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                    WindowInsetsCompat.Type.displayCutout(),
+            )
             view.updatePadding(
-                left = dp(20),
-                top = bars.top + dp(16),
-                right = dp(20),
-                bottom = dp(16),
+                left = horizontal + bars.left,
+                top = vertical + bars.top,
+                right = horizontal + bars.right,
+                bottom = vertical,
             )
             insets
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(bottomNav) { view, insets ->
-            val bars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-            view.updatePadding(bottom = bars.bottom)
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                    WindowInsetsCompat.Type.displayCutout(),
+            )
+            view.updatePadding(
+                left = bars.left,
+                right = bars.right,
+                bottom = bars.bottom,
+            )
+            insets
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(content) { view, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or
+                    WindowInsetsCompat.Type.displayCutout(),
+            )
+            view.updatePadding(left = bars.left, right = bars.right)
             insets
         }
     }

@@ -14,10 +14,10 @@
         android:background="@color/navy"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="20dp"
-        android:paddingTop="16dp"
-        android:paddingEnd="20dp"
-        android:paddingBottom="16dp">
+        android:paddingStart="@dimen/header_padding_horizontal"
+        android:paddingTop="@dimen/header_padding_vertical"
+        android:paddingEnd="@dimen/header_padding_horizontal"
+        android:paddingBottom="@dimen/header_padding_vertical">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -32,10 +32,11 @@
                 android:letterSpacing="0.01"
                 android:text="@string/app_name"
                 android:textColor="@color/gold"
-                android:textSize="26sp"
+                android:textSize="@dimen/header_title_size"
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/headerSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
@@ -75,7 +76,7 @@
         <LinearLayout
             android:id="@+id/navOrden"
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="@dimen/bottom_nav_height"
             android:layout_weight="1"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
@@ -103,7 +104,7 @@
         <LinearLayout
             android:id="@+id/navImagen"
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="@dimen/bottom_nav_height"
             android:layout_weight="1"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"
@@ -131,7 +132,7 @@
         <LinearLayout
             android:id="@+id/navInicio"
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="@dimen/bottom_nav_height"
             android:layout_weight="1"
             android:background="?attr/selectableItemBackground"
             android:clickable="true"

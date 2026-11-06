@@ -10,6 +10,9 @@ import com.runnersz.reto2.android.R
 import com.runnersz.reto2.android.data.ApiClient
 import com.runnersz.reto2.android.data.ApiResult
 
+/**
+ * @author jairoben
+ */
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private var checking = false

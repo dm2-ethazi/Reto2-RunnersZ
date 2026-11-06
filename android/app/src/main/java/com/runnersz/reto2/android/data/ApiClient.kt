@@ -24,7 +24,8 @@ import org.json.JSONObject
  *
  * El token se reconstruye en cada petición y solo vive en la cabecera Authorization.
  * No se persiste, no se muestra y no se incluye en mensajes de error ni logs.
- */
+  * @author jairoben
+*/
 class ApiClient(
     private val base: String = ApiConfig.BASE_URL,
     private val tokenProvider: () -> String = { SecureTokenProvider.getToken() },

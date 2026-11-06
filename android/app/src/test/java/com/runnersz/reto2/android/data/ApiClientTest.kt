@@ -21,6 +21,9 @@ import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
+/**
+ * @author jairoben
+ */
 class ApiClientTest {
 
     private lateinit var server: MockWebServer
