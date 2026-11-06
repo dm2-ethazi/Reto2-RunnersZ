@@ -14,10 +14,12 @@ namespace RunnersZ.Game {
   readonly List<float> enemies = new List<float>();
   // 0..1: pulso rojo del paisaje mientras se apaga el golpe de la puerta.
   float doorBleed;
+  // Avanza solo con la partida en curso: congela la animacion al caer la puerta.
+  float enemyClock;
   AlphabetWheel wheel; bool manuscriptOpen; PhraseBank bank; DifficultyConfig config; int shift, spawned; float clock; string answer="", hint="", feedback=""; bool started, backPressed;
   public void Begin(Difficulty selected) {
    difficulty=selected; config=new DifficultyConfig(selected); bank=new PhraseBank(System.Environment.TickCount);
-   State=GameState.EnCurso; Round=1; Lives=3; started=true; doorBleed=0f; PrepareRound();
+   State=GameState.EnCurso; Round=1; Lives=3; started=true; doorBleed=0f; enemyClock=0f; PrepareRound();
   }
   void PrepareRound() {
    wheel=new AlphabetWheel(difficulty); manuscriptOpen=false; Message=bank.Next(difficulty); shift=Random.Range(1,26); Cipher=Caesar.Transform(Message,shift);
@@ -56,6 +58,9 @@ namespace RunnersZ.Game {
    doorBleed=Mathf.MoveTowards(doorBleed,0f,Time.deltaTime*.42f);
    if(!started || State!=GameState.EnCurso || manuscriptOpen)return;
    clock+=Time.deltaTime;
+   // Los espectros se paran con la partida: sobre la ventana de derrota ya no
+   // caminan, ni desplazandose ni moviendo las piernas.
+   enemyClock+=Time.deltaTime;
    if(clock>=config.Interval && spawned<config.Enemies+2*(Round-1)){clock=0;spawned++;enemies.Add(0);}
    float travel=30f-(int)difficulty*5f-(Round-1)*3f;
    for(int i=enemies.Count-1;i>=0;i--){
@@ -404,7 +409,7 @@ namespace RunnersZ.Game {
   }
 
   void DrawWraith(float centerX,float groundY,float width,float height){
-   int index=Mathf.FloorToInt(Time.time*8f)%8;
+   int index=Mathf.FloorToInt(enemyClock*8f)%8;
    // Los pies van clavados en el suelo: la oscilacion vertical los hacia dar
    // saltitos en vez de avanzar caminando y ya los anima la propia hoja de frames.
    GUI.DrawTextureWithTexCoords(new Rect(centerX-width*.5f,groundY-height,width,height),pixelArt.Wraith,WraithFrames[index],true);
