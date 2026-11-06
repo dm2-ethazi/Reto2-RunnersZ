@@ -58,7 +58,7 @@ namespace RunnersZ.Game {
   }
 
   UiFrame frame; GameLayout gameLayout; MenuLayout menuLayout; ManuscriptLayout manuscriptLayout;
-  GUIStyle heading, body, feedbackStyle, small, cipherStyle, fieldStyle, actionStyle, secondaryStyle, letterStyle, titleStyle, statStyle;
+  GUIStyle heading, body, feedbackStyle, small, cipherStyle, fieldStyle, actionStyle, secondaryStyle, letterStyle, statStyle;
   PixelFantasyArt pixelArt; Texture2D rounded; GUIStyle panelStyle; Font manuscriptFont;
   readonly Color ink=new Color(.035f,.055f,.095f);
   readonly Color muted=new Color(.57f,.65f,.73f);
@@ -95,8 +95,6 @@ namespace RunnersZ.Game {
    if(manuscriptFont!=null){heading.font=manuscriptFont;cipherStyle.font=manuscriptFont;letterStyle.font=manuscriptFont;}
    // El marcador va centrado en su recuadro y con cuerpo mayor que el resto de la barra.
    statStyle=new GUIStyle(small){alignment=TextAnchor.MiddleCenter};
-   // El titulo conserva fuente y cuerpo de siempre; solo se centra en su recuadro.
-   titleStyle=new GUIStyle(heading){alignment=TextAnchor.MiddleCenter};
    pixelArt=new PixelFantasyArt(); stylesReady=true;
   }
 
@@ -112,8 +110,6 @@ namespace RunnersZ.Game {
   void ApplyMetrics(){
    heading.fontSize=Mathf.RoundToInt(frame.Heading);
    statStyle.fontSize=Mathf.RoundToInt(frame.Body*.95f);
-   // La copia no hereda los cambios posteriores: se le da la misma medida que heading.
-   titleStyle.fontSize=Mathf.RoundToInt(frame.Heading);
    body.fontSize=Mathf.RoundToInt(frame.Body);
    small.fontSize=Mathf.RoundToInt(frame.Small);
    cipherStyle.fontSize=Mathf.RoundToInt(frame.Cipher);
@@ -262,7 +258,10 @@ namespace RunnersZ.Game {
    // que ningun control de debajo se lleve el toque ni habra el teclado.
    bool uiEnabled=!manuscriptOpen;
    Frame(l.TopBar,surface);
-   Label(l.Title,"RUNNERS Z",titleStyle);
+   // Mismo estilo de siempre: se centra desplazando el recuadro con el ancho real del texto.
+   var titleContent=new GUIContent("RUNNERS Z");
+   float titleWidth=heading.CalcSize(titleContent).x;
+   GUI.Label(new Rect(l.Title.x+(l.Title.width-titleWidth)*.5f,l.Title.y,titleWidth,l.Title.height),titleContent,heading);
    Label(l.StatRound,"RONDA "+Round+" / 3",statStyle);
    Label(l.StatLives,"VIDAS "+Lives+" / 3",statStyle,Lives<=1?danger:(Color?)null);
    GUI.enabled=uiEnabled;
