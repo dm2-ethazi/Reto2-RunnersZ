@@ -11,6 +11,8 @@ namespace RunnersZ.Game {
   public readonly Texture2D Arena;
   public readonly Texture2D Wraith;
   public readonly Texture2D Door;
+  // Variante roja opcional (Resources/bleed.png) para el fogonazo del golpe.
+  public readonly Texture2D Bleed;
   readonly Dictionary<char,Texture2D> glyphs=new Dictionary<char,Texture2D>();
   const int W=400,H=267;
   readonly Color32[] pixels=new Color32[W*H];
@@ -77,6 +79,7 @@ namespace RunnersZ.Game {
    for(int y=0;y<16;y++)for(int x=0;x<16;x++)if(x<sprite[y].Length&&colors.ContainsKey(sprite[y][x]))sp[(15-y)*16+x]=colors[sprite[y][x]];
    Wraith=LoadAsset("enemy.png",Texture(16,16,sp));
    Door=LoadAsset("door.png",Texture(16,16,sp));
+   Bleed=LoadAsset("bleed.png",null);
    string[] rows={
     "A:0E11111F111111","B:1E11111E11111E","C:0E11101010110E","D:1E11111111111E",
     "E:1F10101E10101F","F:1F10101E101010","G:0E11101711110F","H:1111111F111111",
@@ -136,6 +139,6 @@ namespace RunnersZ.Game {
    }
    GUI.color=old;
   }
-  public void Dispose(){UnityEngine.Object.Destroy(Background);UnityEngine.Object.Destroy(Arena);UnityEngine.Object.Destroy(Wraith);UnityEngine.Object.Destroy(Door);foreach(var t in glyphs.Values)UnityEngine.Object.Destroy(t);}
+  public void Dispose(){UnityEngine.Object.Destroy(Background);UnityEngine.Object.Destroy(Arena);UnityEngine.Object.Destroy(Wraith);UnityEngine.Object.Destroy(Door);if(Bleed!=null)UnityEngine.Object.Destroy(Bleed);foreach(var t in glyphs.Values)UnityEngine.Object.Destroy(t);}
  }
 }

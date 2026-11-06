@@ -12,10 +12,12 @@ namespace RunnersZ.Game {
   public string Message { get; private set; }
   public string Cipher { get; private set; }
   readonly List<float> enemies = new List<float>();
+  // 0..1: pulso rojo del paisaje mientras se apaga el golpe de la puerta.
+  float doorBleed;
   AlphabetWheel wheel; bool manuscriptOpen; PhraseBank bank; DifficultyConfig config; int shift, spawned; float clock; string answer="", hint="", feedback=""; bool started, backPressed;
   public void Begin(Difficulty selected) {
    difficulty=selected; config=new DifficultyConfig(selected); bank=new PhraseBank(System.Environment.TickCount);
-   State=GameState.EnCurso; Round=1; Lives=3; started=true; PrepareRound();
+   State=GameState.EnCurso; Round=1; Lives=3; started=true; doorBleed=0f; PrepareRound();
   }
   void PrepareRound() {
    wheel=new AlphabetWheel(difficulty); manuscriptOpen=false; Message=bank.Next(difficulty); shift=Random.Range(1,26); Cipher=Caesar.Transform(Message,shift);
@@ -50,11 +52,13 @@ namespace RunnersZ.Game {
   }
   void Update() {
    if(Input.GetKeyDown(KeyCode.Escape)) backPressed=true;
+   // El pulso se apaga solo, aunque la partida ya este perdida o en pausa.
+   doorBleed=Mathf.MoveTowards(doorBleed,0f,Time.deltaTime*.42f);
    if(!started || State!=GameState.EnCurso || manuscriptOpen)return;
    clock+=Time.deltaTime;
    if(clock>=config.Interval && spawned<config.Enemies+2*(Round-1)){clock=0;spawned++;enemies.Add(0);}
    float travel=30f-(int)difficulty*5f-(Round-1)*3f;
-   for(int i=enemies.Count-1;i>=0;i--){enemies[i]+=Time.deltaTime/travel;if(enemies[i]>=1){enemies.RemoveAt(i);Lives=Mathf.Max(0,Lives-1);feedback="La puerta ha recibido un golpe.";if(Lives==0){State=GameState.Derrota;feedback="La puerta ha caido.";break;}}}
+   for(int i=enemies.Count-1;i>=0;i--){enemies[i]+=Time.deltaTime/travel;if(enemies[i]>=1){enemies.RemoveAt(i);Lives=Mathf.Max(0,Lives-1);doorBleed=1f;feedback="La puerta ha recibido un golpe.";if(Lives==0){State=GameState.Derrota;feedback="La puerta ha caido.";break;}}}
   }
 
   UiFrame frame; GameLayout gameLayout; MenuLayout menuLayout; ManuscriptLayout manuscriptLayout;
@@ -331,7 +335,43 @@ namespace RunnersZ.Game {
    if(lane.width<8f||lane.height<8f)return;
    float uvHeight=Mathf.Min(1f,lane.height*pixelArt.Arena.width/(lane.width*pixelArt.Arena.height));
    float uvBottom=Mathf.Clamp(.19f,0f,1f-uvHeight);
+   // Golpe en la puerta: el fondo se muere a latidos irregulares. La lava sube
+   // fundida bajo el paisaje con un brillo de ruido suave (no un parpadeo de
+   // reloj) y entre latido y latido el carril cae en penumbra hasta apagarse.
+   float beat=doorBleed;
+   float flick=Mathf.PerlinNoise(Time.time*2.6f,.37f)*.6f+Mathf.PerlinNoise(Time.time*5.3f,.71f)*.4f;
+   flick=Mathf.Clamp01(flick*1.9f-.45f);
+   float pulse=.22f+.78f*flick;
+   float glow=beat*pulse;
+   float dark=beat*(1f-pulse)*.85f;
+   Color tint=GUI.color;
+   if(dark>0f)GUI.color=Color.Lerp(Color.white,new Color(.07f,.02f,.02f),dark);
    GUI.DrawTextureWithTexCoords(lane,pixelArt.Arena,new Rect(0f,uvBottom,1f,uvHeight),true);
+   if(glow>0f){
+    if(pixelArt.Bleed!=null){
+     // La ilustracion entra fundida sobre el paisaje: bleed.png no tiene la
+     // proporcion del carril, asi que se llena recortando y sin bandas.
+     GUI.color=new Color(1f,1f,1f,Mathf.Clamp01(glow*1.45f));
+     GUI.DrawTexture(lane,pixelArt.Bleed,ScaleMode.ScaleAndCrop,true);
+    }else{
+     GUI.color=Color.Lerp(GUI.color,new Color(1f,.16f,.10f),Mathf.Clamp01(glow*.95f));
+     GUI.DrawTextureWithTexCoords(lane,pixelArt.Arena,new Rect(0f,uvBottom,1f,uvHeight),true);
+    }
+   }
+   GUI.color=tint;
+   if(glow>0f){
+    // Halo en franjas con alfa creciente hacia la puerta: sin degradado se veia
+    // un corte recto en mitad del carril.
+    float halo=Mathf.Clamp(lane.width*.55f,64f,lane.width);
+    float strength=Mathf.Clamp01(glow*.5f);
+    const int bands=20;
+    float bandW=halo/bands;
+    for(int k=0;k<bands;k++){
+     float t=(k+1f)/bands;
+     Fill(new Rect(lane.xMax-halo+k*bandW,lane.y,bandW+1f,lane.height),new Color(.74f,.07f,.05f,strength*t*t),false);
+    }
+    Fill(lane,new Color(.55f,.04f,.03f,Mathf.Clamp01(glow*.22f)),false);
+   }
    float entityHeight=Mathf.Clamp(lane.height*.48f,frame.Body*1.5f,lane.height*.8f);
    float entityWidth=entityHeight*(36f/56f);
    float gateHeight=Mathf.Clamp(lane.height*.98f,entityHeight,lane.height);
