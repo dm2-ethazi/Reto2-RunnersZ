@@ -58,7 +58,15 @@ namespace RunnersZ.Game {
    clock+=Time.deltaTime;
    if(clock>=config.Interval && spawned<config.Enemies+2*(Round-1)){clock=0;spawned++;enemies.Add(0);}
    float travel=30f-(int)difficulty*5f-(Round-1)*3f;
-   for(int i=enemies.Count-1;i>=0;i--){enemies[i]+=Time.deltaTime/travel;if(enemies[i]>=1){enemies.RemoveAt(i);Lives=Mathf.Max(0,Lives-1);doorBleed=1f;feedback="La puerta ha recibido un golpe.";if(Lives==0){State=GameState.Derrota;feedback="La puerta ha caido.";break;}}}
+   for(int i=enemies.Count-1;i>=0;i--){
+    enemies[i]+=Time.deltaTime/travel;
+    if(enemies[i]<1)continue;
+    enemies.RemoveAt(i);Lives=Mathf.Max(0,Lives-1);
+    // Este golpe abre ya el cartel de derrota: tenirlo de rojo solo se veria
+    // asomar por los bordes de la ventana, asi que el pulso no llega a dispararse.
+    if(Lives==0){State=GameState.Derrota;feedback="La puerta ha caido.";break;}
+    doorBleed=1f;feedback="La puerta ha recibido un golpe.";
+   }
   }
 
   UiFrame frame; GameLayout gameLayout; MenuLayout menuLayout; ManuscriptLayout manuscriptLayout;
@@ -381,24 +389,25 @@ namespace RunnersZ.Game {
    // El suelo visible del carril es su borde inferior: ahi se apoyan la puerta y los
    // enemigos. Antes se usaba el 94 % del alto y quedaba una franja vacia bajo la puerta.
    float groundY=lane.y+lane.height;
-   foreach(float progress in enemies){
-    float t=Mathf.Clamp01(progress);
-    float px=Mathf.Lerp(lane.x+entityWidth*.5f,gateX-entityWidth*.6f,t);
-    DrawWraith(px,groundY,entityWidth,entityHeight);
-   }
    // door.png es 1:1 y el rectangulo del carril es mas alto que ancho: con ScaleToFit el
    // cuadrado se centraba y la base quedaba flotando. Se dibuja cuadrado y apoyado en groundY,
    // igual que los pies de los enemigos, para que la puerta se vea sobre el suelo.
    float gateSize=Mathf.Min(gateWidth,gateHeight);
    GUI.DrawTexture(new Rect(gateX-gateSize*.5f,groundY-gateSize,gateSize,gateSize),pixelArt.Door,ScaleMode.StretchToFill,true);
+   // La puerta va primero: los espectros tienen que pasar por delante de ella al
+   // llegar, no quedar tapados por el arco justo antes de golpear.
+   foreach(float progress in enemies){
+    float t=Mathf.Clamp01(progress);
+    float px=Mathf.Lerp(lane.x+entityWidth*.5f,gateX-entityWidth*.6f,t);
+    DrawWraith(px,groundY,entityWidth,entityHeight);
+   }
   }
 
   void DrawWraith(float centerX,float groundY,float width,float height){
    int index=Mathf.FloorToInt(Time.time*8f)%8;
-   // Oscilacion solo hacia arriba: con la base en el borde del carril, bajar los pies
-   // haria que se salieran por debajo del terreno.
-   float bob=(Mathf.Sin(Time.time*8f)+1f)*.5f*Mathf.Max(1f,height*.04f);
-   GUI.DrawTextureWithTexCoords(new Rect(centerX-width*.5f,groundY-height+bob,width,height),pixelArt.Wraith,WraithFrames[index],true);
+   // Los pies van clavados en el suelo: la oscilacion vertical los hacia dar
+   // saltitos en vez de avanzar caminando y ya los anima la propia hoja de frames.
+   GUI.DrawTextureWithTexCoords(new Rect(centerX-width*.5f,groundY-height,width,height),pixelArt.Wraith,WraithFrames[index],true);
   }
 
   void DrawManuscript(){
