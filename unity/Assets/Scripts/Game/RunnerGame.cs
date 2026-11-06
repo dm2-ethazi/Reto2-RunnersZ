@@ -330,7 +330,7 @@ namespace RunnersZ.Game {
    float uvHeight=Mathf.Min(1f,lane.height*pixelArt.Arena.width/(lane.width*pixelArt.Arena.height));
    float uvBottom=Mathf.Clamp(.19f,0f,1f-uvHeight);
    GUI.DrawTextureWithTexCoords(lane,pixelArt.Arena,new Rect(0f,uvBottom,1f,uvHeight),true);
-   float entityHeight=Mathf.Clamp(lane.height*.62f,frame.Body*1.8f,lane.height*.9f);
+   float entityHeight=Mathf.Clamp(lane.height*.48f,frame.Body*1.5f,lane.height*.8f);
    float entityWidth=entityHeight*(36f/56f);
    float gateHeight=Mathf.Clamp(lane.height*.98f,entityHeight,lane.height);
    float gateWidth=gateHeight*.72f;
