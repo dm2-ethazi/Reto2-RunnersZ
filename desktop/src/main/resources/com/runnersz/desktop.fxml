@@ -6,7 +6,7 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.ScrollPane?>
-<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Slider?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
@@ -176,9 +176,19 @@
                                     <HBox spacing="10" alignment="CENTER_LEFT">
                                         <Button fx:id="caesarOpenButton" text="%text.open" onAction="#handleOpenText"/>
                                         <Label fx:id="caesarCounter" styleClass="helper"/>
-                                        <Region HBox.hgrow="ALWAYS"/>
+                                    </HBox>
+
+                                    <HBox spacing="10" alignment="CENTER_LEFT">
                                         <Label fx:id="caesarShiftLabel" styleClass="field-label" text="%caesar.shift"/>
-                                        <Spinner fx:id="shiftSpinner" prefWidth="100" editable="false"/>
+                                        <StackPane styleClass="shift-slider-box" prefWidth="230" minWidth="230"
+                                                   maxWidth="230">
+                                            <Slider fx:id="shiftSlider" styleClass="shift-slider" min="1"
+                                                    max="25" value="3" blockIncrement="1" minHeight="34"
+                                                    accessibleHelp="%caesar.shift.help"/>
+                                        </StackPane>
+                                        <Label fx:id="caesarShiftValue" styleClass="shift-value" text="3"
+                                               minWidth="34"/>
+                                        <Region HBox.hgrow="ALWAYS"/>
                                     </HBox>
 
                                     <HBox spacing="12">

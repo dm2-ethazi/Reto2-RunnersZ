@@ -36,7 +36,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Spinner;
+import javafx.scene.control.Slider;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
@@ -130,7 +130,8 @@ public final class DesktopController {
   @FXML private Label caesarResultLabel;
 
   @FXML private TextArea caesarText;
-  @FXML private Spinner<Integer> shiftSpinner;
+  @FXML private Slider shiftSlider;
+  @FXML private Label caesarShiftValue;
   @FXML private Button caesarEncryptButton;
   @FXML private Button caesarDecryptButton;
   @FXML private TextArea caesarResult;
@@ -166,8 +167,8 @@ public final class DesktopController {
 
   @FXML
   private void initialize() {
-    shiftSpinner.setValueFactory(
-        new javafx.scene.control.SpinnerValueFactory.IntegerSpinnerValueFactory(1, 25, 3));
+    shiftSlider.valueProperty().addListener((observable, previous, value) -> updateShift());
+    updateShift();
     languageBox.getItems().setAll("Español", "Euskara", "English");
     languageBox.setValue(switch (I18n.locale().getLanguage()) {
       case "eu" -> "Euskara";
@@ -186,7 +187,7 @@ public final class DesktopController {
     accessible(vigenereResult, "vigenere.result");
     accessible(caesarText, "caesar.text");
     accessible(caesarResult, "caesar.result");
-    accessible(shiftSpinner, "caesar.shift");
+    accessible(shiftSlider, "caesar.shift");
 
     passwordPlain.textProperty().bindBidirectional(passwordField.textProperty());
     showPassword.selectedProperty().addListener((observable, previous, visible) -> {
@@ -254,7 +255,8 @@ public final class DesktopController {
     tip(saveTextButton, "text.save.help");
     tip(copyTextButton, "copy.help");
     tip(caesarText, "caesar.text.help");
-    tip(shiftSpinner, "caesar.shift.help");
+    tip(shiftSlider, "caesar.shift.help");
+    tip(caesarShiftValue, "caesar.shift.help");
     tip(caesarEncryptButton, "caesar.encrypt.help");
     tip(caesarDecryptButton, "caesar.decrypt.help");
     tip(caesarResult, "caesar.result.help");
@@ -319,7 +321,7 @@ public final class DesktopController {
     vigenereResult.setText(state.result());
     caesarText.setText(state.caesarText());
     caesarResult.setText(state.caesarResult());
-    if (state.shift() != null) shiftSpinner.getValueFactory().setValue(state.shift());
+    if (state.shift() != null) shiftSlider.setValue(state.shift());
     tabs.getSelectionModel().select(Math.max(0, Math.min(state.tab(), tabs.getTabs().size() - 1)));
   }
 
@@ -338,7 +340,7 @@ public final class DesktopController {
         vigenereResult.getText(),
         caesarText.getText(),
         caesarResult.getText(),
-        shiftSpinner.getValue(),
+        shift(),
         tabs.getSelectionModel().getSelectedIndex());
   }
 
@@ -496,7 +498,7 @@ public final class DesktopController {
       caesarText.requestFocus();
       return;
     }
-    int shift = shiftSpinner.getValue();
+    int shift = shift();
     if (!ensureConfigured()) return;
     beginOperation(
         "encrypt".equals(mode) ? "status.encryptText" : "status.decryptText",
@@ -844,6 +846,18 @@ public final class DesktopController {
 
   private void updateCounter(String value, Label target) {
     target.setText(text("text.counter", value == null ? 0 : value.length()));
+  }
+
+  /** Desplazamiento elegido en la barra, redondeado a un entero entre 1 y 25. */
+  private int shift() {
+    return (int) Math.round(shiftSlider.getValue());
+  }
+
+  /** Mantiene al día el número visible del desplazamiento, también para lectores de pantalla. */
+  private void updateShift() {
+    int shift = shift();
+    caesarShiftValue.setText(Integer.toString(shift));
+    caesarShiftValue.setAccessibleText(text("caesar.shift") + ": " + shift);
   }
 
   /** Anuncia el resultado en el idioma activo sin abrir diálogos bloqueantes. */

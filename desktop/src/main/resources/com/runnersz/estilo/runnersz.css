@@ -273,3 +273,25 @@
 }
 .dialog-pane .label { -fx-text-fill: -rz-stone; -fx-font-family: "Open Sans"; }
 .dialog-pane .button { -fx-min-height: 34px; }
+
+/* ------------------------------------------- barra de desplazamiento (César) */
+
+.shift-slider .track {
+    -fx-background-color: #C3B08B;
+    -fx-background-radius: 4;
+}
+.shift-slider .thumb {
+    -fx-background-color: -rz-gold;
+    -fx-background-radius: 6;
+}
+.shift-slider .thumb:hover { -fx-background-color: #D8BC82; }
+.shift-value {
+    -fx-background-color: -rz-navy;
+    -fx-text-fill: #F6EFDE;
+    -fx-background-radius: 6;
+    -fx-font-family: -rz-mono;
+    -fx-font-weight: 700;
+    -fx-font-size: 12.5px;
+    -fx-padding: 4 10;
+    -fx-alignment: center;
+}
