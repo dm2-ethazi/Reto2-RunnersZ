@@ -247,7 +247,7 @@ namespace RunnersZ.Game {
     Label(l.CardDetails[i],details[i],body);
     if(Button(l.CardButtons[i],"Jugar en "+names[i],i==0))Begin((Difficulty)i);
    }
-   Label(l.Help,"Abre el manuscrito, cambia los pares y escribe la respuesta.\nCada pista cuesta 50 puntos; cada error acerca a los enemigos.",small);
+   Label(l.Help,"Abre el manuscrito, cambia los pares y escribe la respuesta.\nCada pista destapa tres pares; cada error acerca a los enemigos.",small);
    if(Button(l.Quit,"Salir"))Application.Quit();
   }
 
