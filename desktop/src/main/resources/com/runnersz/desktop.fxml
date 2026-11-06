@@ -17,6 +17,7 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.runnersz.controller.DesktopController" styleClass="app-root">
@@ -84,10 +85,18 @@
                                 <HBox spacing="12" alignment="CENTER_LEFT">
                                     <Button fx:id="encryptButton" styleClass="primary-button" text="%files.encrypt"
                                             mnemonicParsing="true" onAction="#handleEncrypt" minHeight="38"
-                                            accessibleHelp="%files.encrypt.help"/>
+                                            accessibleHelp="%files.encrypt.help">
+                                        <graphic>
+                                            <FontIcon iconLiteral="fas-lock" iconSize="15"/>
+                                        </graphic>
+                                    </Button>
                                     <Button fx:id="decryptButton" text="%files.decrypt" mnemonicParsing="true"
                                             onAction="#handleDecrypt" minHeight="38"
-                                            accessibleHelp="%files.decrypt.help"/>
+                                            accessibleHelp="%files.decrypt.help">
+                                        <graphic>
+                                            <FontIcon iconLiteral="fas-lock-open" iconSize="15"/>
+                                        </graphic>
+                                    </Button>
                                 </HBox>
                             </VBox>
                         </content>
