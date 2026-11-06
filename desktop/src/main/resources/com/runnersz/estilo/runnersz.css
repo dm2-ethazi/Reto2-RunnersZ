@@ -177,8 +177,12 @@
 /* --------------------------------------------------------------------- botones */
 
 .button, .toggle-button {
-    -fx-background-color: #E3D8BF;
+    -fx-background-color: #DDD0B0;
     -fx-background-radius: 6;
+    -fx-border-color: #A8926B;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-graphic-text-gap: 8;
     -fx-text-fill: -rz-navy;
     -fx-font-family: "Inter";
     -fx-font-weight: 600;
@@ -187,8 +191,9 @@
     -fx-min-height: 34px;
     -fx-cursor: hand;
 }
-.button:hover, .toggle-button:hover { -fx-background-color: #D8C9A8; }
-.button:pressed, .toggle-button:selected { -fx-background-color: #CDBB95; }
+.button:hover, .toggle-button:hover { -fx-background-color: #D3C4A0; }
+.button:pressed, .toggle-button:selected { -fx-background-color: #C9B892; }
+.button .font-icon, .toggle-button .font-icon { -fx-icon-color: -rz-navy; }
 .button:disabled { -fx-opacity: 0.5; }
 .button:focused, .toggle-button:focused {
     -fx-border-color: -rz-navy;
@@ -202,6 +207,7 @@
 }
 .primary-button:hover { -fx-background-color: #D8BC82; }
 .primary-button:pressed { -fx-background-color: #C2A468; }
+.primary-button .font-icon { -fx-icon-color: #23282B; }
 
 /* ---------------------------------------------------------------- pie de página */
 
