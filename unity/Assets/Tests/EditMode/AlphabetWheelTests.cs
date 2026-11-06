@@ -8,7 +8,6 @@ public class AlphabetWheelTests {
  [Test] public void MasksCannotBeBypassedByMoving(){var w=new AlphabetWheel(Difficulty.Hard,7);var mask=new bool[26];for(int i=0;i<26;i++)mask[i]=w.IsColumnVisible(i);for(int turn=0;turn<26;turn++){w.Move(1);for(int i=0;i<26;i++)Assert.AreEqual(mask[i],w.IsColumnVisible(i));}Assert.AreEqual(0,w.Offset);}
  [Test] public void HintsRevealEachPairOnce(){var w=new AlphabetWheel(Difficulty.Hard,7);for(int i=0;i<14;i++){Assert.IsTrue(w.RevealHint().HasValue);Assert.AreEqual(13-i,Hidden(w));}Assert.IsFalse(w.RevealHint().HasValue);}
  [Test] public void MovementWrapsBothWays(){var w=new AlphabetWheel(Difficulty.Hard,7);w.Move(-1);Assert.AreEqual(25,w.Offset);w.Move(27);Assert.AreEqual(0,w.Offset);}
-
  [Test] public void HiddenPositionsVaryBetweenRounds(){
   var masks=new System.Collections.Generic.HashSet<string>();
   for(int seed=0;seed<12;seed++){
@@ -18,20 +17,4 @@ public class AlphabetWheelTests {
   }
   Assert.Greater(masks.Count,1);
  }
- [Test] public void CipherMaskPreservesSpacesAndPunctuationAndCannotBeMovedAway(){
-  var w=new AlphabetWheel(Difficulty.Normal,7);
-  string encrypted=Caesar.Transform(AlphabetWheel.Alphabet,3)+" !";
-  string masked=w.MaskCipher(encrypted,3);
-  Assert.AreEqual(8,masked.Split('?').Length-1);
-  StringAssert.EndsWith(" !",masked);
-  w.Move(9);Assert.AreEqual(masked,w.MaskCipher(encrypted,3));
-  while(w.RevealHint().HasValue){}
-  Assert.AreEqual(encrypted,w.MaskCipher(encrypted,3));
- }
- [Test] public void HardMasksMoreCipherLettersThanNormal(){
-  string encrypted=Caesar.Transform(AlphabetWheel.Alphabet,11);
-  Assert.AreEqual(14,new AlphabetWheel(Difficulty.Hard,7).MaskCipher(encrypted,11).Split('?').Length-1);
-  Assert.AreEqual(encrypted,new AlphabetWheel(Difficulty.Easy,7).MaskCipher(encrypted,11));
- }
-
 }

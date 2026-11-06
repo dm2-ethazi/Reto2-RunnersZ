@@ -174,7 +174,6 @@ namespace RunnersZ.Game {
    GUI.backgroundColor=old;return pressed;
   }
 
-  string VisibleCipher {get{return wheel==null?Cipher:wheel.MaskCipher(Cipher,shift);}}
 
   // Sheet espaciado 2656x944: cada frame queda aislado en una ventana de 220x340,
   // asi el recorte no arrastra restos del frame anterior ni del siguiente.
@@ -269,7 +268,7 @@ namespace RunnersZ.Game {
 
    Frame(l.CipherPanel,panel);
    Label(l.CipherLabel,"01 / MANUSCRITO INTERCEPTADO",small,gold);
-   Label(l.CipherText,VisibleCipher,cipherStyle,cream);
+   Label(l.CipherText,Cipher,cipherStyle,cream);
 
    DrawArena(l.Arena);
 
@@ -371,7 +370,7 @@ namespace RunnersZ.Game {
    if(Button(l.Close,"Cerrar")){manuscriptOpen=false;CloseKeyboard();return;}
    Label(l.Subtitle,"JUEGO EN PAUSA  \u00b7  "+DifficultyName()+"  \u00b7  Desplazamiento +"+wheel.Offset+"  /  Ocultas: "+wheel.HiddenCount,small,gold);
    Frame(l.Banner,panel);
-   Label(l.BannerText,VisibleCipher,cipherStyle,cream);
+   Label(l.BannerText,Cipher,cipherStyle,cream);
    for(int group=0;group<2;group++){
     Label(l.GroupLabel(group),"ORIGINAL\nCIFRADO",small,gold);
     for(int column=0;column<13;column++){

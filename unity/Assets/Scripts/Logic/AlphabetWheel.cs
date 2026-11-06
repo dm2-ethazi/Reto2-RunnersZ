@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 namespace RunnersZ.Logic {
  public sealed class AlphabetWheel {
   public const string Alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -28,18 +27,5 @@ namespace RunnersZ.Logic {
   public void Move(int amount){Offset=(int)(((long)Offset+amount)%26);if(Offset<0)Offset+=26;}
   public bool IsVisible(char letter){letter=char.ToUpperInvariant(letter);return !hidden.Contains(letter)||revealed.Contains(letter);}
   public char? RevealHint(){foreach(char c in order)if(hidden.Contains(c)&&revealed.Add(c)){HintsUsed++;return c;}return null;}
-  public string MaskCipher(string cipher,int actualShift){
-   if(cipher==null)return "";
-   int normalized=(actualShift%26+26)%26;
-   var result=new StringBuilder(cipher.Length);
-   foreach(char c in cipher){
-    char upper=char.ToUpperInvariant(c);
-    if(upper>='A'&&upper<='Z'){
-     char original=(char)('A'+(upper-'A'-normalized+26)%26);
-     result.Append(IsVisible(original)?c:'?');
-    }else result.Append(c);
-   }
-   return result.ToString();
-  }
  }
 }
