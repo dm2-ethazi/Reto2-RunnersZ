@@ -112,6 +112,8 @@ namespace RunnersZ.Game {
   void ApplyMetrics(){
    heading.fontSize=Mathf.RoundToInt(frame.Heading);
    statStyle.fontSize=Mathf.RoundToInt(frame.Body*.95f);
+   // La copia no hereda los cambios posteriores: se le da la misma medida que heading.
+   titleStyle.fontSize=Mathf.RoundToInt(frame.Heading);
    body.fontSize=Mathf.RoundToInt(frame.Body);
    small.fontSize=Mathf.RoundToInt(frame.Small);
    cipherStyle.fontSize=Mathf.RoundToInt(frame.Cipher);
