@@ -34,7 +34,8 @@ namespace RunnersZ.Game {
   }
   public string UseHint() {
    if(State!=GameState.EnCurso || HintsRemaining<=0) return hint;
-   if(wheel!=null) { int letters=difficulty==Difficulty.Hard?14:4; for(int i=0;i<letters;i++)wheel.RevealHint(); } int used=config.Hints-HintsRemaining+1; HintsRemaining--;
+   // Cada pista destapa tres pares; el resto del cifrado sigue con "?".
+   if(wheel!=null) { int letters=3; for(int i=0;i<letters;i++)wheel.RevealHint(); } int used=config.Hints-HintsRemaining+1; HintsRemaining--;
    var words=Message.Split(' '); hint=string.Join(" ",words,0,Mathf.Min(used,words.Length)); return hint;
   }
   void Awake(){
