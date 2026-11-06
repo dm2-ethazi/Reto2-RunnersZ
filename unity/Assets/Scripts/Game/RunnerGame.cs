@@ -291,6 +291,9 @@ namespace RunnersZ.Game {
    Label(l.HintText,string.IsNullOrEmpty(hint)?"Cada pista revela parte del mensaje.":"Pista: "+hint,small);
    Label(l.Feedback,feedback,feedbackStyle,State==GameState.Derrota?danger:cream);
 
+   // Perdida la partida la seccion de respuesta queda deshabilitada; estos dos
+   // botones deben seguir respondiendo, pero nunca con el manuscrito abierto.
+   GUI.enabled=uiEnabled;
    if(Button(l.Restart,"Reiniciar"))Begin(difficulty);
    if(Button(l.Menu,"Dificultad")){started=false;enemies.Clear();}
 
@@ -310,7 +313,10 @@ namespace RunnersZ.Game {
    Rect bodyRect=new Rect(inner.x,titleRect.yMax+4f,inner.width,Mathf.Max(0f,buttonRect.y-8f-(titleRect.yMax+4f)));
    Label(titleRect,State==GameState.Victoria?"\u00a1Puerta protegida!":"La puerta ha ca\u00eddo",heading);
    Label(bodyRect,"Puntos: "+Score+"\n"+(State==GameState.Victoria?"Has descifrado los tres mensajes.":"Prueba los pares del manuscrito y vuelve a intentarlo."),body);
-   if(Button(buttonRect,"Volver a jugar",true))Begin(difficulty);
+   // El panel se dibuja con la partida ya detenida, asi que GUI.enabled llegaba en
+   // false y el boton salia bloqueado. Ahora devuelve al selector de dificultad.
+   GUI.enabled=!manuscriptOpen;
+   if(Button(buttonRect,"Volver al men\u00fa principal",true)){started=false;enemies.Clear();manuscriptOpen=false;}
   }
 
   void DrawArena(Rect area){
