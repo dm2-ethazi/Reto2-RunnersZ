@@ -334,19 +334,28 @@ namespace RunnersZ.Game {
    float entityWidth=entityHeight*(36f/56f);
    float gateHeight=Mathf.Clamp(lane.height*.98f,entityHeight,lane.height);
    float gateWidth=gateHeight*.72f;
-   float gateX=lane.xMax-gateWidth*.62f;
-   float groundY=lane.y+lane.height*.94f;
+   // Puerta pegada al extremo derecho del carril, con un margen minimo para que no toque el marco.
+   float gateX=lane.xMax-gateWidth*.52f;
+   // El suelo visible del carril es su borde inferior: ahi se apoyan la puerta y los
+   // enemigos. Antes se usaba el 94 % del alto y quedaba una franja vacia bajo la puerta.
+   float groundY=lane.y+lane.height;
    foreach(float progress in enemies){
     float t=Mathf.Clamp01(progress);
     float px=Mathf.Lerp(lane.x+entityWidth*.5f,gateX-entityWidth*.6f,t);
     DrawWraith(px,groundY,entityWidth,entityHeight);
    }
-   GUI.DrawTexture(new Rect(gateX-gateWidth*.5f,groundY-gateHeight,gateWidth,gateHeight),pixelArt.Door,ScaleMode.ScaleToFit,true);
+   // door.png es 1:1 y el rectangulo del carril es mas alto que ancho: con ScaleToFit el
+   // cuadrado se centraba y la base quedaba flotando. Se dibuja cuadrado y apoyado en groundY,
+   // igual que los pies de los enemigos, para que la puerta se vea sobre el suelo.
+   float gateSize=Mathf.Min(gateWidth,gateHeight);
+   GUI.DrawTexture(new Rect(gateX-gateSize*.5f,groundY-gateSize,gateSize,gateSize),pixelArt.Door,ScaleMode.StretchToFill,true);
   }
 
   void DrawWraith(float centerX,float groundY,float width,float height){
    int index=Mathf.FloorToInt(Time.time*8f)%8;
-   float bob=Mathf.Sin(Time.time*8f)*Mathf.Max(1f,height*.04f);
+   // Oscilacion solo hacia arriba: con la base en el borde del carril, bajar los pies
+   // haria que se salieran por debajo del terreno.
+   float bob=(Mathf.Sin(Time.time*8f)+1f)*.5f*Mathf.Max(1f,height*.04f);
    GUI.DrawTextureWithTexCoords(new Rect(centerX-width*.5f,groundY-height+bob,width,height),pixelArt.Wraith,WraithFrames[index],true);
   }
 
