@@ -129,8 +129,8 @@ namespace RunnersZ.Game {
    if(round)panelStyle.Draw(r,GUIContent.none,false,false,false,false);else GUI.DrawTexture(r,Texture2D.whiteTexture);
    GUI.color=old;
   }
-  void Label(Rect r,string value,GUIStyle style,Color? color=null){
-   if(style==heading||style==letterStyle||style==cipherStyle){pixelArt.Text(r,value,Mathf.RoundToInt(style.fontSize),style.alignment,color??style.normal.textColor);return;}
+  void Label(Rect r,string value,GUIStyle style,Color? color=null,TextAnchor? align=null){
+   if(style==heading||style==letterStyle||style==cipherStyle){pixelArt.Text(r,value,Mathf.RoundToInt(style.fontSize),align??style.alignment,color??style.normal.textColor);return;}
    Color oldContent=GUI.contentColor,oldText=style.normal.textColor;
    GUI.contentColor=Color.white;if(color.HasValue)style.normal.textColor=color.Value;
    GUI.Label(r,value,style);
@@ -258,10 +258,8 @@ namespace RunnersZ.Game {
    // que ningun control de debajo se lleve el toque ni habra el teclado.
    bool uiEnabled=!manuscriptOpen;
    Frame(l.TopBar,surface);
-   // Mismo estilo de siempre: se centra desplazando el recuadro con el ancho real del texto.
-   var titleContent=new GUIContent("RUNNERS Z");
-   float titleWidth=heading.CalcSize(titleContent).x;
-   GUI.Label(new Rect(l.Title.x+(l.Title.width-titleWidth)*.5f,l.Title.y,titleWidth,l.Title.height),titleContent,heading);
+   // El nombre mantiene su rotulo pixel de siempre: solo cambia la alineacion.
+   Label(l.Title,"RUNNERS Z",heading,null,TextAnchor.MiddleCenter);
    Label(l.StatRound,"RONDA "+Round+" / 3",statStyle);
    Label(l.StatLives,"VIDAS "+Lives+" / 3",statStyle,Lives<=1?danger:(Color?)null);
    GUI.enabled=uiEnabled;
