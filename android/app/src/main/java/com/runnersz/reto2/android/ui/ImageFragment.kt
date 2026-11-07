@@ -1,6 +1,5 @@
 package com.runnersz.reto2.android.ui
 
-import android.graphics.BitmapFactory
 import android.net.Uri
 import android.os.Bundle
 import android.provider.OpenableColumns
@@ -13,13 +12,20 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.runnersz.reto2.android.MainActivity
 import com.runnersz.reto2.android.R
 import com.runnersz.reto2.android.data.ApiClient
 import com.runnersz.reto2.android.data.ApiResult
+import com.runnersz.reto2.android.domain.FileValidator
+import com.runnersz.reto2.android.domain.ImageDecoder
+import com.runnersz.reto2.android.domain.ProblemaArchivo
 import java.io.File
 import java.io.FileOutputStream
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * @author jairoben
@@ -116,6 +122,13 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
                 FileOutputStream(destination).use { output -> input.copyTo(output) }
             } ?: throw IllegalStateException("No se pudo abrir el archivo")
 
+            val problem = FileValidator.problema(safeName, destination.length())
+            if (problem != null) {
+                destination.delete()
+                showStatus(problemText(problem), R.color.red)
+                return
+            }
+
             viewModel.file?.takeIf { !viewModel.demo && it != destination }?.delete()
             viewModel.bitmap?.recycle()
             viewModel.bitmap = null
@@ -147,6 +160,12 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
             key.isEmpty() ->
                 showStatus(getString(R.string.image_empty_key), R.color.red)
             else -> {
+                val problem = FileValidator.problema(file.name, file.length())
+                if (problem != null) {
+                    showStatus(problemText(problem), R.color.red)
+                    return
+                }
+
                 viewModel.loading = true
                 viewModel.bitmap?.recycle()
                 viewModel.bitmap = null
@@ -156,37 +175,51 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
 
                 ApiClient().decryptFile(file, key) { result ->
                     if (!isAdded) return@decryptFile
-                    val activeView = view ?: return@decryptFile
-                    viewModel.loading = false
-                    paintLoading(activeView, false)
-
                     when (result) {
-                        is ApiResult.Success -> {
-                            val bitmap = BitmapFactory.decodeByteArray(
-                                result.data,
-                                0,
-                                result.data.size,
-                            )
-                            if (bitmap == null) {
-                                showStatus(getString(R.string.image_corrupt), R.color.red)
-                            } else {
-                                viewModel.bitmap = bitmap
-                                activeView.findViewById<ImageView>(R.id.ivResult)
-                                    .setImageBitmap(bitmap)
-                                activeView.findViewById<View>(R.id.previewCard).visibility =
-                                    View.VISIBLE
-                                showStatus(
-                                    getString(R.string.image_integrity_ok),
-                                    R.color.green,
-                                )
-                            }
-                        }
-                        is ApiResult.Failure ->
+                        is ApiResult.Success -> decodeAsync(result.data)
+                        is ApiResult.Failure -> {
+                            viewModel.loading = false
+                            val activeView = view ?: return@decryptFile
+                            paintLoading(activeView, false)
                             showStatus(result.error.texto, R.color.red)
+                        }
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Descifra en segundo plano: una imagen grande no debe bloquear la interfaz.
+     */
+    private fun decodeAsync(bytes: ByteArray) {
+        lifecycleScope.launch {
+            val bitmap = withContext(Dispatchers.IO) { ImageDecoder.decode(bytes) }
+            viewModel.loading = false
+
+            val activeView = view
+            if (activeView == null) {
+                bitmap?.recycle()
+                return@launch
+            }
+
+            paintLoading(activeView, false)
+            if (bitmap == null) {
+                showStatus(getString(R.string.image_corrupt), R.color.red)
+                return@launch
+            }
+
+            viewModel.bitmap = bitmap
+            activeView.findViewById<ImageView>(R.id.ivResult).setImageBitmap(bitmap)
+            activeView.findViewById<View>(R.id.previewCard).visibility = View.VISIBLE
+            showStatus(getString(R.string.image_integrity_ok), R.color.green)
+        }
+    }
+
+    private fun problemText(problem: ProblemaArchivo): String = when (problem) {
+        ProblemaArchivo.VACIO -> getString(R.string.image_empty_file)
+        ProblemaArchivo.DEMASIADO_GRANDE -> getString(R.string.image_too_large)
+        ProblemaArchivo.EXTENSION -> getString(R.string.image_wrong_extension)
     }
 
     private fun paintLoading(view: View, loading: Boolean) {

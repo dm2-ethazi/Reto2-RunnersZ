@@ -39,8 +39,12 @@
     <string name="image_processing">Procesando…</string>
     <string name="image_decrypting">Descifrando imagen…</string>
     <string name="image_integrity_ok">Integridad verificada</string>
+    <string name="image_decrypted_desc">Imagen descifrada</string>
     <string name="image_empty_key">Introduce la clave AES</string>
     <string name="image_no_file_error">Selecciona un archivo .enc</string>
+    <string name="image_wrong_extension">El archivo debe tener extensión .enc</string>
+    <string name="image_empty_file">El archivo está vacío</string>
+    <string name="image_too_large">El archivo supera el límite de 100 MiB</string>
     <string name="image_corrupt">La imagen descifrada no se pudo abrir</string>
     <string name="image_select_file">Seleccionar archivo .enc</string>
     <string name="image_demo_ready">Vector de prueba listo para descifrar</string>
