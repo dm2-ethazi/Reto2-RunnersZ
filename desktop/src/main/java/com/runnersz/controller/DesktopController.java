@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,6 +31,7 @@ import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.AccessibleRole;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
@@ -51,7 +53,11 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -90,6 +96,7 @@ public final class DesktopController {
   @FXML private Label connectionChip;
   @FXML private ComboBox<String> languageBox;
   @FXML private Button settingsButton;
+  @FXML private Button helpButton;
 
   @FXML private VBox fileCard;
   @FXML private TextField inputPath;
@@ -159,6 +166,8 @@ public final class DesktopController {
    */
   public void attach(Stage stage) {
     this.stage = stage;
+    stage.sceneProperty().addListener((observable, previous, scene) -> installShortcuts(scene));
+    installShortcuts(stage.getScene());
   }
 
   /**
@@ -182,6 +191,7 @@ public final class DesktopController {
     icon(caesarEncryptButton, "fas-lock");
     icon(caesarDecryptButton, "fas-lock-open");
     icon(settingsButton, "fas-cog");
+    icon(helpButton, "fas-question");
     languageBox.getItems().setAll("Español", "Euskara", "English");
     languageBox.setValue(switch (I18n.locale().getLanguage()) {
       case "eu" -> "Euskara";
@@ -250,6 +260,7 @@ public final class DesktopController {
     tip(connectionChip, "chip.help");
     tip(languageBox, "language.help");
     tip(settingsButton, "settings.open.help");
+    tip(helpButton, "help.open.help");
     tip(inputPath, "files.input.help");
     tip(browseInput, "files.choose.help");
     tip(outputPath, "files.output.help");
@@ -609,6 +620,166 @@ public final class DesktopController {
     showToast(text("text.swapped"));
   }
 
+  // ------------------------------------------------------------ ayuda y atajos
+
+  /** Explica qué hace la aplicación y los atajos; el botón «?» y F1 abren este diálogo. */
+  @FXML
+  private void handleHelp() {
+    Dialog<ButtonType> dialog = new Dialog<>();
+    dialog.initOwner(stage);
+    dialog.setTitle(text("help.title"));
+    dialog.setHeaderText(text("help.header"));
+
+    VBox panel =
+        new VBox(
+            14,
+            paragraph("help.intro"),
+            heading("help.what.title"),
+            bullet("help.what.files"),
+            bullet("help.what.vigenere"),
+            bullet("help.what.caesar"),
+            heading("help.shortcuts.title"),
+            shortcuts(),
+            paragraph("help.shortcuts.note"));
+    panel.setPadding(new Insets(16));
+    panel.setPrefWidth(680);
+    dialog.getDialogPane().setContent(panel);
+    dialog.getDialogPane().getButtonTypes().add(ButtonType.CLOSE);
+    translate(dialog.getDialogPane());
+    show(dialog);
+  }
+
+  private Label paragraph(String key) {
+    Label label = wrapped(text(key));
+    label.getStyleClass().add("helper");
+    return label;
+  }
+
+  private Label bullet(String key) {
+    Label label = wrapped("• " + text(key));
+    label.getStyleClass().add("helper");
+    return label;
+  }
+
+  private Label heading(String key) {
+    Label label = new Label(text(key));
+    label.getStyleClass().add("help-heading");
+    label.setAccessibleRole(AccessibleRole.TEXT);
+    label.setAccessibleText(label.getText());
+    return label;
+  }
+
+  /** Tabla de atajos: la combinación a la izquierda y lo que hace a la derecha. */
+  private GridPane shortcuts() {
+    String modifier = shortcutModifier();
+    String[][] rows = {
+      {"help.combo.help", "help.shortcut.help"},
+      {"help.combo.tabs", "help.shortcut.tabs"},
+      {"help.combo.open", "help.shortcut.open"},
+      {"help.combo.save", "help.shortcut.save"},
+      {"help.combo.encrypt", "help.shortcut.encrypt"},
+      {"help.combo.decrypt", "help.shortcut.decrypt"},
+      {"help.combo.settings", "help.shortcut.settings"}
+    };
+    GridPane grid = new GridPane();
+    grid.setHgap(16);
+    grid.setVgap(9);
+    for (int row = 0; row < rows.length; row++) {
+      Label keys = new Label(text(rows[row][0], modifier));
+      keys.getStyleClass().add("shortcut-keys");
+      keys.setAccessibleText(keys.getText());
+      Label what = wrapped(text(rows[row][1]));
+      what.setMaxWidth(440);
+      grid.add(keys, 0, row);
+      grid.add(what, 1, row);
+    }
+    return grid;
+  }
+
+  /** Ctrl en Windows y Linux, ⌘ en macOS: la tecla real depende del sistema. */
+  static String shortcutModifier() {
+    String os = System.getProperty("os.name", "");
+    return os.toLowerCase(Locale.ROOT).startsWith("mac") ? "⌘" : "Ctrl";
+  }
+
+  /**
+   * Atajos de la ventana. Se reinstalan en cada escena nueva, que es la que se crea al cambiar de
+   * idioma; conviven con los mnemónicos Alt de los botones.
+   */
+  void installShortcuts(Scene scene) {
+    if (scene == null) return;
+    Map<KeyCombination, Runnable> keys = scene.getAccelerators();
+    keys.put(new KeyCodeCombination(KeyCode.F1), this::handleHelp);
+    KeyCode[] digits = {KeyCode.DIGIT1, KeyCode.DIGIT2, KeyCode.DIGIT3};
+    for (int tab = 0; tab < digits.length; tab++) {
+      int index = tab;
+      keys.put(shortcut(digits[tab]), () -> selectTab(index));
+    }
+    keys.put(shortcut(KeyCode.O), this::handleOpen);
+    keys.put(shortcut(KeyCode.S), this::handleSave);
+    keys.put(shortcut(KeyCode.ENTER), () -> runTabAction(true));
+    keys.put(
+        new KeyCodeCombination(
+            KeyCode.ENTER, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN),
+        () -> runTabAction(false));
+    keys.put(
+        new KeyCodeCombination(KeyCode.COMMA, KeyCombination.SHORTCUT_DOWN), this::handleSettings);
+  }
+
+  private static KeyCodeCombination shortcut(KeyCode code) {
+    return new KeyCodeCombination(code, KeyCombination.SHORTCUT_DOWN);
+  }
+
+  private void selectTab(int index) {
+    if (index < 0 || index >= tabs.getTabs().size()) return;
+    tabs.getSelectionModel().select(index);
+  }
+
+  /** Ctrl+O: elige fichero en Ficheros y abre un .txt en las pestañas de mensajes. */
+  private void handleOpen() {
+    if (tabs.getSelectionModel().getSelectedIndex() == 0) {
+      handleChooseInput();
+    } else {
+      handleOpenText();
+    }
+  }
+
+  /** Ctrl+S: elige el destino del fichero o guarda el resultado del mensaje. */
+  private void handleSave() {
+    if (tabs.getSelectionModel().getSelectedIndex() == 0) {
+      handleChooseOutput();
+    } else {
+      handleSaveText();
+    }
+  }
+
+  /** Ctrl+Intro cifra y Ctrl+Mayús+Intro descifra, siempre en la pestaña activa. */
+  private void runTabAction(boolean encrypt) {
+    switch (tabs.getSelectionModel().getSelectedIndex()) {
+      case 0 -> {
+        if (encrypt) {
+          handleEncrypt();
+        } else {
+          handleDecrypt();
+        }
+      }
+      case 2 -> {
+        if (encrypt) {
+          handleCaesarEncrypt();
+        } else {
+          handleCaesarDecrypt();
+        }
+      }
+      default -> {
+        if (encrypt) {
+          handleVigenereEncrypt();
+        } else {
+          handleVigenereDecrypt();
+        }
+      }
+    }
+  }
+
   // --------------------------------------------------------------- ajustes
 
   @FXML
@@ -718,7 +889,7 @@ public final class DesktopController {
           worker.submit(check);
         });
 
-    Optional<ButtonType> answer = dialog.showAndWait();
+    Optional<ButtonType> answer = show(dialog);
     if (answer.isPresent() && answer.get() == save) {
       try {
         settings.update(base.getText(), token.getText());
@@ -790,7 +961,7 @@ public final class DesktopController {
           notice.setText(text("logs.copied"));
         });
 
-    dialog.showAndWait();
+    show(dialog);
   }
 
   /**
@@ -835,7 +1006,7 @@ public final class DesktopController {
     translate(alert.getDialogPane());
     Button copyButton = (Button) alert.getDialogPane().lookupButton(copy);
     tip(copyButton, key ? "reminder.key.copy.help" : "reminder.copy.help");
-    Optional<ButtonType> answer = alert.showAndWait();
+    Optional<ButtonType> answer = show(alert);
     if (answer.isPresent() && answer.get() == copy) copySecret(secret, key);
   }
 
@@ -863,7 +1034,7 @@ public final class DesktopController {
     ButtonType open = new ButtonType(text("settings.open"), ButtonBar.ButtonData.OK_DONE);
     alert.getButtonTypes().setAll(open, ButtonType.CLOSE);
     translate(alert.getDialogPane());
-    alert.showAndWait();
+    show(alert);
     handleSettings();
     return false;
   }
@@ -1094,7 +1265,7 @@ public final class DesktopController {
     ButtonType settingsType = new ButtonType(text("goSettings"), ButtonBar.ButtonData.LEFT);
     alert.getButtonTypes().setAll(settingsType, retryType, ButtonType.CLOSE);
     translate(alert.getDialogPane());
-    Optional<ButtonType> answer = alert.showAndWait();
+    Optional<ButtonType> answer = show(alert);
     if (answer.isEmpty()) return;
     if (answer.get() == retryType && retry != null) {
       Platform.runLater(retry);
@@ -1111,22 +1282,60 @@ public final class DesktopController {
     alert.getDialogPane().setContent(wrapped(text("confirm.body", path)));
     alert.getButtonTypes().setAll(ButtonType.CANCEL, ButtonType.OK);
     translate(alert.getDialogPane());
-    return alert.showAndWait().orElse(ButtonType.CANCEL) == ButtonType.OK;
+    return show(alert).orElse(ButtonType.CANCEL) == ButtonType.OK;
+  }
+
+  /** Abre el diálogo y ajusta sus botones cuando la hoja de estilos ya ha fijado la tipografía. */
+  private Optional<ButtonType> show(Dialog<ButtonType> dialog) {
+    dialog.setOnShown(shown -> fitButtons(dialog.getDialogPane()));
+    return dialog.showAndWait();
+  }
+
+  /**
+   * Ningún botón de un diálogo puede recortar su texto con «…»: se mide ya visible, con la fuente
+   * definitiva, y se le da ese ancho. Si la barra de botones no cabe, la ventana crece lo justo.
+   */
+  private static void fitButtons(javafx.scene.control.DialogPane pane) {
+    pane.applyCss();
+    pane.layout();
+    double total = 0;
+    for (ButtonType type : pane.getButtonTypes()) {
+      Button button = (Button) pane.lookupButton(type);
+      if (button == null) continue;
+      double width = Math.ceil(button.prefWidth(-1)) + 4;
+      button.setMinWidth(width);
+      button.setPrefWidth(width);
+      total += width + 10;
+    }
+    var window = pane.getScene() == null ? null : pane.getScene().getWindow();
+    if (window instanceof Stage dialog) {
+      dialog.setWidth(Math.max(dialog.getWidth(), total + 80));
+    }
+    pane.applyCss();
+    pane.layout();
   }
 
   private void translate(javafx.scene.control.DialogPane pane) {
+    String css = stylesheet();
+    if (css != null && !pane.getStylesheets().contains(css)) pane.getStylesheets().add(css);
     for (ButtonType type : pane.getButtonTypes()) {
+      Button button = (Button) pane.lookupButton(type);
+      if (button == null) continue;
+      // Cada botón conserva su ancho preferido: el texto nunca acaba recortado como «Cer…».
       String key =
           type == ButtonType.CANCEL
               ? "cancel"
               : type == ButtonType.OK
                   ? "ok"
                   : type == ButtonType.CLOSE ? "close" : null;
-      if (key != null) {
-        Button button = (Button) pane.lookupButton(type);
-        if (button != null) button.setText(text(key));
-      }
+      if (key != null) button.setText(text(key));
     }
+  }
+
+  /** Hoja de estilos de la aplicación; los diálogos no siempre heredan la de la ventana dueña. */
+  private static String stylesheet() {
+    var url = DesktopController.class.getResource("/com/runnersz/estilo/runnersz.css");
+    return url == null ? null : url.toExternalForm();
   }
 
   private Label wrapped(String message) {
@@ -1207,6 +1416,7 @@ public final class DesktopController {
             browseInput,
             browseOutput,
             settingsButton,
+            helpButton,
             openTextButton,
             saveTextButton,
             copyTextButton,

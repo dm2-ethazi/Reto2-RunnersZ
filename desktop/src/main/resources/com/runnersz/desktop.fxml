@@ -30,6 +30,8 @@
             <Region HBox.hgrow="ALWAYS"/>
             <Label fx:id="connectionChip" styleClass="chip"/>
             <ComboBox fx:id="languageBox" prefWidth="130"/>
+            <Button fx:id="helpButton" styleClass="help-button" onAction="#handleHelp"
+                    accessibleText="%help.open" minHeight="34"/>
             <Button fx:id="settingsButton" styleClass="ghost-button" text="%settings.open"
                     onAction="#handleSettings" minHeight="36"/>
         </HBox>

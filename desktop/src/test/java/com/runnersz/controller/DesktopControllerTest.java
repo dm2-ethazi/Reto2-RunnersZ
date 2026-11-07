@@ -17,6 +17,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,8 @@ import javafx.scene.control.TextInputControl;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.Clipboard;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -77,6 +80,7 @@ class DesktopControllerTest {
   private static boolean toolkit;
   private static volatile boolean autoClose = true;
   private Parent root;
+  private Scene scene;
   private DesktopController controller;
 
   @BeforeAll
@@ -106,7 +110,7 @@ class DesktopControllerTest {
                   DesktopController.class.getResource("/com/runnersz/desktop.fxml"),
                   I18n.bundle());
           root = loader.load();
-          Scene scene = new Scene(root, 1040, 800);
+          scene = new Scene(root, 1040, 800);
           scene
               .getStylesheets()
               .add(
@@ -173,6 +177,7 @@ class DesktopControllerTest {
             "browseInput",
             "browseOutput",
             "settingsButton",
+            "helpButton",
             "openTextButton",
             "saveTextButton",
             "copyTextButton",
@@ -685,6 +690,103 @@ class DesktopControllerTest {
   }
 
   @Test
+  void elBotonDeAyudaExplicaLaAplicacionYLosAtajos() {
+    autoClose = false;
+    try {
+      fireLater("helpButton");
+      waitUntil(this::dialogShowing);
+      assertEquals("Ayuda y atajos de teclado", onFx(() -> dialogPane().getHeaderText()));
+      String content = onFx(() -> texts(dialogPane().getContent()));
+      assertTrue(content.contains("AES"), content);
+      assertTrue(content.contains("Ctrl+1"), content);
+      assertTrue(content.contains("Ctrl+Intro"), content);
+      assertTrue(content.contains("F1"), content);
+      clickDialogButton("Cerrar");
+      waitUntil(() -> !dialogShowing());
+    } finally {
+      autoClose = true;
+    }
+  }
+
+  @Test
+  void losAtajosCambianDePestanaYAvisanSinDatos() {
+    onFx(
+        () -> {
+          controller.installShortcuts(scene);
+          return null;
+        });
+    onFx(
+        () -> {
+          press(KeyCode.DIGIT3, KeyCombination.SHORTCUT_DOWN);
+          return null;
+        });
+    assertEquals(2, tabIndex());
+
+    CLOSED.clear();
+    onFx(
+        () -> {
+          press(KeyCode.ENTER, KeyCombination.SHORTCUT_DOWN);
+          return null;
+        });
+    waitUntil(() -> CLOSED.contains("Falta el texto"));
+    assertEquals(List.of("Falta el texto"), List.copyOf(CLOSED), "Ctrl+Intro cifra César");
+
+    CLOSED.clear();
+    onFx(
+        () -> {
+          press(KeyCode.DIGIT1, KeyCombination.SHORTCUT_DOWN);
+          press(KeyCode.ENTER, KeyCombination.SHORTCUT_DOWN);
+          return null;
+        });
+    waitUntil(() -> CLOSED.contains("Falta el fichero"));
+    assertEquals(List.of("Falta el fichero"), List.copyOf(CLOSED), "Ctrl+Intro cifra Ficheros");
+
+    CLOSED.clear();
+    onFx(
+        () -> {
+          press(KeyCode.DIGIT3, KeyCombination.SHORTCUT_DOWN);
+          press(KeyCode.ENTER, KeyCombination.SHORTCUT_DOWN, KeyCombination.SHIFT_DOWN);
+          return null;
+        });
+    waitUntil(() -> CLOSED.contains("Falta el texto"));
+    assertEquals(List.of("Falta el texto"), List.copyOf(CLOSED), "Ctrl+Mayús+Intro descifra");
+  }
+
+  @Test
+  void ningunDialogoRecortaElTextoDeSusBotones() {
+    autoClose = false;
+    try {
+      checkDialog("helpButton", "Cerrar");
+      checkDialog("settingsButton", "Cancelar");
+      checkDialog("encryptButton", "Cerrar");
+      onFx(
+          () -> {
+            Platform.runLater(controller::showLogs);
+            return null;
+          });
+      waitUntil(this::dialogShowing);
+      assertButtonsWhole();
+      clickDialogButton("Cerrar");
+      waitUntil(() -> !dialogShowing());
+    } finally {
+      autoClose = true;
+    }
+  }
+
+  @Test
+  void elBotonDeAyudaEsUnCirculo() {
+    onFx(
+        () -> {
+          Button help = (Button) root.lookup("#helpButton");
+          double radius =
+              help.getBackground().getFills().get(0).getRadii().getTopLeftHorizontalRadius();
+          assertEquals(34, help.getWidth(), 0.01, "ocupa lo mismo que un botón de la cabecera");
+          assertEquals(help.getWidth() / 2, radius, 0.01, "el radio cubre medio botón: círculo");
+          return null;
+        });
+  }
+
+  @Test
   void laTipografiaUsaEmSobreUnaBaseDe16Px() {
     assertEquals(16.0, onFx(() -> font("#statusLabel")), 0.01, "cuerpo: 1 em = 16 px = 12 pt");
     assertEquals(16.0, onFx(() -> font("#plainText")), 0.01, "campos: 1 em");
@@ -821,6 +923,62 @@ class DesktopControllerTest {
           } catch (InvocationTargetException ex) {
             throw new IllegalStateException(ex.getCause());
           }
+        });
+  }
+
+  /** Ejecuta el atajo tal como lo haría JavaFX al pulsar la combinación. */
+  private void press(KeyCode code, KeyCombination.Modifier... modifiers) {
+    Runnable action = scene.getAccelerators().get(new KeyCodeCombination(code, modifiers));
+    assertNotNull(action, "atajo registrado: " + code);
+    action.run();
+  }
+
+  private int tabIndex() {
+    return onFx(() -> ((TabPane) root.lookup("#tabs")).getSelectionModel().getSelectedIndex());
+  }
+
+  /** Texto de todas las etiquetas del contenedor, para revisar lo que muestra un diálogo. */
+  private static String texts(Node node) {
+    StringBuilder all = new StringBuilder();
+    if (node instanceof javafx.scene.control.Labeled labelled && labelled.getText() != null) {
+      all.append(labelled.getText()).append('\n');
+    }
+    if (node instanceof Parent parent) {
+      for (Node child : parent.getChildrenUnmodifiable()) all.append(texts(child));
+    }
+    return all.toString();
+  }
+
+  /** Abre el diálogo de un botón, revisa que sus botones se lean enteros y lo cierra. */
+  private void checkDialog(String buttonId, String closeLabel) {
+    fireLater(buttonId);
+    waitUntil(this::dialogShowing);
+    assertButtonsWhole();
+    clickDialogButton(closeLabel);
+    waitUntil(() -> !dialogShowing());
+  }
+
+  /** Ningún botón del diálogo abierto puede medir menos que su ancho preferido: se vería «Cer…». */
+  private void assertButtonsWhole() {
+    onFx(
+        () -> {
+          DialogPane pane = dialogPane();
+          assertNotNull(pane, "hay un diálogo abierto");
+          pane.applyCss();
+          pane.layout();
+          for (ButtonType type : pane.getButtonTypes()) {
+            Button button = (Button) pane.lookupButton(type);
+            assertNotNull(button, type.getText());
+            assertTrue(
+                button.getWidth() + 0.5 >= button.prefWidth(-1),
+                "«"
+                    + button.getText()
+                    + "» se recorta: ancho "
+                    + button.getWidth()
+                    + " < "
+                    + button.prefWidth(-1));
+          }
+          return null;
         });
   }
 

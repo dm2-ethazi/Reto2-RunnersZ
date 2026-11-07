@@ -307,3 +307,36 @@
     -fx-padding: 4 10;
     -fx-alignment: center;
 }
+
+/* ------------------------------------------------------------ ayuda y atajos */
+
+/* Botón «?» de la cabecera: hereda colores, borde y estados de .button y solo cambia la forma
+ * (redondo) y el tamaño, para que ocupe lo mismo que Ajustes sin crecer.
+ * El radio es 17 px, la mitad de los 34 px de lado: con un valor mayor JavaFX escala las esquinas
+ * y el botón se dibuja como un octógono en lugar de un círculo. */
+.help-button {
+    -fx-background-radius: 17px;
+    -fx-border-radius: 17px;
+    -fx-padding: 1 9;
+    -fx-min-width: 34px;
+    -fx-max-width: 34px;
+    -fx-min-height: 34px;
+    -fx-max-height: 34px;
+}
+
+/* El diálogo pinta sus etiquetas con Open Sans; estos dos estilos lo ajustan. */
+.dialog-pane .help-heading {
+    -fx-text-fill: -rz-navy;
+    -fx-font-family: "Inter";
+    -fx-font-weight: 700;
+    -fx-font-size: 1.125em;
+}
+.dialog-pane .shortcut-keys {
+    -fx-background-color: #E5D9BF;
+    -fx-background-radius: 5;
+    -fx-border-color: #C8B896;
+    -fx-border-radius: 5;
+    -fx-font-family: -rz-mono;
+    -fx-text-fill: -rz-navy;
+    -fx-padding: 2 8;
+}
