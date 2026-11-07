@@ -176,6 +176,7 @@ public final class DesktopController {
     icon(vigenereDecryptButton, "fas-lock-open");
     icon(caesarEncryptButton, "fas-lock");
     icon(caesarDecryptButton, "fas-lock-open");
+    icon(settingsButton, "fas-cog");
     languageBox.getItems().setAll("Español", "Euskara", "English");
     languageBox.setValue(switch (I18n.locale().getLanguage()) {
       case "eu" -> "Euskara";
