@@ -20,8 +20,12 @@ cd desktop
 java -jar target/runnersz-desktop.jar
 ```
 
-`mvn verify` falla si la cobertura de líneas de `service`, `model` y `utiles` baja del 80 %
-(JaCoCo `check`), tal como exige el §11.2. El informe queda en `target/site/jacoco/index.html`.
+`mvn verify` falla si la cobertura de líneas **del proyecto** baja del 80 %, el mínimo que pide el
+pliego (JaCoCo `check` sin filtros de paquete). El informe queda en `target/site/jacoco/index.html`.
+
+Medición actual: **82,0 %** (936 de 1142 líneas), también por encima del 80 % en cada capa. El
+desglose por paquete y el procedimiento para repetirlo están en
+[`docs/evidencias.md`](docs/evidencias.md).
 
 ## Configuración de la conexión
 
@@ -64,7 +68,9 @@ valor se sale del rango.
 
 ## Accesibilidad (§9.3)
 
-- Todos los controles tienen nombre accesible y ayuda contextual.
+- Todos los controles declaran su rol (`setAccessibleRole`) y su nombre (`setAccessibleText`); los
+  botones de icono llevan además la descripción (`setAccessibleHelp`).
+- Todos tienen ayuda contextual: ayuda emergente al pasar el ratón o al enfocar con el teclado.
 - Objetivos táctiles de 34–38 px de alto.
 - Foco visible con borde de 2 px y orden de tabulación natural.
 - Atajos: `Alt+C` cifrar, `Alt+D` descifrar, menú contextual de edición traducido.
@@ -96,6 +102,10 @@ src/main/resources/com/runnersz/
 Decisiones relevantes:
 
 - **FXML real**: la ventana se carga con `FXMLLoader` y `ResourceBundle`; no hay recursos muertos.
+- **Tipografía del §9.2 en puntos**: marca 22 pt, títulos 20 pt, cuerpo, ayudas y botones 12 pt, y
+  resultados monoespaciados 14 pt. Inter y Open Sans van empaquetadas en el JAR.
+- **Paleta**: el `#DDD0B0` de los botones secundarios no es un color nuevo, es un tono derivado del
+  pergamino `#E8DCC6`. Con `#1B2A41` encima supera 9:1 de contraste y separa el botón del fondo.
 - **Streaming**: el cuerpo multipart se emite en bloques de 64 KiB y la respuesta se escribe
   directamente en un temporal, así que la memoria no depende del tamaño del fichero (§7.1).
 - **Timeout de 120 s** en todas las peticiones (§7.2) y botones **Reintentar** / **Ir a Ajustes** en
@@ -108,7 +118,7 @@ Decisiones relevantes:
 
 ## Pruebas
 
-`./mvnw verify` ejecuta 40 pruebas JUnit 5 contra un servidor HTTP local (`StubApi`), sin Docker ni
+`./mvnw verify` ejecuta 64 pruebas JUnit 5 contra un servidor HTTP local (`StubApi`), sin Docker ni
 red externa:
 
 | Clase | Qué comprueba |
@@ -117,10 +127,17 @@ red externa:
 | `FileOperationServiceTest` | fichero vacío, salida que es carpeta, protección del original, publicación y limpieza de temporales |
 | `FileServiceTest` | temporales junto al destino, reemplazo atómico, textos UTF-8 |
 | `SettingsStoreTest` | sin credenciales por defecto, normalización de `/api/v1`, validación de URL y token, migración |
+| `DesktopControllerTest` | roles y nombres accesibles, estado del formulario, selección de ficheros, desplazamiento, avisos, diálogo de Ajustes, menú de edición, portapapeles y un cifrado completo (carga el FXML real) |
+| `MainTest` | arranque de la ventana, título, fuentes empaquetadas y parada sin ventanas ni tareas vivas |
 | `I18nTest` | paridad de claves en los cuatro catálogos, claves del FXML, formato por idioma |
 
 Las pruebas usan preferencias en memoria (`MemoryPreferencesFactory`), de modo que no tocan la
 configuración real del usuario.
+
+`DesktopControllerTest` carga `desktop.fxml` en el hilo de JavaFX y cierra los diálogos modales desde
+un vigilante, así que comprueba también qué aviso aparece sin necesidad de interacción. Si el
+entorno no puede arrancar el motor gráfico, la clase se omite; en integración continua se ejecuta
+bajo Xvfb.
 
 ## Integración continua
 
@@ -145,6 +162,13 @@ esperado, porque al ejecutar la aplicación sí aparecen.
   que el editor usará la fuente del sistema.
 - El controlador no está en el classpath del editor: el panel *Controller* sale vacío y los `onAction`
   se conservan como texto en el FXML.
+
+## Documentación
+
+- [`docs/codigo.md`](docs/codigo.md): qué hace cada capa del cliente, cómo se reparten los hilos y
+  por qué está separada así.
+- [`docs/evidencias.md`](docs/evidencias.md): pruebas, cobertura por paquete, empaquetado y el
+  procedimiento de las pruebas manuales del Anexo VI.4 (0 B, 1 B, 1 MiB, 20 MiB).
 
 ## Problemas frecuentes
 

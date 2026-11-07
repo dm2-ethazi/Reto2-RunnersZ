@@ -214,6 +214,7 @@ public final class DesktopController {
     updateCounter("", textCounter);
     updateCounter("", caesarCounter);
 
+    installAccessibility();
     installTooltips();
     configureDropTarget();
     progressBar.setVisible(false);
@@ -965,6 +966,91 @@ public final class DesktopController {
   private void accessible(javafx.scene.control.Control control, String key) {
     control.setAccessibleText(text(key));
     if (control instanceof TextInputControl input) installEditMenu(input);
+  }
+
+  /**
+   * Aplica el modelo ARIA de la §9.3: cada control declara su rol y los botones de icono su nombre
+   * accesible. Se ejecuta al cargar la vista, así que también sigue el idioma activo al recargar.
+   */
+  private void installAccessibility() {
+    role(tabs, AccessibleRole.TAB_PANE);
+    role(languageBox, AccessibleRole.COMBO_BOX);
+    role(connectionChip, AccessibleRole.TEXT);
+    role(showPassword, AccessibleRole.TOGGLE_BUTTON);
+    role(shiftSlider, AccessibleRole.SLIDER);
+    role(caesarShiftValue, AccessibleRole.TEXT);
+    role(textCounter, AccessibleRole.TEXT);
+    role(caesarCounter, AccessibleRole.TEXT);
+    role(dropHint, AccessibleRole.TEXT);
+    role(filesNote, AccessibleRole.TEXT);
+    role(progressBar, AccessibleRole.PROGRESS_INDICATOR);
+    role(progressLabel, AccessibleRole.TEXT);
+    role(statusLabel, AccessibleRole.TEXT);
+    role(toast, AccessibleRole.TEXT);
+    role(inputPath, AccessibleRole.TEXT_FIELD);
+    role(outputPath, AccessibleRole.TEXT_FIELD);
+    role(passwordField, AccessibleRole.PASSWORD_FIELD);
+    role(passwordPlain, AccessibleRole.TEXT_FIELD);
+    role(keyField, AccessibleRole.TEXT_FIELD);
+    role(plainText, AccessibleRole.TEXT_AREA);
+    role(vigenereResult, AccessibleRole.TEXT_AREA);
+    role(caesarText, AccessibleRole.TEXT_AREA);
+    role(caesarResult, AccessibleRole.TEXT_AREA);
+    for (ScrollPane pane : List.of(filesScroll, vigenereScroll, caesarScroll)) {
+      role(pane, AccessibleRole.SCROLL_PANE);
+    }
+    for (Label heading :
+        List.of(
+            brandName,
+            brandSubtitle,
+            filesTitle,
+            filesIntro,
+            inputLabel,
+            outputLabel,
+            passwordLabel,
+            vigenereTitle,
+            vigenereIntro,
+            textInputLabel,
+            keyLabel,
+            vigenereResultLabel,
+            caesarTitle,
+            caesarIntro,
+            caesarInputLabel,
+            caesarShiftLabel,
+            caesarResultLabel)) {
+      role(heading, AccessibleRole.TEXT);
+      heading.setAccessibleText(heading.getText());
+    }
+    for (Button button :
+        List.of(
+            encryptButton,
+            decryptButton,
+            browseInput,
+            browseOutput,
+            settingsButton,
+            openTextButton,
+            saveTextButton,
+            copyTextButton,
+            swapTextButton,
+            vigenereEncryptButton,
+            vigenereDecryptButton,
+            caesarEncryptButton,
+            caesarDecryptButton,
+            caesarOpenButton,
+            caesarSaveButton,
+            caesarCopyButton,
+            cancelButton)) {
+      role(button, AccessibleRole.BUTTON);
+      String current = button.getAccessibleText();
+      if (current == null || current.isBlank()) {
+        // El guion bajo del FXML es un mnemónico: no forma parte del nombre accesible.
+        button.setAccessibleText(button.getText().replace("_", "").trim());
+      }
+    }
+  }
+
+  private static void role(javafx.scene.control.Control control, AccessibleRole value) {
+    if (control != null) control.setAccessibleRole(value);
   }
 
   /** El menú JavaFX predeterminado usa el idioma del entorno; este sigue el selector. */

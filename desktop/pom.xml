@@ -88,11 +88,7 @@
                         <phase>verify</phase>
                         <goals><goal>check</goal></goals>
                         <configuration>
-                            <includes>
-                                <include>com/runnersz/service/*</include>
-                                <include>com/runnersz/model/*</include>
-                                <include>com/runnersz/utiles/*</include>
-                            </includes>
+                            <!-- El pliego pide el 80 % del proyecto: se mide todo, no solo el dominio. -->
                             <rules>
                                 <rule>
                                     <element>BUNDLE</element>
