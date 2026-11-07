@@ -128,6 +128,24 @@ configuración real del usuario.
 JaCoCo y fat JAR como artefactos. En local, `act push -j desktop` reproduce el job con la imagen
 fijada en `.actrc`.
 
+## Editar la vista en Scene Builder
+
+`desktop.fxml` usa solo controles estándar de JavaFX, así que se abre en cualquier versión de Scene
+Builder sin instalar librerías ni tocar su classpath. Los candados de los botones los crea
+`DesktopController` con Ikonli al arrancar: en el editor los botones se ven sin icono, y es lo
+esperado, porque al ejecutar la aplicación sí aparecen.
+
+- Abre `src/main/resources/com/runnersz/desktop.fxml` con **File → Open**. Arrastrar el fichero sobre
+  el icono de la aplicación, o abrirlo por línea de órdenes, también funciona; en versiones antiguas
+  la carga desde la línea de órdenes se hacía antes de registrar librerías y fallaba.
+- Los textos aparecen como `%files.title`, `%caesar.shift`…: las traducciones las inyecta
+  `FXMLLoader` desde `i18n/` al ejecutar, y Scene Builder lee el FXML en crudo.
+- Para ver colores y tipografías reales: **Preview → Scene Style Sheets → Add a Style Sheet…** y elige
+  `estilo/runnersz.css`. Las fuentes de `fonts/` las registra la aplicación en tiempo de ejecución, así
+  que el editor usará la fuente del sistema.
+- El controlador no está en el classpath del editor: el panel *Controller* sale vacío y los `onAction`
+  se conservan como texto en el FXML.
+
 ## Problemas frecuentes
 
 | Síntoma | Causa y solución |

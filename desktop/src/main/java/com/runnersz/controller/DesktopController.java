@@ -1,6 +1,7 @@
 package com.runnersz.controller;
 
 import static com.runnersz.utiles.I18n.text;
+import org.kordamp.ikonli.javafx.FontIcon;
 
 import com.runnersz.model.ConnectionSettings;
 import com.runnersz.service.ApiClient;
@@ -169,6 +170,12 @@ public final class DesktopController {
   private void initialize() {
     shiftSlider.valueProperty().addListener((observable, previous, value) -> updateShift());
     updateShift();
+    icon(encryptButton, "fas-lock");
+    icon(decryptButton, "fas-lock-open");
+    icon(vigenereEncryptButton, "fas-lock");
+    icon(vigenereDecryptButton, "fas-lock-open");
+    icon(caesarEncryptButton, "fas-lock");
+    icon(caesarDecryptButton, "fas-lock-open");
     languageBox.getItems().setAll("Español", "Euskara", "English");
     languageBox.setValue(switch (I18n.locale().getLanguage()) {
       case "eu" -> "Euskara";
@@ -849,6 +856,16 @@ public final class DesktopController {
   }
 
   /** Desplazamiento elegido en la barra, redondeado a un entero entre 1 y 25. */
+  /**
+   * Crea el candado del botón. Se hace en código y no en el FXML para que la vista se abra en
+   * cualquier Scene Builder sin añadir Ikonli a su classpath.
+   */
+  private static void icon(Button button, String literal) {
+    FontIcon icon = new FontIcon(literal);
+    icon.setIconSize(15);
+    button.setGraphic(icon);
+  }
+
   private int shift() {
     return (int) Math.round(shiftSlider.getValue());
   }

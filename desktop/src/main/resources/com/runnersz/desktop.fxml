@@ -17,7 +17,6 @@
 <?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
-<?import org.kordamp.ikonli.javafx.FontIcon?>
 
 <BorderPane xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="com.runnersz.controller.DesktopController" styleClass="app-root">
@@ -86,16 +85,10 @@
                                     <Button fx:id="encryptButton" styleClass="primary-button" text="%files.encrypt"
                                             mnemonicParsing="true" onAction="#handleEncrypt" minHeight="38"
                                             accessibleHelp="%files.encrypt.help">
-                                        <graphic>
-                                            <FontIcon iconLiteral="fas-lock" iconSize="15"/>
-                                        </graphic>
                                     </Button>
                                     <Button fx:id="decryptButton" text="%files.decrypt" mnemonicParsing="true"
                                             onAction="#handleDecrypt" minHeight="38"
                                             accessibleHelp="%files.decrypt.help">
-                                        <graphic>
-                                            <FontIcon iconLiteral="fas-lock-open" iconSize="15"/>
-                                        </graphic>
                                     </Button>
                                 </HBox>
                             </VBox>
@@ -133,16 +126,10 @@
                                         <Button fx:id="vigenereEncryptButton" styleClass="primary-button"
                                                 text="%vigenere.encrypt" onAction="#handleVigenereEncrypt" minHeight="38"
                                                 accessibleHelp="%vigenere.encrypt.help">
-                                            <graphic>
-                                                <FontIcon iconLiteral="fas-lock" iconSize="15"/>
-                                            </graphic>
                                         </Button>
                                         <Button fx:id="vigenereDecryptButton" text="%vigenere.decrypt"
                                                 onAction="#handleVigenereDecrypt" minHeight="38"
                                                 accessibleHelp="%vigenere.decrypt.help">
-                                            <graphic>
-                                                <FontIcon iconLiteral="fas-lock-open" iconSize="15"/>
-                                            </graphic>
                                         </Button>
                                     </HBox>
 
@@ -195,16 +182,10 @@
                                         <Button fx:id="caesarEncryptButton" styleClass="primary-button"
                                                 text="%caesar.encrypt" onAction="#handleCaesarEncrypt" minHeight="38"
                                                 accessibleHelp="%caesar.encrypt.help">
-                                            <graphic>
-                                                <FontIcon iconLiteral="fas-lock" iconSize="15"/>
-                                            </graphic>
                                         </Button>
                                         <Button fx:id="caesarDecryptButton" text="%caesar.decrypt"
                                                 onAction="#handleCaesarDecrypt" minHeight="38"
                                                 accessibleHelp="%caesar.decrypt.help">
-                                            <graphic>
-                                                <FontIcon iconLiteral="fas-lock-open" iconSize="15"/>
-                                            </graphic>
                                         </Button>
                                     </HBox>
 
