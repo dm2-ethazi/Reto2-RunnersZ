@@ -16,6 +16,9 @@ namespace RunnersZ.Game {
   float doorBleed;
   // Avanza solo con la partida en curso: congela la animacion al caer la puerta.
   float enemyClock;
+  // Mismo GameObject: el RunnerGame es el unico que sabe cuando se entra al
+  // nivel, cuando quedan espectros caminando y cuando golpean la puerta.
+  GameAudio audio;
   AlphabetWheel wheel; bool manuscriptOpen; PhraseBank bank; DifficultyConfig config; int shift, spawned; float nextSpawn; string answer="", hint="", feedback=""; bool started, backPressed;
   // Teclado propio del juego: el campo de respuesta deja de ser un control de
   // texto, asi que Android no puede levantar su teclado encima de la partida.
@@ -23,7 +26,7 @@ namespace RunnersZ.Game {
   const string KeypadLetters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   public void Begin(Difficulty selected) {
    difficulty=selected; config=new DifficultyConfig(selected); bank=new PhraseBank(System.Environment.TickCount);
-   State=GameState.EnCurso; Round=1; Lives=3; started=true; doorBleed=0f; enemyClock=0f; PrepareRound();
+   State=GameState.EnCurso; Round=1; Lives=3; started=true; doorBleed=0f; enemyClock=0f; PrepareRound(); if(audio!=null)audio.EnterLevel();
   }
   void PrepareRound() {
    wheel=new AlphabetWheel(difficulty); manuscriptOpen=false; Message=bank.Next(difficulty); shift=Random.Range(1,26); Cipher=Caesar.Transform(Message,shift);
@@ -51,6 +54,8 @@ namespace RunnersZ.Game {
    var words=Message.Split(' '); hint=string.Join(" ",words,0,Mathf.Min(used,words.Length)); return hint;
   }
   void Awake(){
+   audio=GetComponent<GameAudio>();
+   if(audio==null)audio=gameObject.AddComponent<GameAudio>();
    // Un runner de teclado y pantalla ancha necesita apaisado y 60 fps estables.
    if(Application.isMobilePlatform){
     Screen.orientation=ScreenOrientation.AutoRotation;
@@ -66,6 +71,12 @@ namespace RunnersZ.Game {
    doorBleed=Mathf.MoveTowards(doorBleed,0f,Time.deltaTime*.42f);
    // Con la puerta caida o la partida ganada el teclado propio se cierra solo.
    if(!started || State!=GameState.EnCurso)keypadOpen=false;
+   // Fuera del nivel el ambiente se apaga; las pisadas solo suenan mientras la
+   // partida corre y hay espectros en el carril (el manuscrito los congela).
+   if(audio!=null){
+    if(!started)audio.LeaveLevel();
+    audio.Marching(started&&State==GameState.EnCurso&&!manuscriptOpen&&enemies.Count>0);
+   }
    if(!started || State!=GameState.EnCurso || manuscriptOpen)return;
    // Los espectros se paran con la partida: sobre la ventana de derrota ya no
    // caminan, ni desplazandose ni moviendo las piernas.
@@ -97,6 +108,7 @@ namespace RunnersZ.Game {
   }
 
   void RegisterHits(int hits){
+   if(audio!=null)audio.DoorHit();
    Lives=Mathf.Max(0,Lives-hits);
    // Este golpe abre ya el cartel de derrota: tenirlo de rojo solo se veria
    // asomar por los bordes de la ventana, asi que el pulso no llega a dispararse.
