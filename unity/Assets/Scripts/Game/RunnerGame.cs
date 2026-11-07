@@ -16,7 +16,7 @@ namespace RunnersZ.Game {
   float doorBleed;
   // Avanza solo con la partida en curso: congela la animacion al caer la puerta.
   float enemyClock;
-  AlphabetWheel wheel; bool manuscriptOpen; PhraseBank bank; DifficultyConfig config; int shift, spawned; float clock; string answer="", hint="", feedback=""; bool started, backPressed;
+  AlphabetWheel wheel; bool manuscriptOpen; PhraseBank bank; DifficultyConfig config; int shift, spawned; float nextSpawn; string answer="", hint="", feedback=""; bool started, backPressed;
   // Teclado propio del juego: el campo de respuesta deja de ser un control de
   // texto, asi que Android no puede levantar su teclado encima de la partida.
   bool keypadOpen;
@@ -28,13 +28,17 @@ namespace RunnersZ.Game {
   void PrepareRound() {
    wheel=new AlphabetWheel(difficulty); manuscriptOpen=false; Message=bank.Next(difficulty); shift=Random.Range(1,26); Cipher=Caesar.Transform(Message,shift);
    HintsRemaining=config.Hints; answer=""; hint=""; feedback="Descifra el mensaje antes de que lleguen."; keypadOpen=false;
-   spawned=0; clock=0; enemies.Clear(); enemies.Add(0); spawned++;
+   spawned=0; enemies.Clear(); enemies.Add(0); spawned++; nextSpawn=SpawnDelay();
   }
   public bool Submit(string value) {
    if(!started || State!=GameState.EnCurso || string.IsNullOrWhiteSpace(value)) return false;
    if(!AnswerValidator.IsCorrect(value,Message)) {
     feedback="Respuesta incorrecta: los enemigos avanzan.";
-    for(int i=0;i<enemies.Count;i++) enemies[i]=Mathf.Min(1,enemies[i]+.12f);
+    // Un fallo solo acerca al espectro que va en cabeza: asi no se amontonan
+    // todos en la puerta de golpe y cada error se nota como un paso.
+    int closest=-1;
+    for(int i=0;i<enemies.Count;i++) if(closest<0||enemies[i]>enemies[closest]) closest=i;
+    if(closest>=0) enemies[closest]=Mathf.Min(.97f,enemies[closest]+.16f);
     return false;
    }
    if(Round==3){State=GameState.Victoria;feedback="Has protegido la puerta.";enemies.Clear();}
@@ -63,21 +67,42 @@ namespace RunnersZ.Game {
    // Con la puerta caida o la partida ganada el teclado propio se cierra solo.
    if(!started || State!=GameState.EnCurso)keypadOpen=false;
    if(!started || State!=GameState.EnCurso || manuscriptOpen)return;
-   clock+=Time.deltaTime;
    // Los espectros se paran con la partida: sobre la ventana de derrota ya no
    // caminan, ni desplazandose ni moviendo las piernas.
    enemyClock+=Time.deltaTime;
-   if(clock>=config.Interval && spawned<config.Enemies+2*(Round-1)){clock=0;spawned++;enemies.Add(0);}
-   float travel=30f-(int)difficulty*5f-(Round-1)*3f;
+   float travel=TravelTime();
+   // Primero los que llegan. Cada espectro que entra resta una vida y el bucle
+   // no se corta: antes un break dejaba a los demas clavados en la puerta sin
+   // descontar, y el jugador perdia una vida en vez de tres.
+   int hits=0;
    for(int i=enemies.Count-1;i>=0;i--){
     enemies[i]+=Time.deltaTime/travel;
-    if(enemies[i]<1)continue;
-    enemies.RemoveAt(i);Lives=Mathf.Max(0,Lives-1);
-    // Este golpe abre ya el cartel de derrota: tenirlo de rojo solo se veria
-    // asomar por los bordes de la ventana, asi que el pulso no llega a dispararse.
-    if(Lives==0){State=GameState.Derrota;feedback="La puerta ha caido.";break;}
-    doorBleed=1f;feedback="La puerta ha recibido un golpe.";
+    if(enemies[i]<1f)continue;
+    enemies.RemoveAt(i);hits++;
    }
+   if(hits>0){RegisterHits(hits);return;}
+   // Despues el turno de aparicion: de uno en uno y con margen aleatorio, para
+   // que la dificultad marque el ritmo sin que salgan dos en cadena.
+   if(spawned<config.Enemies+2*(Round-1)){
+    nextSpawn-=Time.deltaTime;
+    if(nextSpawn<=0f){nextSpawn=SpawnDelay();spawned++;enemies.Add(0);}
+   }
+  }
+
+  float TravelTime(){return 30f-(int)difficulty*5f-(Round-1)*3f;}
+
+  float SpawnDelay(){
+   float baseInterval=Mathf.Max(5f,config.Interval-(Round-1)*2f);
+   return baseInterval*Random.Range(.85f,1.15f);
+  }
+
+  void RegisterHits(int hits){
+   Lives=Mathf.Max(0,Lives-hits);
+   // Este golpe abre ya el cartel de derrota: tenirlo de rojo solo se veria
+   // asomar por los bordes de la ventana, asi que el pulso no llega a dispararse.
+   if(Lives==0){enemies.Clear();State=GameState.Derrota;feedback="La puerta ha caido.";return;}
+   doorBleed=1f;
+   feedback=hits==1?"La puerta ha recibido un golpe.":"La puerta ha recibido "+hits+" golpes.";
   }
 
   UiFrame frame; GameLayout gameLayout; MenuLayout menuLayout; ManuscriptLayout manuscriptLayout;
