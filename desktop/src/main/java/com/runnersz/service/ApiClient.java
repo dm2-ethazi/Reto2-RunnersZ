@@ -30,7 +30,7 @@ import java.util.concurrent.Flow;
  * <p>Los ficheros se envían y se reciben en bloques de 64 KiB: el consumo de memoria no depende del
  * tamaño del archivo y el progreso refleja bytes reales transferidos.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 public final class ApiClient {
   /** Límite del contrato (§7.2): ninguna petición puede esperar más de dos minutos. */

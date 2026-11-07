@@ -57,7 +57,7 @@ import javafx.util.Duration;
  * Controlador de la ventana declarada en {@code desktop.fxml}. Traduce eventos en operaciones y
  * actualiza los controles desde el hilo de JavaFX; la red y el disco viven en servicios.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 public final class DesktopController {
   private static final String MIB = "%.1f MiB";

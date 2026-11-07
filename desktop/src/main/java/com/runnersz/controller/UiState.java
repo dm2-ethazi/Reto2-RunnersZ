@@ -13,7 +13,7 @@ package com.runnersz.controller;
  * @param caesarResult resultado de César
  * @param shift desplazamiento de César seleccionado
  * @param tab pestaña activa
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 public record UiState(
     String inputPath,

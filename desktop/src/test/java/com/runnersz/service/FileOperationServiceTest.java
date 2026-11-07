@@ -21,7 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * Pruebas del caso de uso de ficheros y del acceso a disco.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 class FileOperationServiceTest {
   @TempDir Path dir;

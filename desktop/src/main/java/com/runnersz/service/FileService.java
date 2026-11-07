@@ -11,7 +11,7 @@ import java.nio.file.StandardCopyOption;
  * Acceso a disco compartido por AES, Vigenère y César. La salida se prepara en un temporal junto al
  * destino: un fallo previo a moverlo no publica un fichero incompleto.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 public final class FileService {
   /**

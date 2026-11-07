@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Pruebas de los catálogos: paridad entre idiomas, claves de FXML y errores traducidos.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 class I18nTest {
   private static final String BUNDLE = "com.runnersz.i18n.messages";

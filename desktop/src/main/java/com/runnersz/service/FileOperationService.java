@@ -9,7 +9,7 @@ import java.nio.file.Path;
  * Caso de uso de ficheros: validar → transferir a un temporal → publicar. No depende de JavaFX y no
  * implementa algoritmos criptográficos.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 public final class FileOperationService {
   private final ApiClient api;

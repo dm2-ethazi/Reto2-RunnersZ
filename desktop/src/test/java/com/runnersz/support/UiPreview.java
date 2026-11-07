@@ -26,7 +26,7 @@ import javax.imageio.ImageIO;
  * Herramienta de desarrollo: carga la vista real y guarda una captura de cada pestaña. No forma
  * parte de las pruebas automáticas; se ejecuta a mano para revisar el diseño.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 public final class UiPreview {
   private static final String[] FONTS = {

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 /**
  * Pruebas de los ajustes: valores vacíos por defecto, normalización y validación.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 class SettingsStoreTest {
   private Preferences node;

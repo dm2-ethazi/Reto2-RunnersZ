@@ -6,7 +6,7 @@ package com.runnersz.model;
  *
  * @param baseUrl dirección base del servidor, sin {@code /api/v1}
  * @param token token Bearer de la API
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 public record ConnectionSettings(String baseUrl, String token) {
   @Override

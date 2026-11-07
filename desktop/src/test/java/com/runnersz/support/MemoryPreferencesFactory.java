@@ -10,7 +10,7 @@ import java.util.prefs.PreferencesFactory;
 /**
  * Preferencias en memoria para que las pruebas no toquen el registro del usuario.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 public final class MemoryPreferencesFactory implements PreferencesFactory {
   private static final MemoryNode USER = new MemoryNode(null, "");

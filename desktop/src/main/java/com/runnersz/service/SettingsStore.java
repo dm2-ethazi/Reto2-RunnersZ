@@ -10,7 +10,7 @@ import java.util.prefs.Preferences;
  * Lee, valida y guarda los ajustes de conexión del usuario. No hay dirección ni token escritos en
  * el código: ambos se configuran desde Ajustes. La contraseña AES nunca pasa por esta clase.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 public final class SettingsStore {
   private static final String NODE = "/com/runnersz";

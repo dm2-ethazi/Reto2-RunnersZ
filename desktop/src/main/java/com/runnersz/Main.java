@@ -16,7 +16,7 @@ import javafx.stage.Stage;
  * Ciclo de vida de JavaFX. Carga la vista FXML, registra las tipografías empaquetadas y reconstruye
  * la escena cuando cambia el idioma, conservando lo que el usuario había escrito.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 public final class Main extends Application {
   private static final String[] FONTS = {

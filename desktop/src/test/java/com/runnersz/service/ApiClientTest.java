@@ -22,7 +22,7 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * Pruebas del adaptador HTTP: rutas, token, multipart por bloques, integridad y errores.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 class ApiClientTest {
   @TempDir Path dir;

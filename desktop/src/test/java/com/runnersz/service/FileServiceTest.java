@@ -14,7 +14,7 @@ import org.junit.jupiter.api.io.TempDir;
 /**
  * Pruebas del acceso a disco: temporales, publicación y textos.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 class FileServiceTest {
   @TempDir Path dir;

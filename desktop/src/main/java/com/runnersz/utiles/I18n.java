@@ -14,7 +14,7 @@ import java.util.prefs.Preferences;
 /**
  * Catálogos UTF-8 y preferencia de idioma. No depende de JavaFX ni traduce datos del usuario.
  *
- * @author RunnersZ
+ * @author Jairo y Alain
  */
 public final class I18n {
   private static final String BUNDLE = "com.runnersz.i18n.messages";
