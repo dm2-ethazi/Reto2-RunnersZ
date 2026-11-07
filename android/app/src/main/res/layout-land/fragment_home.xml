@@ -161,7 +161,7 @@
                     <ImageView
                         android:layout_width="18dp"
                         android:layout_height="18dp"
-                        android:contentDescription="@string/row_order"
+                        android:importantForAccessibility="no"
                         android:src="@drawable/ic_arrow_right" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -200,7 +200,7 @@
                     <ImageView
                         android:layout_width="18dp"
                         android:layout_height="18dp"
-                        android:contentDescription="@string/row_image"
+                        android:importantForAccessibility="no"
                         android:src="@drawable/ic_arrow_right" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

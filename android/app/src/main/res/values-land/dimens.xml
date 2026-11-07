@@ -1,5 +1,5 @@
 <resources>
-    <dimen name="screen_padding_horizontal">120dp</dimen>
+    <dimen name="screen_padding_horizontal">56dp</dimen>
     <dimen name="screen_padding_vertical">12dp</dimen>
     <dimen name="header_padding_horizontal">24dp</dimen>
     <dimen name="header_padding_vertical">4dp</dimen>

@@ -112,6 +112,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="18dp"
             android:layout_marginBottom="6dp"
+            android:labelFor="@+id/etClave"
             android:text="@string/image_aes_key_label"
             android:textColor="@color/ink"
             android:textSize="14sp"
@@ -174,7 +175,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/image_preview_height"
                 android:adjustViewBounds="true"
-                android:contentDescription="@string/image_title"
+                android:contentDescription="@string/image_decrypted_desc"
                 android:padding="8dp"
                 android:scaleType="fitCenter" />
         </com.google.android.material.card.MaterialCardView>

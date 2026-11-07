@@ -55,7 +55,7 @@
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:layout_gravity="center"
-                android:contentDescription="@string/a11y_secure_connection"
+                android:importantForAccessibility="no"
                 android:src="@drawable/ic_lock" />
         </FrameLayout>
     </LinearLayout>
@@ -88,7 +88,7 @@
                 android:id="@+id/navOrdenIcon"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                android:contentDescription="@string/nav_order"
+                android:importantForAccessibility="no"
                 android:src="@drawable/ic_doc" />
 
             <TextView
@@ -116,7 +116,7 @@
                 android:id="@+id/navImagenIcon"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                android:contentDescription="@string/nav_image"
+                android:importantForAccessibility="no"
                 android:src="@drawable/ic_image" />
 
             <TextView
@@ -144,7 +144,7 @@
                 android:id="@+id/navInicioIcon"
                 android:layout_width="22dp"
                 android:layout_height="22dp"
-                android:contentDescription="@string/nav_home"
+                android:importantForAccessibility="no"
                 android:src="@drawable/ic_home" />
 
             <TextView
