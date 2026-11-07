@@ -41,7 +41,7 @@ class OrderFragment : Fragment(R.layout.fragment_order) {
         }
         button.setOnClickListener { decrypt(etTexto, etShift, button) }
 
-        viewModel.result?.let { showResult(it, viewModel.resultIsError) }
+        viewModel.result?.let { showResult(it, viewModel.resultIsError, reveal = false) }
         if (viewModel.loading) paintLoading(button, true)
 
         if (savedInstanceState == null) {
@@ -112,7 +112,7 @@ class OrderFragment : Fragment(R.layout.fragment_order) {
         )
     }
 
-    private fun showResult(text: String, isError: Boolean) {
+    private fun showResult(text: String, isError: Boolean, reveal: Boolean = true) {
         val currentView = view ?: return
         val card = currentView.findViewById<View>(R.id.resultCard)
         card.visibility = View.VISIBLE
@@ -124,8 +124,13 @@ class OrderFragment : Fragment(R.layout.fragment_order) {
                 if (isError) R.color.red else R.color.navy,
             ),
         )
-        (currentView as? ScrollView)?.post {
-            (currentView as? ScrollView)?.smoothScrollTo(0, card.top)
+        val scroll = currentView as? ScrollView ?: return
+        if (!reveal) return
+        scroll.post {
+            val margin = resources.getDimensionPixelSize(R.dimen.screen_padding_vertical)
+            val bottom = card.top + card.height + margin - scroll.height
+            val target = bottom.coerceIn(0, maxOf(0, card.top))
+            if (bottom > scroll.scrollY) scroll.smoothScrollTo(0, target)
         }
     }
 

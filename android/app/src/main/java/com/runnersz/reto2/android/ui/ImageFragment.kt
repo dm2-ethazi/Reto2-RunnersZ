@@ -6,6 +6,7 @@ import android.provider.OpenableColumns
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -125,6 +126,9 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
             val problem = FileValidator.problema(safeName, destination.length())
             if (problem != null) {
                 destination.delete()
+                viewModel.bitmap?.recycle()
+                viewModel.bitmap = null
+                view?.findViewById<View>(R.id.previewCard)?.visibility = View.GONE
                 showStatus(problemText(problem), R.color.red)
                 return
             }
@@ -211,8 +215,23 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
 
             viewModel.bitmap = bitmap
             activeView.findViewById<ImageView>(R.id.ivResult).setImageBitmap(bitmap)
-            activeView.findViewById<View>(R.id.previewCard).visibility = View.VISIBLE
+            val preview = activeView.findViewById<View>(R.id.previewCard)
+            preview.visibility = View.VISIBLE
             showStatus(getString(R.string.image_integrity_ok), R.color.green)
+            reveal(activeView, preview)
+        }
+    }
+
+    /**
+     * Desplaza lo justo para que la vista previa quede a la vista, sin perder la cabecera.
+     */
+    private fun reveal(view: View, target: View) {
+        val scroll = view as? ScrollView ?: return
+        scroll.post {
+            val margin = resources.getDimensionPixelSize(R.dimen.screen_padding_vertical)
+            val bottom = target.top + target.height + margin - scroll.height
+            val limit = bottom.coerceIn(0, maxOf(0, target.top))
+            if (bottom > scroll.scrollY) scroll.smoothScrollTo(0, limit)
         }
     }
 
