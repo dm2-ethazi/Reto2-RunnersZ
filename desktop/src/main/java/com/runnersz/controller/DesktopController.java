@@ -454,6 +454,8 @@ public final class DesktopController {
           passwordPlain.clear();
           showToast(text(encrypt ? "file.encrypted" : "file.decrypted", value.toString()));
           setStatus("status.ready");
+          // Al cifrar, la contraseña desaparece del formulario: conviene tenerla guardada.
+          if (encrypt) warnSavePassword(password, false);
         },
         () -> handleFileOperation(encrypt));
   }
@@ -491,6 +493,10 @@ public final class DesktopController {
           vigenereResult.setText(value);
           vigenereResult.requestFocus();
           setStatus("status.ready");
+          if ("encrypt".equals(mode)) {
+            warnSavePassword(key, true);
+            keyField.clear();
+          }
         },
         () -> handleVigenere(mode));
   }
@@ -806,6 +812,45 @@ public final class DesktopController {
       LOG.warn("No se pudo abrir la carpeta del registro %s: %s", folder, ex);
       return false;
     }
+  }
+
+  /**
+   * Aviso tras cifrar: la contraseña o la clave se borran de la interfaz, así que se ofrecen
+   * copiarlas antes de cerrar el aviso. Sin ellas el resultado no se puede descifrar.
+   *
+   * @param secret contraseña AES o clave de Vigenère que se acaba de usar
+   * @param key {@code true} si el secreto es la clave de Vigenère
+   */
+  private void warnSavePassword(String secret, boolean key) {
+    Alert alert = new Alert(Alert.AlertType.WARNING);
+    alert.initOwner(stage);
+    alert.setTitle(text(key ? "reminder.key.title" : "reminder.title"));
+    alert.setHeaderText(text(key ? "reminder.key.header" : "reminder.header"));
+    alert.getDialogPane().setContent(wrapped(text(key ? "reminder.key.body" : "reminder.body")));
+    alert.getDialogPane().setPrefWidth(620);
+    ButtonType copy =
+        new ButtonType(
+            text(key ? "reminder.key.copy" : "reminder.copy"), ButtonBar.ButtonData.LEFT);
+    alert.getButtonTypes().setAll(copy, new ButtonType(text("close"), ButtonBar.ButtonData.OK_DONE));
+    translate(alert.getDialogPane());
+    Button copyButton = (Button) alert.getDialogPane().lookupButton(copy);
+    tip(copyButton, key ? "reminder.key.copy.help" : "reminder.copy.help");
+    Optional<ButtonType> answer = alert.showAndWait();
+    if (answer.isPresent() && answer.get() == copy) copySecret(secret, key);
+  }
+
+  /**
+   * Copia el secreto al portapapeles y lo anuncia; nunca se muestra en pantalla.
+   *
+   * @param secret contraseña o clave que se copia
+   * @param key {@code true} si el secreto es la clave de Vigenère
+   */
+  private void copySecret(String secret, boolean key) {
+    if (secret == null || secret.isBlank()) return;
+    ClipboardContent content = new ClipboardContent();
+    content.putString(secret);
+    Clipboard.getSystemClipboard().setContent(content);
+    showToast(text(key ? "reminder.key.copied" : "reminder.copied"));
   }
 
   private boolean ensureConfigured() {

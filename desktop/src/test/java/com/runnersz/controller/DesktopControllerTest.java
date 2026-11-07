@@ -447,7 +447,7 @@ class DesktopControllerTest {
       api.respond(200, "cifrado".getBytes(StandardCharsets.UTF_8));
       configure(api.baseUrl());
       fillFileForm(input, output, "clave");
-      assertTrue(fireAndClose("encryptButton").isEmpty(), "no debería haber avisos");
+      assertTrue(fireAndClose("encryptButton").isEmpty(), "el aviso llega al terminar la operación");
 
       waitUntil(() -> Files.exists(output));
       assertTrue(Files.exists(output), "el resultado se publica en el destino");
@@ -458,6 +458,67 @@ class DesktopControllerTest {
       waitUntil(() -> text("#passwordField").isEmpty());
       assertEquals("", text("#passwordField"), "la contraseña se borra al terminar");
       assertTrue(onFx(() -> root.lookup("#toast").isVisible()));
+      waitUntil(() -> CLOSED.contains("Guarda la contraseña"));
+      assertTrue(CLOSED.contains("Guarda la contraseña"), "avisa de que la contraseña se borra");
+    }
+  }
+
+  @Test
+  void alCifrarUnFicheroAvisaYOfreceCopiarLaContrasena(@TempDir Path dir) throws Exception {
+    Path input = Files.writeString(dir.resolve("nota.txt"), "hola", StandardCharsets.UTF_8);
+    Path output = dir.resolve("nota.txt.enc");
+    try (StubApi api = new StubApi()) {
+      api.respond(200, "cifrado".getBytes(StandardCharsets.UTF_8));
+      configure(api.baseUrl());
+      fillFileForm(input, output, "clave");
+      autoClose = false;
+      fireLater("encryptButton");
+      waitUntil(this::dialogShowing);
+
+      assertEquals(
+          "Asegúrate de que tienes la contraseña guardada",
+          onFx(() -> dialogPane().getHeaderText()));
+      clickDialogButton("Copiar contraseña");
+      waitUntil(() -> !dialogShowing());
+
+      String copied;
+      try {
+        copied = onFx(() -> Clipboard.getSystemClipboard().getString());
+      } catch (RuntimeException unavailable) {
+        copied = null;
+      }
+      Assumptions.assumeTrue(copied != null, "El portapapeles no está disponible sin pantalla");
+      assertEquals("clave", copied, "el aviso copia la contraseña antes de borrarla");
+      assertEquals("", text("#passwordField"), "la contraseña desaparece del formulario");
+    } finally {
+      autoClose = true;
+    }
+  }
+
+  @Test
+  void alCifrarConVigenereAvisaDeQueLaClaveSeBorra() throws Exception {
+    try (StubApi api = new StubApi()) {
+      api.respond(200, "{\"result\":\"KHOOR\"}".getBytes(StandardCharsets.UTF_8));
+      configure(api.baseUrl());
+      onFx(
+          () -> {
+            ((TextArea) root.lookup("#plainText")).setText("HOLA");
+            ((TextField) root.lookup("#keyField")).setText("CLAVE");
+            return null;
+          });
+      autoClose = false;
+      fireLater("vigenereEncryptButton");
+      waitUntil(this::dialogShowing);
+
+      assertEquals(
+          "Asegúrate de que tienes la clave guardada", onFx(() -> dialogPane().getHeaderText()));
+      clickDialogButton("Cerrar");
+      waitUntil(() -> !dialogShowing());
+
+      assertEquals("KHOOR", text("#vigenereResult"));
+      assertEquals("", text("#keyField"), "la clave desaparece del formulario");
+    } finally {
+      autoClose = true;
     }
   }
 
