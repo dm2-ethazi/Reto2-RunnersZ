@@ -20,6 +20,10 @@ No descifra localmente: las operaciones se delegan en la API oficial por HTTPS.
 - **Navegación**: barra inferior Orden / Imagen / Inicio y filas de
   acceso rápido en Inicio. Recibe archivos mediante `ACTION_SEND` y
   `ACTION_VIEW` (texto, imagen u octet-stream).
+- **Estado estable**: cada pestaña conserva formulario y resultado al cambiar
+  de pestaña, al re-tocar la pestaña activa y al girar el dispositivo. Los
+  archivos que no son `.enc` se rechazan antes de subirlos y la vista previa se
+  decodifica fuera del hilo de UI.
 - **Interfaz adaptativa**: variantes vertical y horizontal, cabecera compacta
   al girar y márgenes seguros para notch y barra de navegación.
 
@@ -33,7 +37,7 @@ No descifra localmente: las operaciones se delegan en la API oficial por HTTPS.
 - `app/src/main/java/.../ui`: Inicio, Orden e Imagen.
 - `app/src/main/assets/demo/image.png.enc`: vector AES de demostración.
 - `app/src/main/res`: cabecera, layouts, navegación, colores y textos.
-- `app/src/test`: 4 suites JUnit/Robolectric con 10 pruebas.
+- `app/src/test`: 6 suites JUnit/Robolectric con 19 pruebas.
 - `gradle/wrapper`: Gradle 8.9; no requiere instalación global.
 
 ## API utilizada
@@ -96,16 +100,18 @@ El JDK del sistema debe ser 21: Gradle 8.9 no admite JDK 25.
 
 - APK generado: `app/build/outputs/apk/release/app-release.apk`.
 - Copia de entrega: `C:\Users\dm2\Desktop\CipherSprint.apk`.
-- SHA-256 de la copia: `96cd2cc1688371250cdf3bef8dd4ef736effe63178778cd28381d42dba16e409`.
-- Tamaño: 2.515.286 bytes.
+- SHA-256 de la copia: `7251e61c1e68923bd81096c979a9e5adedc8f309dd25f344268ed704b6e39393`.
+- Tamaño: 2.552.264 bytes.
 
 ## Validación
 
 Consultar [`docs/validacion-android.md`](docs/validacion-android.md) para los
 resultados realmente ejecutados, las capturas y los límites.
 
-Resumen: `BUILD SUCCESSFUL`, 10 tests en 4 suites, 0 fallos, y verificación
-manual en el emulador `emulator-5556` contra la API real desplegada.
+Resumen: `BUILD SUCCESSFUL`, 19 tests en 6 suites, 0 fallos, y verificación
+manual en el emulador `emulator-5554` (Pixel 8a) contra la API real desplegada:
+flujos completos de las tres pantallas, errores de red y de validación,
+rotación, cambio de pestañas, fuente ampliada y modo horizontal.
 
 ## Capturas del emulador
 
@@ -116,3 +122,4 @@ manual en el emulador `emulator-5556` contra la API real desplegada.
 - [Imagen con integridad verificada](docs/evidencias/05_imagen_resultado.png)
 - [Orden en horizontal](docs/evidencias/06_horizontal_orden.png)
 - [Imagen en horizontal](docs/evidencias/07_horizontal_imagen.png)
+- [Archivo con extensión inválida](docs/evidencias/08_extension_invalida.png)
