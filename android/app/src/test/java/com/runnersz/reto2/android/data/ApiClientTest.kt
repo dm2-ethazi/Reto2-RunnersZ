@@ -146,6 +146,34 @@ class ApiClientTest {
     }
 
     @Test
+    fun `respuesta sin json se reporta como inesperada y no como red`() {
+        server.enqueue(MockResponse().setResponseCode(200).setBody("no es json"))
+
+        val result = await<String> { callback ->
+            api().caesarDecrypt("Dwdtxh", 3, callback)
+        }
+
+        assertTrue(result is ApiResult.Failure)
+        assertEquals(
+            "Respuesta inesperada del servidor",
+            (result as ApiResult.Failure).error.texto,
+        )
+    }
+
+    @Test
+    fun `429 se traduce a demasiadas peticiones`() {
+        server.enqueue(MockResponse().setResponseCode(429))
+
+        val result = await<Unit> { callback -> api().checkAuth(callback) }
+
+        assertTrue(result is ApiResult.Failure)
+        assertEquals(
+            "Demasiadas peticiones. Espera un momento",
+            (result as ApiResult.Failure).error.texto,
+        )
+    }
+
+    @Test
     fun `401 se traduce a error de autenticacion`() {
         server.enqueue(
             MockResponse()

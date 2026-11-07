@@ -17,6 +17,7 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.asRequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import org.json.JSONException
 import org.json.JSONObject
 
 /**
@@ -121,6 +122,8 @@ class ApiClient(
                             onSuccess(resp.body?.bytes() ?: ByteArray(0), resp.code)
                         }
                     }
+                } catch (e: JSONException) {
+                    ApiResult.Failure(ErrorMessages.respuestaInvalida(), 0, e)
                 } catch (e: Exception) {
                     ApiResult.Failure(ErrorMessages.sinConexion(), 0, e)
                 }
