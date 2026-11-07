@@ -116,8 +116,15 @@ Los diálogos de error ofrecen **Reintentar** e **Ir a Ajustes**; el aviso del p
 
 Inter para títulos y botones, Open Sans para textos largos y una monoespaciada para resultados. Las
 dos primeras van **empaquetadas** en el JAR, así que la aplicación se ve igual en Windows y Linux.
-Los tamaños están en puntos porque el contrato los fija así: 22 pt la marca y 20 pt los títulos,
-12 pt el cuerpo, las ayudas y los botones, y 14 pt el texto cifrado y los resultados.
+Los tamaños son **relativos**: `.root` fija la base en 16 px —que son exactamente 12 pt— y el resto
+va en `em` sobre esa base, elegidos para caer en píxeles enteros: marca `1.875em` (30 px ≈ 22,5 pt),
+títulos `1.6875em` (27 px ≈ 20,25 pt), cuerpo, ayudas y botones `1em` (16 px = 12 pt) y resultados
+monoespaciados `1.1875em` (19 px ≈ 14,25 pt). Así se cumplen con holgura los mínimos del contrato
+(20 pt, 12 pt y 14 pt), toda la interfaz se reescala cambiando un solo valor y ninguna letra cae en
+posiciones fraccionarias: 20 pt son 26,67 px y 14 pt son 18,67 px, y esos decimales son los que se
+ven pixelados en pantallas con escalado. La ayuda emergente usa 16 px absolutos porque vive en una
+ventana aparte y no hereda la base del `.root`. `DesktopControllerTest.laTipografiaUsaEmSobreUnaBaseDe16Px`
+comprueba los tamaños realmente calculados por el motor de CSS.
 
 ## 10. Pruebas
 

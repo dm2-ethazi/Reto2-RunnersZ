@@ -3,10 +3,16 @@
  * Paleta del contrato (§9.1): azul noche #1B2A41, pergamino #E8DCC6, oro #C9A96A,
  * piedra #2E2E33 y madera antigua #4A3520. Tipografías empaquetadas Inter y Open Sans (§9.2).
  *
- * Tamaños (§9.2, en puntos): títulos 20 pt, cuerpo y botones 12 pt, textos largos y ayudas 12 pt,
- * texto cifrado y resultados monoespaciados 14 pt. La raíz fija los 12 pt del cuerpo.
- * Los #DDD0B0 de los botones secundarios son un tono derivado del pergamino (#E8DCC6) para que el
- * botón se lea como superficie y no como fondo: #1B2A41 sobre #DDD0B0 da ≈ 9:1 de contraste.
+ * Tamaños (§9.2): la base del cuerpo es 16 px, que son exactamente 12 pt. El resto se declara en
+ * em sobre esa base para que toda la interfaz se reescale cambiando un solo valor:
+ *   marca          1,875 em  = 30 px ≈ 22,5 pt
+ *   títulos        1,6875 em = 27 px ≈ 20,25 pt   (mínimo 20 pt)
+ *   cuerpo/ayudas  1 em      = 16 px = 12 pt      (mínimo 12 pt)
+ *   monoespaciada  1,1875 em = 19 px ≈ 14,25 pt   (mínimo 14 pt)
+ * Los em están elegidos para dar píxeles enteros: con 20 pt (26,67 px) o 14 pt (18,67 px) el texto
+ * cae en posiciones fraccionarias y se ve pixelado en pantallas con escalado.
+ * Los #DDD0B0 de los botones secundarios son un tono derivado del pergamino (#E8DCC6): #1B2A41
+ * sobre #DDD0B0 da ≈ 9:1 de contraste.
  */
 
 .root {
@@ -24,7 +30,7 @@
     -rz-mono: "Consolas", "DejaVu Sans Mono", "Liberation Mono", monospace;
 
     -fx-font-family: "Inter";
-    -fx-font-size: 12pt;
+    -fx-font-size: 16px;
     -fx-text-fill: -rz-stone;
     -fx-font-smoothing-type: gray;
 }
@@ -43,18 +49,18 @@
     -fx-text-fill: #F6EFDE;
     -fx-font-family: "Inter";
     -fx-font-weight: 800;
-    -fx-font-size: 22pt;
+    -fx-font-size: 1.875em;
 }
 .eyebrow {
     -fx-text-fill: -rz-gold;
     -fx-font-family: "Inter";
     -fx-font-weight: 600;
-    -fx-font-size: 12pt;
+    -fx-font-size: 1em;
 }
 .chip {
     -fx-background-radius: 999;
     -fx-padding: 5 12;
-    -fx-font-size: 12pt;
+    -fx-font-size: 1em;
     -fx-font-weight: 600;
 }
 .chip-ok { -fx-background-color: #2F6B4F; -fx-text-fill: #F2F7EF; }
@@ -86,7 +92,7 @@
 .main-tabs .tab .tab-label {
     -fx-text-fill: #E7DECB;
     -fx-font-weight: 600;
-    -fx-font-size: 12pt;
+    -fx-font-size: 1em;
 }
 .main-tabs .tab:hover .tab-label { -fx-text-fill: #FFFFFF; }
 .main-tabs .tab:selected { -fx-background-color: -rz-parchment; }
@@ -113,24 +119,24 @@
     -fx-text-fill: -rz-navy;
     -fx-font-family: "Inter";
     -fx-font-weight: 800;
-    -fx-font-size: 20pt;
+    -fx-font-size: 1.6875em;
 }
 .muted, .helper {
     -fx-font-family: "Open Sans";
     -fx-text-fill: -rz-muted;
-    -fx-font-size: 12pt;
+    -fx-font-size: 1em;
 }
-.helper { -fx-font-size: 12pt; }
+.helper { -fx-font-size: 1em; }
 .field-label {
     -fx-text-fill: -rz-navy;
     -fx-font-family: "Inter";
     -fx-font-weight: 700;
-    -fx-font-size: 12pt;
+    -fx-font-size: 1em;
 }
 .drop-hint {
     -fx-text-fill: -rz-wood;
     -fx-font-family: "Open Sans";
-    -fx-font-size: 12pt;
+    -fx-font-size: 1em;
     -fx-border-color: -rz-border;
     -fx-border-style: segments(6, 6);
     -fx-border-radius: 6;
@@ -138,7 +144,7 @@
 }
 .valid { -fx-text-fill: -rz-success; }
 .invalid { -fx-text-fill: -rz-danger; }
-.mono { -fx-font-family: -rz-mono; -fx-font-size: 14pt; }
+.mono { -fx-font-family: -rz-mono; -fx-font-size: 1.1875em; }
 
 /* ------------------------------------------------------------------- tarjetas */
 
@@ -191,7 +197,7 @@
     -fx-text-fill: -rz-navy;
     -fx-font-family: "Inter";
     -fx-font-weight: 600;
-    -fx-font-size: 12pt;
+    -fx-font-size: 1em;
     -fx-padding: 8 16;
     -fx-min-height: 34px;
     -fx-cursor: hand;
@@ -223,7 +229,7 @@
     -fx-border-width: 0 0 0 4;
     -fx-text-fill: -rz-navy;
     -fx-font-family: "Open Sans";
-    -fx-font-size: 12pt;
+    -fx-font-size: 1em;
     -fx-padding: 9 14;
 }
 .footer {
@@ -235,12 +241,12 @@
 .status-text {
     -fx-text-fill: -rz-navy;
     -fx-font-family: "Open Sans";
-    -fx-font-size: 12pt;
+    -fx-font-size: 1em;
 }
 .progress-label {
     -fx-text-fill: -rz-wood;
     -fx-font-family: -rz-mono;
-    -fx-font-size: 12pt;
+    -fx-font-size: 1em;
 }
 .progress-bar > .track {
     -fx-background-color: #C3B08B;
@@ -257,11 +263,12 @@
 
 /* ------------------------------------------------------------------ ayuda */
 
+/* Ayuda emergente: vive en una ventana aparte, así que no hereda la base del .root. */
 .tooltip {
     -fx-background-color: -rz-navy;
     -fx-text-fill: #F6EFDE;
     -fx-font-family: "Open Sans";
-    -fx-font-size: 12pt;
+    -fx-font-size: 16px;
     -fx-background-radius: 6;
     -fx-padding: 6 10;
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 8, 0, 0, 2);
@@ -296,7 +303,7 @@
     -fx-background-radius: 6;
     -fx-font-family: -rz-mono;
     -fx-font-weight: 700;
-    -fx-font-size: 14pt;
+    -fx-font-size: 1.1875em;
     -fx-padding: 4 10;
     -fx-alignment: center;
 }

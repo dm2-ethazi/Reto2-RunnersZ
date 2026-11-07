@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BooleanSupplier;
 import java.util.prefs.Preferences;
 import javafx.application.Platform;
+import javafx.event.Event;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.AccessibleRole;
 import javafx.scene.Node;
@@ -49,6 +50,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.input.Clipboard;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.Window;
@@ -578,6 +581,54 @@ class DesktopControllerTest {
     assertEquals(Path.of("x"), pathOrNull.invoke(null, " x "));
   }
 
+  @Test
+  void losMensajesSoloAdmitenLetrasCifrasYEspacios() {
+    for (String id : List.of("plainText", "caesarText")) {
+      assertNotNull(
+          onFx(() -> ((TextArea) root.lookup("#" + id)).getTextFormatter()),
+          id + " lleva el filtro de entrada instalado");
+    }
+    assertEquals("Hola Mundo 42", DesktopController.onlyText("Ho#la Mu@ndo 4$2"));
+    assertEquals("Año nuevo\nlinea 2", DesktopController.onlyText("Año nuevo\nlinea 2"));
+    assertEquals("", DesktopController.onlyText("¡¿@#$%&*()[]{}<>/\\|~"));
+    assertEquals("", DesktopController.onlyText(null));
+  }
+
+  @Test
+  void elFiltroRechazaLosSignosAlTeclear() {
+    for (String id : List.of("plainText", "caesarText")) {
+      String typed =
+          onFx(
+              () -> {
+                TextArea area = (TextArea) root.lookup("#" + id);
+                area.requestFocus();
+                area.clear();
+                Event.fireEvent(area, keyTyped("a"));
+                Event.fireEvent(area, keyTyped("#"));
+                return area.getText();
+              });
+      assertEquals("a", typed, id + ": la tecla del signo no debe llegar al texto");
+    }
+  }
+
+  @Test
+  void laTipografiaUsaEmSobreUnaBaseDe16Px() {
+    assertEquals(16.0, onFx(() -> font("#statusLabel")), 0.01, "cuerpo: 1 em = 16 px = 12 pt");
+    assertEquals(16.0, onFx(() -> font("#plainText")), 0.01, "campos: 1 em");
+    assertEquals(16.0, onFx(() -> font("#encryptButton")), 0.01, "botones: 1 em");
+    assertEquals(30.0, onFx(() -> font("#brandName")), 0.01, "marca: 1,875 em");
+    assertEquals(27.0, onFx(() -> font("#filesTitle")), 0.01, "títulos: 1,6875 em ≈ 20,25 pt");
+    assertEquals(19.0, onFx(() -> font("#vigenereResult")), 0.01, "resultados: 1,1875 em ≈ 14,25 pt");
+  }
+
+  private double font(String id) {
+    javafx.scene.Node node = root.lookup(id);
+    if (node instanceof javafx.scene.control.Labeled labelled) {
+      return labelled.getFont().getSize();
+    }
+    return ((javafx.scene.control.TextInputControl) node).getFont().getSize();
+  }
+
   // ---------------------------------------------------------------- utilidades
 
   private String text(String id) {
@@ -679,6 +730,11 @@ class DesktopControllerTest {
           if (nodes.isEmpty()) return null;
           return nodes.get(nodes.size() - 1) instanceof Label label ? label.getText() : null;
         });
+  }
+
+  private static KeyEvent keyTyped(String character) {
+    return new KeyEvent(
+        KeyEvent.KEY_TYPED, character, "", KeyCode.UNDEFINED, false, false, false, false);
   }
 
   private void selectInput(File file) {

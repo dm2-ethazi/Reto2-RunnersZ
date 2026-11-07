@@ -41,6 +41,7 @@ import javafx.scene.control.Slider;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextInputControl;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.Tooltip;
@@ -213,6 +214,8 @@ public final class DesktopController {
     caesarText.textProperty().addListener((observable, previous, value) -> updateCounter(value, caesarCounter));
     updateCounter("", textCounter);
     updateCounter("", caesarCounter);
+    restrictToText(plainText);
+    restrictToText(caesarText);
 
     installAccessibility();
     installTooltips();
@@ -534,7 +537,9 @@ public final class DesktopController {
     File file = chooser.showOpenDialog(stage);
     if (file == null) return;
     try {
-      target.setText(files.readText(file.toPath()));
+      String loaded = files.readText(file.toPath());
+      // Los mensajes solo admiten letras, cifras y espacios: los signos no se cifran.
+      target.setText(onlyText(loaded));
       lastDirectory = file.toPath().getParent();
       setStatus("text.loaded", file.getName());
     } catch (IOException ex) {
@@ -855,6 +860,35 @@ public final class DesktopController {
 
   private void updateCounter(String value, Label target) {
     target.setText(text("text.counter", value == null ? 0 : value.length()));
+  }
+
+  /**
+   * Rechaza los signos mientras se escribe o se pega en los mensajes de Vigenère y César: el
+   * servidor solo cifra A–Z, así que aceptar símbolos daría la falsa impresión de que se protegen.
+   */
+  private void restrictToText(TextInputControl area) {
+    area.setTextFormatter(
+        new TextFormatter<String>(
+            change -> {
+              if (!change.isContentChange()) return change;
+              return onlyText(change.getText()).equals(change.getText()) ? change : null;
+            }));
+  }
+
+  /**
+   * Texto que admite el mensaje: letras (también con acentos), cifras, espacios y saltos de línea.
+   *
+   * @param value texto escrito, pegado o leído de un fichero
+   * @return el mismo texto sin los signos que no se cifran
+   */
+  static String onlyText(String value) {
+    if (value == null) return "";
+    StringBuilder clean = new StringBuilder(value.length());
+    value
+        .codePoints()
+        .filter(c -> Character.isLetter(c) || Character.isDigit(c) || Character.isWhitespace(c))
+        .forEach(clean::appendCodePoint);
+    return clean.toString();
   }
 
   /** Desplazamiento elegido en la barra, redondeado a un entero entre 1 y 25. */

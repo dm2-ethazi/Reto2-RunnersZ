@@ -132,13 +132,9 @@ una captura de cada pestaña en `target/ui-1.png` … `target/ui-3.png`.
 | Foco y orden de lectura | borde de 2 px, `Alt+C`/`Alt+D`, menú de edición traducido | `elMenuDeEdicionEstaTraducidoYRespetaLaSeleccion` |
 | Objetivo ≥ 32 px | `.button` 34 px, botones de operación 38 px | `runnersz.css` |
 | Contraste | `#1B2A41` sobre `#DDD0B0` ≈ 9:1; oro solo como fondo con texto azul | `runnersz.css` |
-| Títulos 20 pt | `.section-title` 20 pt, `.brand` 22 pt | `runnersz.css` |
-| Cuerpo y botones 12 pt | `.root` 12 pt, `.button` 12 pt | `runnersz.css` |
-| Textos largos y ayudas 12 pt | `.muted`, `.helper`, `.drop-hint`, `.tooltip`, `.status-text` | `runnersz.css` |
-| Texto cifrado 14 pt monoespaciada | `.mono` (resultados) y `.shift-value` | `runnersz.css` |
-
-## 6. Qué queda pendiente
-
-Las cinco pruebas de tamaño del §4 requieren el servidor y un token reales: hay que ejecutarlas y
-adjuntar las capturas. El resto (pruebas, cobertura, empaquetado, accesibilidad y tipografía) se
-repite con los comandos de este documento y no depende de nada externo.
+| Base relativa en `em` | `.root` 16 px (12 pt) y el resto en `em` sobre esa base | `DesktopControllerTest.laTipografiaUsaEmSobreUnaBaseDe16Px` |
+| Títulos 20 pt | `.section-title` 1,6875 em = 27 px ≈ 20,25 pt; `.brand` 1,875 em = 30 px ≈ 22,5 pt | `runnersz.css` |
+| Cuerpo y botones 12 pt | `.root` 16 px = 12 pt, `.button` 1 em | `runnersz.css` |
+| Textos largos y ayudas 12 pt | `.muted`, `.helper`, `.drop-hint`, `.status-text` 1 em; `.tooltip` 16 px | `runnersz.css` |
+| Texto cifrado 14 pt monoespaciada | `.mono` y `.shift-value` 1,1875 em = 19 px ≈ 14,25 pt | `runnersz.css` |
+| Tamaños en píxeles enteros (sin pixelado) | 16/19/27/30 px: ningún tamaño cae en fracciones | `DesktopControllerTest.laTipografiaUsaEmSobreUnaBaseDe16Px` |
