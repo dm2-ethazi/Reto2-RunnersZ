@@ -6,6 +6,7 @@
     <string name="home_welcome_title">Bienvenido a CipherSprint</string>
     <string name="home_welcome_body">Cliente oficial para descifrado de órdenes y streaming de imágenes.</string>
     <string name="btn_test_api">Probar API</string>
+    <string name="btn_test_api_loading">Comprobando…</string>
     <string name="home_status_label">Estado del cliente:</string>
     <string name="home_status_checking">Comprobando conexión…</string>
     <string name="home_status_ok">API responde correctamente</string>
@@ -42,5 +43,7 @@
     <string name="image_no_file_error">Selecciona un archivo .enc</string>
     <string name="image_corrupt">La imagen descifrada no se pudo abrir</string>
     <string name="image_select_file">Seleccionar archivo .enc</string>
+    <string name="image_demo_ready">Vector de prueba listo para descifrar</string>
+    <string name="share_copy_failed">No se pudo abrir el archivo compartido</string>
 
 </resources>

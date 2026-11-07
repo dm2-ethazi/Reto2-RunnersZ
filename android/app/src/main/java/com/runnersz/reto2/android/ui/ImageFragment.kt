@@ -10,7 +10,9 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.google.android.material.button.MaterialButton
 import com.runnersz.reto2.android.MainActivity
 import com.runnersz.reto2.android.R
@@ -24,12 +26,12 @@ import java.io.FileOutputStream
  */
 class ImageFragment : Fragment(R.layout.fragment_image) {
 
-    private var selectedFile: File? = null
-    private var isDemo = false
+    private val viewModel: ImageViewModel by viewModels()
 
-    private val filePicker = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
-        if (uri != null) copySelection(uri)
-    }
+    private val filePicker =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            if (uri != null) copySelection(uri)
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -44,69 +46,38 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
             filePicker.launch(arrayOf("*/*"))
         }
 
-        val path = arguments?.getString(ARG_PATH)
-        if (path != null) {
-            val file = File(path)
-            if (file.exists()) {
-                selectedFile = file
-                isDemo = false
-                view.findViewById<TextView>(R.id.tvFileName).text =
-                    arguments?.getString(ARG_NAME) ?: file.name
-                etClave.setText("")
-            } else {
-                showStatus(getString(R.string.image_no_file_error), R.color.red)
-            }
-        } else {
+        etClave.doAfterTextChanged { viewModel.key = it?.toString().orEmpty() }
+        button.setOnClickListener { decrypt() }
+
+        if (viewModel.file == null) {
             prepareDemo(view)
+        } else {
+            restore(view)
+        }
+    }
+
+    private fun restore(view: View) {
+        val file = viewModel.file
+        if (file == null || !file.exists()) {
+            prepareDemo(view)
+            return
         }
 
-        button.setOnClickListener {
-            val file = selectedFile
-            val key = etClave.text.toString().trim()
-
-            when {
-                file == null || !file.exists() ->
-                    showStatus(getString(R.string.image_no_file_error), R.color.red)
-                key.isEmpty() ->
-                    showStatus(getString(R.string.image_empty_key), R.color.red)
-                else -> {
-                    button.isEnabled = false
-                    button.text = getString(R.string.image_processing)
-                    showStatus(getString(R.string.image_decrypting), R.color.navy)
-
-                    ApiClient().decryptFile(file, key) { result ->
-                        if (!isAdded) return@decryptFile
-                        val activeView = view ?: return@decryptFile
-                        val activeButton = activeView.findViewById<MaterialButton>(R.id.btnDecryptImage)
-                        activeButton.isEnabled = true
-                        activeButton.text = getString(R.string.btn_decrypt_image)
-
-                        when (result) {
-                            is ApiResult.Success -> {
-                                val bitmap = BitmapFactory.decodeByteArray(
-                                    result.data,
-                                    0,
-                                    result.data.size,
-                                )
-                                if (bitmap == null) {
-                                    showStatus(getString(R.string.image_corrupt), R.color.red)
-                                } else {
-                                    activeView.findViewById<ImageView>(R.id.ivResult)
-                                        .setImageBitmap(bitmap)
-                                    activeView.findViewById<View>(R.id.previewCard).visibility =
-                                        View.VISIBLE
-                                    showStatus(
-                                        getString(R.string.image_integrity_ok),
-                                        R.color.green,
-                                    )
-                                }
-                            }
-                            is ApiResult.Failure ->
-                                showStatus(result.error.texto, R.color.red)
-                        }
-                    }
-                }
+        view.findViewById<TextView>(R.id.tvFileName).text =
+            viewModel.displayName ?: file.name
+        view.findViewById<EditText>(R.id.etClave).setText(viewModel.key)
+        viewModel.bitmap?.let { bitmap ->
+            view.findViewById<ImageView>(R.id.ivResult).setImageBitmap(bitmap)
+            view.findViewById<View>(R.id.previewCard).visibility = View.VISIBLE
+        }
+        viewModel.status?.let { text ->
+            view.findViewById<TextView>(R.id.tvStatus).apply {
+                this.text = text
+                setTextColor(ContextCompat.getColor(requireContext(), viewModel.statusColorRes))
             }
+        }
+        if (viewModel.loading) {
+            paintLoading(view, true)
         }
     }
 
@@ -118,11 +89,16 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
                     FileOutputStream(destination).use { output -> input.copyTo(output) }
                 }
             }
-            selectedFile = destination
-            isDemo = true
-            view.findViewById<TextView>(R.id.tvFileName).text =
-                getString(R.string.image_demo_file)
+            viewModel.file = destination
+            viewModel.demo = true
+            viewModel.displayName = getString(R.string.image_demo_file)
+            viewModel.key = DEMO_KEY
+            viewModel.status = null
+            viewModel.bitmap = null
+
+            view.findViewById<TextView>(R.id.tvFileName).text = viewModel.displayName
             view.findViewById<EditText>(R.id.etClave).setText(DEMO_KEY)
+            showStatus(getString(R.string.image_demo_ready), R.color.muted)
         } catch (_: Exception) {
             showStatus(getString(R.string.image_no_file_error), R.color.red)
         }
@@ -140,15 +116,85 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
                 FileOutputStream(destination).use { output -> input.copyTo(output) }
             } ?: throw IllegalStateException("No se pudo abrir el archivo")
 
-            selectedFile?.takeIf { !isDemo && it != destination }?.delete()
-            selectedFile = destination
-            isDemo = false
+            viewModel.file?.takeIf { !viewModel.demo && it != destination }?.delete()
+            viewModel.bitmap?.recycle()
+            viewModel.bitmap = null
+
+            viewModel.file = destination
+            viewModel.demo = false
+            viewModel.displayName = name
+            viewModel.key = ""
+            viewModel.status = null
+
             view?.findViewById<TextView>(R.id.tvFileName)?.text = name
             view?.findViewById<EditText>(R.id.etClave)?.setText("")
+            view?.findViewById<View>(R.id.previewCard)?.visibility = View.GONE
             showStatus("", R.color.muted)
         } catch (_: Exception) {
             showStatus(getString(R.string.image_no_file_error), R.color.red)
         }
+    }
+
+    private fun decrypt() {
+        if (viewModel.loading) return
+        val currentView = view ?: return
+        val file = viewModel.file
+        val key = currentView.findViewById<EditText>(R.id.etClave).text.toString().trim()
+
+        when {
+            file == null || !file.exists() ->
+                showStatus(getString(R.string.image_no_file_error), R.color.red)
+            key.isEmpty() ->
+                showStatus(getString(R.string.image_empty_key), R.color.red)
+            else -> {
+                viewModel.loading = true
+                viewModel.bitmap?.recycle()
+                viewModel.bitmap = null
+                currentView.findViewById<View>(R.id.previewCard).visibility = View.GONE
+                paintLoading(currentView, true)
+                showStatus(getString(R.string.image_decrypting), R.color.navy)
+
+                ApiClient().decryptFile(file, key) { result ->
+                    if (!isAdded) return@decryptFile
+                    val activeView = view ?: return@decryptFile
+                    viewModel.loading = false
+                    paintLoading(activeView, false)
+
+                    when (result) {
+                        is ApiResult.Success -> {
+                            val bitmap = BitmapFactory.decodeByteArray(
+                                result.data,
+                                0,
+                                result.data.size,
+                            )
+                            if (bitmap == null) {
+                                showStatus(getString(R.string.image_corrupt), R.color.red)
+                            } else {
+                                viewModel.bitmap = bitmap
+                                activeView.findViewById<ImageView>(R.id.ivResult)
+                                    .setImageBitmap(bitmap)
+                                activeView.findViewById<View>(R.id.previewCard).visibility =
+                                    View.VISIBLE
+                                showStatus(
+                                    getString(R.string.image_integrity_ok),
+                                    R.color.green,
+                                )
+                            }
+                        }
+                        is ApiResult.Failure ->
+                            showStatus(result.error.texto, R.color.red)
+                    }
+                }
+            }
+        }
+    }
+
+    private fun paintLoading(view: View, loading: Boolean) {
+        val button = view.findViewById<MaterialButton>(R.id.btnDecryptImage)
+        button.isEnabled = !loading
+        button.text = getString(
+            if (loading) R.string.image_processing else R.string.btn_decrypt_image,
+        )
     }
 
     private fun displayName(uri: Uri): String? = try {
@@ -166,17 +212,13 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
         null
     }
 
-    private fun showStatus(text: String, color: Int) {
+    private fun showStatus(text: String, colorRes: Int) {
+        viewModel.status = text
+        viewModel.statusColorRes = colorRes
         val currentView = view ?: return
         val status = currentView.findViewById<TextView>(R.id.tvStatus)
         status.text = text
-        status.setTextColor(ContextCompat.getColor(currentView.context, color))
-    }
-
-    override fun onDestroyView() {
-        if (!isDemo) selectedFile?.delete()
-        selectedFile = null
-        super.onDestroyView()
+        status.setTextColor(ContextCompat.getColor(currentView.context, colorRes))
     }
 
     companion object {

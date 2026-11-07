@@ -9,6 +9,7 @@ import android.provider.OpenableColumns
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -57,11 +58,12 @@ class MainActivity : AppCompatActivity() {
         })
 
         if (savedInstanceState == null) {
+            cleanTemporaryFiles()
             showTab(Tab.INICIO)
             handleIncomingIntent(intent)
         } else {
             currentTab = Tab.entries.getOrElse(savedInstanceState.getInt(KEY_TAB)) { Tab.INICIO }
-            paintNavigation(currentTab)
+            restoreTabs()
         }
     }
 
@@ -88,12 +90,60 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(R.id.navImagen).setOnClickListener { showTab(Tab.IMAGEN) }
     }
 
-    private fun showTab(tab: Tab, fragment: Fragment = createFragment(tab)) {
+    /**
+     * Mantiene una única instancia por pestaña con [androidx.fragment.app.FragmentTransaction.show]
+     * y [androidx.fragment.app.FragmentTransaction.hide], de forma que el texto escrito, el
+     * resultado de una orden y la imagen descifrada sobrevivan al cambio de pestaña.
+     */
+    private fun showTab(tab: Tab, incoming: Fragment? = null) {
+        val manager = supportFragmentManager
+        val existing = manager.findFragmentByTag(tab.name)
+
+        if (incoming == null && tab == currentTab && existing != null) {
+            paintNavigation(tab)
+            return
+        }
+
         currentTab = tab
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.contenedor, fragment, tab.name)
-            .commit()
+        val transaction = manager.beginTransaction()
+        Tab.entries.forEach { other ->
+            if (other != tab) manager.findFragmentByTag(other.name)?.let(transaction::hide)
+        }
+
+        when {
+            incoming != null -> {
+                existing?.let(transaction::remove)
+                transaction.add(R.id.contenedor, incoming, tab.name)
+            }
+            existing != null -> transaction.show(existing)
+            else -> transaction.add(R.id.contenedor, createFragment(tab), tab.name)
+        }
+
+        transaction.commit()
         paintNavigation(tab)
+    }
+
+    /**
+     * Tras un giro o una recreación, el FragmentManager devuelve las pestañas ya creadas:
+     * solo hay que dejar visible la que estaba activa.
+     */
+    private fun restoreTabs() {
+        val manager = supportFragmentManager
+        var restored = false
+        manager.beginTransaction().apply {
+            Tab.entries.forEach { tab ->
+                val fragment = manager.findFragmentByTag(tab.name) ?: return@forEach
+                restored = true
+                if (tab == currentTab) show(fragment) else hide(fragment)
+            }
+            commitNow()
+        }
+
+        if (!restored) {
+            showTab(currentTab)
+        } else {
+            paintNavigation(currentTab)
+        }
     }
 
     private fun createFragment(tab: Tab): Fragment = when (tab) {
@@ -180,7 +230,11 @@ class MainActivity : AppCompatActivity() {
 
         val name = displayName(uri) ?: uri.lastPathSegment ?: "archivo"
         val mime = contentResolver.getType(uri).orEmpty()
-        val local = copyToCache(uri, name) ?: return
+        val local = copyToCache(uri, name)
+        if (local == null) {
+            Toast.makeText(this, R.string.share_copy_failed, Toast.LENGTH_LONG).show()
+            return
+        }
 
         val isImage = mime.startsWith("image/") || name.endsWith(".enc", ignoreCase = true)
         if (isImage) {
@@ -232,8 +286,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun dp(value: Int): Int =
-        (value * resources.displayMetrics.density).toInt()
+    /**
+     * Borra las copias temporales de archivos compartidos que quedaron de sesiones
+     * anteriores. Solo se ejecuta con un arranque limpio, nunca tras un giro, para no
+     * eliminar el archivo que una pestaña restaurada todavía está usando.
+     */
+    private fun cleanTemporaryFiles() {
+        val stale = cacheDir.listFiles() ?: return
+        stale.forEach { file ->
+            if (file.name.startsWith("in-") || file.name.startsWith("upload-")) {
+                file.delete()
+            }
+        }
+    }
 
     companion object {
         private const val KEY_TAB = "tab_actual"

@@ -5,6 +5,8 @@ import android.view.View
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import com.google.android.material.button.MaterialButton
 import com.runnersz.reto2.android.MainActivity
 import com.runnersz.reto2.android.R
 import com.runnersz.reto2.android.data.ApiClient
@@ -15,7 +17,7 @@ import com.runnersz.reto2.android.data.ApiResult
  */
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
-    private var checking = false
+    private val viewModel: HomeViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -28,39 +30,61 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             (activity as? MainActivity)?.goToImage()
         }
 
-        checkApi()
+        restoreStatus(view)
+        if (viewModel.checking) {
+            paintLoading(view, true)
+        } else if (viewModel.statusText == null) {
+            checkApi()
+        }
+    }
+
+    private fun restoreStatus(view: View) {
+        val text = viewModel.statusText ?: return
+        val status = view.findViewById<TextView>(R.id.tvStatus)
+        status.text = text
+        status.setTextColor(ContextCompat.getColor(requireContext(), viewModel.statusColorRes))
     }
 
     private fun checkApi() {
-        if (checking) return
+        if (viewModel.checking) return
         val currentView = view ?: return
-        val context = context ?: return
-        val status = currentView.findViewById<TextView>(R.id.tvStatus)
-        val button = currentView.findViewById<View>(R.id.btnCheckApi)
 
-        checking = true
-        button.isEnabled = false
+        viewModel.checking = true
+        paintLoading(currentView, true)
+        val status = currentView.findViewById<TextView>(R.id.tvStatus)
         status.text = getString(R.string.home_status_checking)
-        status.setTextColor(ContextCompat.getColor(context, R.color.navy))
+        status.setTextColor(ContextCompat.getColor(requireContext(), R.color.navy))
 
         ApiClient().checkAuth { result ->
-            checking = false
             if (!isAdded) return@checkAuth
+            viewModel.checking = false
             val activeView = view ?: return@checkAuth
-            activeView.findViewById<View>(R.id.btnCheckApi).isEnabled = true
-            val activeStatus = activeView.findViewById<TextView>(R.id.tvStatus)
-            val activeContext = activeView.context
+            paintLoading(activeView, false)
 
             when (result) {
                 is ApiResult.Success -> {
-                    activeStatus.text = getString(R.string.home_status_ok)
-                    activeStatus.setTextColor(ContextCompat.getColor(activeContext, R.color.green))
+                    viewModel.statusText = getString(R.string.home_status_ok)
+                    viewModel.statusColorRes = R.color.green
                 }
                 is ApiResult.Failure -> {
-                    activeStatus.text = result.error.texto
-                    activeStatus.setTextColor(ContextCompat.getColor(activeContext, R.color.red))
+                    viewModel.statusText = result.error.texto
+                    viewModel.statusColorRes = R.color.red
                 }
             }
+
+            val activeStatus = activeView.findViewById<TextView>(R.id.tvStatus)
+            activeStatus.text = viewModel.statusText
+            activeStatus.setTextColor(
+                ContextCompat.getColor(activeView.context, viewModel.statusColorRes),
+            )
         }
+    }
+
+    private fun paintLoading(view: View, loading: Boolean) {
+        val button = view.findViewById<MaterialButton>(R.id.btnCheckApi)
+        button.isEnabled = !loading
+        button.text = getString(
+            if (loading) R.string.btn_test_api_loading else R.string.btn_test_api,
+        )
     }
 }
