@@ -45,6 +45,8 @@ Thumbs.db
 .idea/
 *.iml
 
-# Logs
+# Logs (el registro se escribe en la carpeta del usuario, nunca en el repositorio)
 *.log
+*.log.gz
 *.err
+logs/

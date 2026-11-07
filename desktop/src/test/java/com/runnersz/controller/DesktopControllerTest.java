@@ -612,6 +612,18 @@ class DesktopControllerTest {
   }
 
   @Test
+  void elVisorDelRegistroSeAbreConSuRuta() {
+    autoClose = true;
+    CLOSED.clear();
+    onFx(
+        () -> {
+          controller.showLogs();
+          return null;
+        });
+    assertTrue(CLOSED.contains("Registro de la aplicación"), CLOSED.toString());
+  }
+
+  @Test
   void laTipografiaUsaEmSobreUnaBaseDe16Px() {
     assertEquals(16.0, onFx(() -> font("#statusLabel")), 0.01, "cuerpo: 1 em = 16 px = 12 pt");
     assertEquals(16.0, onFx(() -> font("#plainText")), 0.01, "campos: 1 em");

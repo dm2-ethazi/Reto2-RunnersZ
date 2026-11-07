@@ -138,3 +138,18 @@ una captura de cada pestaña en `target/ui-1.png` … `target/ui-3.png`.
 | Textos largos y ayudas 12 pt | `.muted`, `.helper`, `.drop-hint`, `.status-text` 1 em; `.tooltip` 16 px | `runnersz.css` |
 | Texto cifrado 14 pt monoespaciada | `.mono` y `.shift-value` 1,1875 em = 19 px ≈ 14,25 pt | `runnersz.css` |
 | Tamaños en píxeles enteros (sin pixelado) | 16/19/27/30 px: ningún tamaño cae en fracciones | `DesktopControllerTest.laTipografiaUsaEmSobreUnaBaseDe16Px` |
+
+## 6. Registro de la aplicación (log)
+
+| Requisito | Dónde se cumple | Cómo comprobarlo |
+|---|---|---|
+| El registro nunca se versiona | `.gitignore`: `*.log`, `*.log.gz`, `logs/` | `git status --short` después de usar la aplicación |
+| Fuera del repositorio y del JAR | `Logs.directory()` usa la carpeta de registros del usuario | arrancar y leer la línea «Registro en …» |
+| Rotación y retención | `RollingFileAppender`: 5 MB o un día, 7 días, 50 MB | `LogsTest.elRegistroEscribeNivelFechaYMensaje` |
+| Sin secretos en el fichero | `Logs.redact` enmascara `token`, `password`, `clave` y `Bearer` | `LogsTest.losSecretosSeEnmascaran` y `elErrorSeRegistraConSuTraza` |
+| Ruta propia de cada sistema | `Logs.defaultDirectory` | `LogsTest.laCarpetaPorDefectoDependeDelSistemaOperativo` |
+| El usuario puede verlo | Ajustes → Ver registro | `DesktopControllerTest.elVisorDelRegistroSeAbreConSuRuta` |
+
+En este equipo (Windows) la ruta por omisión es `%LOCALAPPDATA%\RunnersZ\logs\runnersz.log`, es decir
+`C:\Users\alain\AppData\Local\RunnersZ\logs\runnersz.log`. En las pruebas se escribe en
+`desktop/target/logs/`, que también queda ignorado.

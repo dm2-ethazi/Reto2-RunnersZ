@@ -2,6 +2,7 @@ package com.runnersz.service;
 
 import com.runnersz.model.ConnectionSettings;
 import com.runnersz.utiles.I18n;
+import com.runnersz.utiles.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -38,6 +39,7 @@ public final class ApiClient {
 
   private static final int CHUNK = 64 * 1024;
   private static final int MAX_ERROR_BYTES = 8 * 1024;
+  private static final Log LOG = Log.of(ApiClient.class);
 
   /** Notificación de avance: bytes transferidos y total conocido (0 si se desconoce). */
   @FunctionalInterface
@@ -146,6 +148,7 @@ public final class ApiClient {
             .build();
 
     ErrorCollector errors = new ErrorCollector();
+    long started = System.nanoTime();
     HttpResponse<Path> response =
         client.send(
             request,
@@ -157,11 +160,19 @@ public final class ApiClient {
                         info.headers().firstValueAsLong("Content-Length").orElse(-1))
                     : errors);
 
+    LOG.info(
+        "%s %s (%d bytes) -> %d en %d ms",
+        encrypt ? "cifrar" : "descifrar",
+        fileName,
+        size,
+        response.statusCode(),
+        millis(started));
     if (response.statusCode() < 200 || response.statusCode() >= 300) {
       throw failureFor(response.statusCode(), errors.text());
     }
     if (!encrypt
         && !"verified".equalsIgnoreCase(response.headers().firstValue("X-Integrity").orElse(""))) {
+      LOG.warn("La API no confirmó X-Integrity al descifrar %s", fileName);
       throw I18n.failure("error.integrity");
     }
   }
@@ -187,13 +198,29 @@ public final class ApiClient {
 
   private HttpResponse<byte[]> sendBytes(HttpRequest request)
       throws IOException, InterruptedException {
+    long started = System.nanoTime();
+    String path = request.uri().getPath();
     try {
-      return client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+      HttpResponse<byte[]> response = client.send(request, HttpResponse.BodyHandlers.ofByteArray());
+      // Solo método, ruta, estado, tiempo y tamaño: ni el token ni el cuerpo llegan al registro.
+      LOG.info(
+          "%s %s -> %d en %d ms (%d bytes)",
+          request.method(),
+          path,
+          response.statusCode(),
+          millis(started),
+          response.body().length);
+      return response;
     } catch (IOException ex) {
+      LOG.warn("Fallo de red en %s %s tras %d ms: %s", request.method(), path, millis(started), ex);
       IOException failure = I18n.failure("error.network");
       failure.initCause(ex);
       throw failure;
     }
+  }
+
+  private static long millis(long started) {
+    return (System.nanoTime() - started) / 1_000_000;
   }
 
   private URI uri(String endpoint) throws IOException {

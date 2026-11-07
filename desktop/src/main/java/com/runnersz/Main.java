@@ -3,8 +3,11 @@ package com.runnersz;
 import com.runnersz.controller.DesktopController;
 import com.runnersz.controller.UiState;
 import com.runnersz.utiles.I18n;
+import com.runnersz.utiles.Log;
+import com.runnersz.utiles.Logs;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Path;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -19,6 +22,8 @@ import javafx.stage.Stage;
  * @author Jairo y Alain
  */
 public final class Main extends Application {
+  private static final Log LOG = Log.of(Main.class);
+
   private static final String[] FONTS = {
     "Inter-Regular.ttf",
     "Inter-Medium.ttf",
@@ -36,6 +41,14 @@ public final class Main extends Application {
   @Override
   public void start(Stage stage) {
     this.stage = stage;
+    Path log = Logs.start();
+    LOG.info(
+        "Arranca la aplicación %s (%s %s, Java %s)",
+        version(),
+        System.getProperty("os.name"),
+        System.getProperty("os.arch"),
+        System.getProperty("java.version"));
+    LOG.info("Registro en %s", log);
     loadFonts();
     show(null);
   }
@@ -59,6 +72,7 @@ public final class Main extends Application {
       stage.show();
       controller = next;
     } catch (IOException ex) {
+      LOG.error("No se pudo cargar la vista", ex);
       throw new IllegalStateException("No se pudo cargar la vista", ex);
     }
   }
@@ -68,8 +82,9 @@ public final class Main extends Application {
     for (String name : FONTS) {
       try (InputStream stream = Main.class.getResourceAsStream("/com/runnersz/fonts/" + name)) {
         if (stream != null) Font.loadFont(stream, 13);
-      } catch (IOException ignored) {
+      } catch (IOException ex) {
         // La interfaz conserva una familia del sistema si una fuente no se puede leer.
+        LOG.debug("No se pudo cargar la fuente %s: %s", name, ex);
       }
     }
   }
@@ -77,6 +92,14 @@ public final class Main extends Application {
   @Override
   public void stop() {
     if (controller != null) controller.stop();
+    LOG.info("La aplicación se cierra");
+  }
+
+  /** Versión del JAR empaquetado, o {@code desarrollo} cuando se ejecuta desde clases. */
+  private static String version() {
+    Package info = Main.class.getPackage();
+    String version = info == null ? null : info.getImplementationVersion();
+    return version == null || version.isBlank() ? "desarrollo" : version;
   }
 
   /**

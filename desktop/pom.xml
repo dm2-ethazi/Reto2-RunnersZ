@@ -13,6 +13,8 @@
         <javafx.version>21.0.5</javafx.version>
         <ikonli.version>12.4.0</ikonli.version>
         <junit.version>5.11.4</junit.version>
+        <slf4j.version>2.0.13</slf4j.version>
+        <logback.version>1.5.6</logback.version>
         <jacoco.version>0.8.12</jacoco.version>
     </properties>
     <dependencies>
@@ -35,6 +37,16 @@
             <groupId>org.kordamp.ikonli</groupId>
             <artifactId>ikonli-fontawesome5-pack</artifactId>
             <version>${ikonli.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -66,6 +78,8 @@
                     <systemPropertyVariables>
                         <java.util.prefs.PreferencesFactory>com.runnersz.support.MemoryPreferencesFactory</java.util.prefs.PreferencesFactory>
                         <java.awt.headless>true</java.awt.headless>
+                        <runnersz.logs.dir>${project.build.directory}/logs</runnersz.logs.dir>
+                        <runnersz.logs.console>false</runnersz.logs.console>
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
@@ -135,6 +149,8 @@
                                 </filter>
                             </filters>
                             <transformers>
+                                <!-- Conserva META-INF/services: sin esto el fat JAR pierde el proveedor de SLF4J. -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.runnersz.Launcher</mainClass>
                                 </transformer>

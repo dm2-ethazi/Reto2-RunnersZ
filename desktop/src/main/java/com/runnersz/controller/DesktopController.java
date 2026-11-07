@@ -9,6 +9,9 @@ import com.runnersz.service.FileOperationService;
 import com.runnersz.service.FileService;
 import com.runnersz.service.SettingsStore;
 import com.runnersz.utiles.I18n;
+import com.runnersz.utiles.Log;
+import com.runnersz.utiles.Logs;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -64,6 +67,7 @@ import javafx.util.Duration;
 public final class DesktopController {
   private static final String MIB = "%.1f MiB";
   private static final String KIB = "%.1f KiB";
+  private static final Log LOG = Log.of(DesktopController.class);
 
   private final FileService files = new FileService();
   private final SettingsStore settings = new SettingsStore();
@@ -647,6 +651,17 @@ public final class DesktopController {
     tip(saveButton, "save.help");
     tip(cancelButton, "cancel.help");
 
+    ButtonType logs = new ButtonType(text("logs.open"), ButtonBar.ButtonData.LEFT);
+    dialog.getDialogPane().getButtonTypes().add(logs);
+    Button logsButton = (Button) dialog.getDialogPane().lookupButton(logs);
+    tip(logsButton, "logs.open.help");
+    logsButton.addEventFilter(
+        ActionEvent.ACTION,
+        event -> {
+          event.consume();
+          showLogs();
+        });
+
     testButton.addEventFilter(
         ActionEvent.ACTION,
         event -> {
@@ -706,6 +721,90 @@ public final class DesktopController {
       } catch (IllegalArgumentException ex) {
         showFailure(text("settings.error.title"), ex, this::handleSettings);
       }
+    }
+  }
+
+  /**
+   * Visor del registro: últimas líneas, ruta del fichero y acceso a la carpeta que lo contiene. Se
+   * abre desde Ajustes sin cerrar el diálogo, de modo que el usuario puede volver a sus datos.
+   */
+  void showLogs() {
+    Path file = Logs.file();
+    Dialog<ButtonType> dialog = new Dialog<>();
+    dialog.initOwner(stage);
+    dialog.setTitle(text("logs.title"));
+    dialog.setHeaderText(text("logs.header"));
+
+    Label path = new Label(file.toString());
+    path.setWrapText(true);
+    path.getStyleClass().add("helper");
+    path.setAccessibleText(text("logs.path") + ": " + file);
+
+    TextArea view = new TextArea();
+    String tail = Logs.lastLines(file, Logs.VIEWER_LINES);
+    view.setText(tail.isBlank() ? text("logs.empty") : tail);
+    view.setEditable(false);
+    view.setWrapText(false);
+    view.getStyleClass().add("mono");
+    view.setPrefRowCount(18);
+    view.setPrefColumnCount(90);
+    view.setAccessibleText(text("logs.title"));
+    view.setAccessibleHelp(text("logs.open.help"));
+
+    Label notice = new Label();
+    notice.setWrapText(true);
+    notice.getStyleClass().add("helper");
+
+    VBox panel = new VBox(10, path, view, notice);
+    panel.setPadding(new Insets(14));
+    panel.setPrefWidth(760);
+    dialog.getDialogPane().setContent(panel);
+
+    ButtonType folder = new ButtonType(text("logs.openFolder"), ButtonBar.ButtonData.LEFT);
+    ButtonType copyPath = new ButtonType(text("logs.copyPath"), ButtonBar.ButtonData.LEFT);
+    dialog.getDialogPane().getButtonTypes().addAll(folder, copyPath, ButtonType.CLOSE);
+    translate(dialog.getDialogPane());
+    Button folderButton = (Button) dialog.getDialogPane().lookupButton(folder);
+    Button copyButton = (Button) dialog.getDialogPane().lookupButton(copyPath);
+    tip(folderButton, "logs.openFolder.help");
+    tip(copyButton, "logs.copyPath.help");
+    folderButton.addEventFilter(
+        ActionEvent.ACTION,
+        event -> {
+          event.consume();
+          notice.setText(openFolder(file.getParent()) ? "" : text("logs.folderError"));
+        });
+    copyButton.addEventFilter(
+        ActionEvent.ACTION,
+        event -> {
+          event.consume();
+          ClipboardContent selection = new ClipboardContent();
+          selection.putString(file.toString());
+          Clipboard.getSystemClipboard().setContent(selection);
+          notice.setText(text("logs.copied"));
+        });
+
+    dialog.showAndWait();
+  }
+
+  /**
+   * Abre la carpeta del registro con el explorador del sistema.
+   *
+   * @param folder carpeta que se quiere mostrar
+   * @return {@code true} si el sistema la abrió
+   */
+  private boolean openFolder(Path folder) {
+    try {
+      if (folder == null
+          || !Desktop.isDesktopSupported()
+          || !Desktop.getDesktop().isSupported(Desktop.Action.OPEN)) {
+        return false;
+      }
+      Desktop.getDesktop().open(folder.toFile());
+      return true;
+    } catch (IOException | RuntimeException ex) {
+      LOG.warn("No se pudo abrir la carpeta del registro %s: %s", folder, ex);
+      return false;
     }
   }
 
@@ -939,6 +1038,7 @@ public final class DesktopController {
   }
 
   private void showFailure(String title, Throwable error, Runnable retry) {
+    LOG.error("Fallo mostrado al usuario («%s»): %s", error, title, I18n.errorMessage(error));
     Alert alert = new Alert(Alert.AlertType.ERROR);
     alert.initOwner(stage);
     alert.setTitle(title);

@@ -149,3 +149,30 @@ se ejecutan bajo Xvfb). Se omiten solas si el entorno no puede arrancar JavaFX.
   transporte con presentación.
 - **Todo traducido por clave**: añadir un idioma es añadir un `.properties`, no tocar Java.
 - **Fallar sin dañar**: temporal + `ATOMIC_MOVE` + comprobación de integridad antes de publicar.
+
+## 12. Registro (log)
+
+La aplicación escribe un registro propio con SLF4J y Logback, sin fichero de configuración estático:
+`utiles/Logs` monta el `RollingFileAppender` en código y `utiles/Log` es la fachada que usa todo el
+programa, de modo que ningún mensaje puede saltarse el enmascarado. El token, la contraseña y la
+clave se sustituyen por `***` antes de escribir (`Logs.redact`).
+
+La carpeta se elige en este orden: `-Drunnersz.logs.dir`, la variable `RUNNERSZ_LOGS_DIR` y, si no hay
+ninguna, la carpeta de registros del usuario: `%LOCALAPPDATA%\RunnersZ\logs` en Windows,
+`~/Library/Logs/RunnersZ` en macOS y `$XDG_STATE_HOME/runnersz/logs` (o `~/.local/state/runnersz/logs`)
+en Linux. Nunca se escribe en el directorio de trabajo ni junto al JAR: instalar la aplicación en una
+carpeta de solo lectura no rompe el registro, y el fichero no puede acabar en el repositorio porque
+`.gitignore` excluye `*.log`, `*.log.gz` y `logs/`.
+
+`runnersz.log` rota cada 5 MB o cada día a `runnersz.AAAA-MM-DD.n.log.gz`, conserva siete días y no
+pasa de 50 MB. El nivel por omisión es `INFO`; con `-Drunnersz.log.level=DEBUG` se añade el detalle
+fino y `-Drunnersz.logs.console=false` silencia la copia por consola. Si la carpeta no se puede crear,
+el registro cae en una carpeta temporal del sistema y deja un aviso, sin impedir el arranque.
+
+Se registran el arranque y el cierre, las peticiones HTTP (método, ruta, estado, milisegundos y
+bytes), el resultado de cifrar o descifrar, la falta de `X-Integrity` y los fallos que la interfaz
+muestra en un diálogo, con la pila completa que el diálogo no enseña. Las excepciones no capturadas de
+cualquier hilo también se guardan en el manejador por omisión.
+
+Desde Ajustes → **Ver registro** se abre un visor con las últimas 200 líneas, la ruta completa y los
+botones para abrir la carpeta o copiar la ruta, traducido a los cuatro idiomas.
