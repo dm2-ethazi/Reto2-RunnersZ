@@ -17,13 +17,17 @@ namespace RunnersZ.Game {
   // Avanza solo con la partida en curso: congela la animacion al caer la puerta.
   float enemyClock;
   AlphabetWheel wheel; bool manuscriptOpen; PhraseBank bank; DifficultyConfig config; int shift, spawned; float clock; string answer="", hint="", feedback=""; bool started, backPressed;
+  // Teclado propio del juego: el campo de respuesta deja de ser un control de
+  // texto, asi que Android no puede levantar su teclado encima de la partida.
+  bool keypadOpen;
+  const string KeypadLetters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   public void Begin(Difficulty selected) {
    difficulty=selected; config=new DifficultyConfig(selected); bank=new PhraseBank(System.Environment.TickCount);
    State=GameState.EnCurso; Round=1; Lives=3; started=true; doorBleed=0f; enemyClock=0f; PrepareRound();
   }
   void PrepareRound() {
    wheel=new AlphabetWheel(difficulty); manuscriptOpen=false; Message=bank.Next(difficulty); shift=Random.Range(1,26); Cipher=Caesar.Transform(Message,shift);
-   HintsRemaining=config.Hints; answer=""; hint=""; feedback="Descifra el mensaje antes de que lleguen.";
+   HintsRemaining=config.Hints; answer=""; hint=""; feedback="Descifra el mensaje antes de que lleguen."; keypadOpen=false;
    spawned=0; clock=0; enemies.Clear(); enemies.Add(0); spawned++;
   }
   public bool Submit(string value) {
@@ -56,6 +60,8 @@ namespace RunnersZ.Game {
    if(Input.GetKeyDown(KeyCode.Escape)) backPressed=true;
    // El pulso se apaga solo, aunque la partida ya este perdida o en pausa.
    doorBleed=Mathf.MoveTowards(doorBleed,0f,Time.deltaTime*.42f);
+   // Con la puerta caida o la partida ganada el teclado propio se cierra solo.
+   if(!started || State!=GameState.EnCurso)keypadOpen=false;
    if(!started || State!=GameState.EnCurso || manuscriptOpen)return;
    clock+=Time.deltaTime;
    // Los espectros se paran con la partida: sobre la ventana de derrota ya no
@@ -75,7 +81,7 @@ namespace RunnersZ.Game {
   }
 
   UiFrame frame; GameLayout gameLayout; MenuLayout menuLayout; ManuscriptLayout manuscriptLayout;
-  GUIStyle heading, body, feedbackStyle, small, cipherStyle, fieldStyle, actionStyle, secondaryStyle, letterStyle, statStyle;
+  GUIStyle heading, body, feedbackStyle, small, cipherStyle, fieldStyle, actionStyle, secondaryStyle, letterStyle, statStyle, answerStyle, keypadStyle;
   PixelFantasyArt pixelArt; Texture2D rounded; GUIStyle panelStyle; Font manuscriptFont;
   readonly Color ink=new Color(.035f,.055f,.095f);
   readonly Color muted=new Color(.57f,.65f,.73f);
@@ -107,7 +113,11 @@ namespace RunnersZ.Game {
    fieldStyle=new GUIStyle(GUI.skin.textField){alignment=TextAnchor.MiddleLeft,clipping=TextClipping.Clip};
    fieldStyle.normal.background=rounded;fieldStyle.focused.background=rounded;
    fieldStyle.normal.textColor=Color.white;fieldStyle.focused.textColor=Color.white;
+   // El valor se pinta como etiqueta: sin fondo propio para no duplicar el marco.
+   answerStyle=new GUIStyle(fieldStyle){wordWrap=false,clipping=TextClipping.Clip};
+   answerStyle.normal.background=null;answerStyle.hover.background=null;answerStyle.active.background=null;answerStyle.focused.background=null;
    letterStyle=new GUIStyle(body){fontStyle=FontStyle.Bold,alignment=TextAnchor.MiddleCenter,wordWrap=false};
+   keypadStyle=new GUIStyle(letterStyle){fontSize=18};
    manuscriptFont=LoadManuscriptFont();
    if(manuscriptFont!=null){heading.font=manuscriptFont;cipherStyle.font=manuscriptFont;letterStyle.font=manuscriptFont;}
    // El marcador va centrado en su recuadro y con cuerpo mayor que el resto de la barra.
@@ -135,8 +145,11 @@ namespace RunnersZ.Game {
    actionStyle.fontSize=Mathf.RoundToInt(frame.Button);
    secondaryStyle.fontSize=Mathf.RoundToInt(frame.Button);
    fieldStyle.fontSize=Mathf.RoundToInt(frame.Field);
+   answerStyle.fontSize=Mathf.RoundToInt(frame.Field);
+   keypadStyle.fontSize=Mathf.RoundToInt(frame.Button*.95f);
    int pad=Mathf.RoundToInt(frame.Body*.7f);
    fieldStyle.padding=new RectOffset(pad,pad,Mathf.RoundToInt(pad*.45f),Mathf.RoundToInt(pad*.45f));
+   answerStyle.padding=new RectOffset(pad,pad,Mathf.RoundToInt(pad*.45f),Mathf.RoundToInt(pad*.45f));
   }
 
   void Fill(Rect r,Color c,bool round=true){
@@ -147,7 +160,7 @@ namespace RunnersZ.Game {
    GUI.color=old;
   }
   void Label(Rect r,string value,GUIStyle style,Color? color=null,TextAnchor? align=null){
-   if(style==heading||style==letterStyle||style==cipherStyle){pixelArt.Text(r,value,Mathf.RoundToInt(style.fontSize),align??style.alignment,color??style.normal.textColor);return;}
+   if(style==heading||style==letterStyle||style==cipherStyle||style==keypadStyle){pixelArt.Text(r,value,Mathf.RoundToInt(style.fontSize),align??style.alignment,color??style.normal.textColor);return;}
    Color oldContent=GUI.contentColor,oldText=style.normal.textColor;
    GUI.contentColor=Color.white;if(color.HasValue)style.normal.textColor=color.Value;
    GUI.Label(r,value,style);
@@ -218,31 +231,18 @@ namespace RunnersZ.Game {
    }
    ApplyMetrics();
    var origin=UiFrame.Origin(safe,Screen.height);
-   float shift=KeyboardShift(origin);
    var matrix=GUI.matrix;
-   GUI.matrix=Matrix4x4.TRS(new Vector3(origin.x,origin.y-shift,0f),Quaternion.identity,new Vector3(frame.Scale,frame.Scale,1f));
+   GUI.matrix=Matrix4x4.TRS(new Vector3(origin.x,origin.y,0f),Quaternion.identity,new Vector3(frame.Scale,frame.Scale,1f));
    GUI.DrawTexture(new Rect(0f,0f,frame.Width,frame.Height),pixelArt.Background);
    if(!started)DrawWelcome();else DrawGame();
    if(manuscriptOpen&&started)DrawManuscript();
+   if(keypadOpen&&started&&!manuscriptOpen)DrawKeypad();
    GUI.matrix=matrix;
    if(backPressed){backPressed=false;HandleBack();}
   }
 
-  // Con el teclado abierto se sube el lienzo lo justo para que el campo de
-  // respuesta siga visible; nada se redimensiona ni se solapa.
-  float KeyboardShift(Vector2 origin){
-   if(!TouchScreenKeyboard.visible||manuscriptOpen||!started)return 0f;
-   var area=TouchScreenKeyboard.area;
-   if(area.height<=1f||area.height>Screen.height*.85f)return 0f;
-   float keyboardTop=Screen.height-(area.y+area.height);
-   float fieldTop=origin.y+gameLayout.Field.y*frame.Scale;
-   float fieldBottom=origin.y+gameLayout.Field.yMax*frame.Scale;
-   if(fieldBottom<=keyboardTop-6f)return 0f;
-   float needed=fieldBottom-keyboardTop+10f;
-   return Mathf.Clamp(needed,0f,Mathf.Max(0f,fieldTop-10f));
-  }
-
   void HandleBack(){
+   if(keypadOpen){keypadOpen=false;return;}
    if(manuscriptOpen){manuscriptOpen=false;return;}
    if(started){started=false;enemies.Clear();return;}
    Application.Quit();
@@ -273,14 +273,14 @@ namespace RunnersZ.Game {
    bool playing=State==GameState.EnCurso;
    // Con el manuscrito abierto la partida queda de fondo: sin foco ni clics, para
    // que ningun control de debajo se lleve el toque ni habra el teclado.
-   bool uiEnabled=!manuscriptOpen;
+   bool uiEnabled=!manuscriptOpen&&!keypadOpen;
    Frame(l.TopBar,surface);
    // El nombre mantiene su rotulo pixel de siempre: solo cambia la alineacion.
    Label(l.Title,"RUNNERS Z",heading,null,TextAnchor.MiddleCenter);
    Label(l.StatRound,"RONDA "+Round+" / 3",statStyle);
    Label(l.StatLives,"VIDAS "+Lives+" / 3",statStyle,Lives<=1?danger:(Color?)null);
    GUI.enabled=uiEnabled;
-   if(Button(l.Manuscript,"Manuscrito",true)){manuscriptOpen=true;CloseKeyboard();}
+   if(Button(l.Manuscript,"Manuscrito",true)){manuscriptOpen=true;keypadOpen=false;CloseKeyboard();}
 
    float segment=l.Ticks.width/3f;
    float gapTick=Mathf.Max(4f,frame.Gap*.5f);
@@ -295,15 +295,23 @@ namespace RunnersZ.Game {
    Frame(l.SidePanel,surface);
    Label(l.FieldLabel,"02 / ESCRIBE EL MENSAJE DESCIFRADO",small);
    GUI.enabled=playing&&uiEnabled;
-   GUI.SetNextControlName("answer");
-   var bg=GUI.backgroundColor;GUI.backgroundColor=new Color(.16f,.22f,.31f);
-   answer=GUI.TextField(l.Field,answer,160,fieldStyle);
-   GUI.backgroundColor=bg;
+   // Sin TextField no hay teclado del sistema: el valor se pinta como etiqueta y
+   // el toque abre el teclado propio, que ademas deja ver el cifrado.
+   Fill(l.Field,new Color(.16f,.22f,.31f),true);
+   Rect fieldText=UiSplit.Inset(l.Field,Mathf.Round(frame.Body*.65f));
+   if(string.IsNullOrEmpty(answer))Label(fieldText,"Toca para escribir",small,muted);
+   else Label(fieldText,answer,answerStyle,cream);
+   if(GUI.enabled&&Event.current.type==EventType.MouseUp&&l.Field.Contains(Event.current.mousePosition)){keypadOpen=true;Event.current.Use();}
+   // Un teclado fisico sigue sirviendo para escribir sin abrir el propio.
+   if(GUI.enabled&&Event.current.type==EventType.KeyDown&&!manuscriptOpen){
+    char typed=Event.current.character;
+    if(typed=='\b'){Backspace();Event.current.Use();}
+    else if(typed!='\0'&&!char.IsControl(typed)){AddLetter(typed);Event.current.Use();}
+   }
    bool canSubmit=!string.IsNullOrWhiteSpace(answer);
    bool previous=GUI.enabled;GUI.enabled=previous&&canSubmit;
-   if(Button(l.Submit,"Validar respuesta",true)){Submit(answer);GUI.FocusControl(null);CloseKeyboard();}
+   if(Button(l.Submit,"Validar respuesta",true))Submit(answer);
    GUI.enabled=previous;
-   if(!manuscriptOpen&&playing&&canSubmit&&GUI.GetNameOfFocusedControl()=="answer"&&Event.current.type==EventType.KeyDown&&Event.current.keyCode==KeyCode.Return){Submit(answer);Event.current.Use();}
    GUI.enabled=previous&&HintsRemaining>0;
    if(Button(l.Hint,"Pista \u00b7 "+HintsRemaining+" restantes"))UseHint();
    GUI.enabled=previous;
@@ -334,8 +342,8 @@ namespace RunnersZ.Game {
    Label(bodyRect,(State==GameState.Victoria?"Has descifrado los tres mensajes.":"Prueba los pares del manuscrito y vuelve a intentarlo."),body);
    // El panel se dibuja con la partida ya detenida, asi que GUI.enabled llegaba en
    // false y el boton salia bloqueado. Ahora devuelve al selector de dificultad.
-   GUI.enabled=!manuscriptOpen;
-   if(Button(buttonRect,"Volver al men\u00fa principal",true)){started=false;enemies.Clear();manuscriptOpen=false;}
+   GUI.enabled=!manuscriptOpen&&!keypadOpen;
+   if(Button(buttonRect,"Volver al men\u00fa principal",true)){started=false;enemies.Clear();manuscriptOpen=false;keypadOpen=false;}
   }
 
   void DrawArena(Rect area){
@@ -414,6 +422,80 @@ namespace RunnersZ.Game {
    // saltitos en vez de avanzar caminando y ya los anima la propia hoja de frames.
    GUI.DrawTextureWithTexCoords(new Rect(centerX-width*.5f,groundY-height,width,height),pixelArt.Wraith,WraithFrames[index],true);
   }
+
+  // Teclado propio: se apoya en el borde inferior del lienzo y deja a la vista la
+  // barra superior y el mensaje cifrado, en vez de tapar media pantalla como el
+  // teclado del sistema. Las teclas usan el mismo marco y la misma tipografia.
+  void DrawKeypad(){
+   float w=Mathf.Min(frame.ContentWidth,1040f);
+   float pad=Mathf.Round(frame.Pad*.8f);
+   float headerH=Mathf.Round(frame.Small+10f);
+   float fieldH=frame.ActionHeight;
+   float gap=Mathf.Round(frame.Gap*.55f);
+   float keyH=Mathf.Max(46f,Mathf.Round(frame.Touch*.95f));
+   float keyGap=Mathf.Max(5f,Mathf.Round(frame.Gap*.32f));
+   float keysH=keyH*4f+keyGap*3f;
+   float h=pad*2f+headerH+gap+fieldH+gap+keysH;
+   float boxY=Mathf.Round(frame.Height-frame.Margin*.6f-h);
+   Rect box=new Rect(Mathf.Round((frame.Width-w)*.5f),Mathf.Max(frame.Margin,boxY),w,h);
+   Fill(new Rect(0f,0f,frame.Width,frame.Height),new Color(0f,0f,0f,.52f),false);
+   Frame(box,new Color(.045f,.065f,.10f));
+   Rect inner=UiSplit.Inset(box,pad);
+
+   Rect header=new Rect(inner.x,inner.y,inner.width,headerH);
+   float closeW=Mathf.Clamp(inner.width*.16f,frame.Touch*1.5f,180f);
+   Rect close=new Rect(inner.xMax-closeW,header.y,closeW,headerH);
+   Label(new Rect(header.x,header.y,Mathf.Max(0f,header.width-closeW-gap),headerH),"ESCRIBE LA RESPUESTA",small,gold);
+   if(Button(close,"Ocultar")){keypadOpen=false;return;}
+
+   Rect row=new Rect(inner.x,header.yMax+gap,inner.width,fieldH);
+   float okW=Mathf.Clamp(inner.width*.26f,frame.Touch*2.3f,300f);
+   Rect field=new Rect(row.x,row.y,Mathf.Max(0f,row.width-okW-gap),row.height);
+   Rect ok=new Rect(field.xMax+gap,row.y,okW,row.height);
+   // El marco ya rellena el interior: mismo azul que el campo de la derecha.
+   Frame(field,new Color(.16f,.22f,.31f));
+   Rect fieldText=UiSplit.Inset(field,Mathf.Round(frame.Body*.65f));
+   if(string.IsNullOrEmpty(answer))Label(fieldText,"Toca las letras",small,muted);
+   else Label(fieldText,answer,answerStyle,cream);
+   if(Event.current.type==EventType.Repaint&&Mathf.Repeat(Time.unscaledTime,1f)<.55f){
+    float textW=string.IsNullOrEmpty(answer)?0f:Mathf.Min(fieldText.width,answerStyle.CalcSize(new GUIContent(answer)).x);
+    Fill(new Rect(fieldText.x+answerStyle.padding.left+textW+1f,fieldText.y+fieldText.height*.2f,Mathf.Max(2f,frame.Body*.08f),fieldText.height*.6f),gold,false);
+   }
+   bool canSubmit=!string.IsNullOrWhiteSpace(answer);
+   bool previous=GUI.enabled;GUI.enabled=previous&&canSubmit;
+   bool send=Button(ok,"Validar",true);
+   GUI.enabled=previous;
+   if(send){Submit(answer);keypadOpen=false;return;}
+
+   float keyW=(inner.width-keyGap*6f)/7f;
+   float top=row.yMax+gap;
+   for(int i=0;i<28;i++){
+    Rect key=new Rect(inner.x+(i%7)*(keyW+keyGap),top+(i/7)*(keyH+keyGap),keyW,keyH);
+    if(i<26){if(KeypadKey(key,KeypadLetters[i].ToString()))AddLetter(KeypadLetters[i]);}
+    else if(i==26){if(KeypadKey(key,"BORRAR"))Backspace();}
+    else{if(KeypadKey(key,"ESPACIO"))AddLetter(' ');}
+   }
+  }
+
+  // Tecla con el marco del juego: el fondo no usa el estilo de la skin porque la
+  // tipografia de los rotulos se dibuja con la fuente pixel.
+  bool KeypadKey(Rect r,string value){
+   if(r.width<=0f||r.height<=0f)return false;
+   bool hover=r.Contains(Event.current.mousePosition);
+   Frame(r,hover?gold:new Color(.30f,.27f,.21f));
+   Fill(new Rect(r.x+2f,r.y+2f,r.width-4f,r.height-4f),hover?new Color(.15f,.19f,.25f):new Color(.075f,.10f,.15f),false);
+   Label(r,value,value.Length>1?keypadStyle:letterStyle,cream,TextAnchor.MiddleCenter);
+   return GUI.Button(r,GUIContent.none,GUIStyle.none);
+  }
+
+  void AddLetter(char c){
+   if(answer.Length>=160)return;
+   // Un unico espacio entre palabras: el validador compara con el mensaje limpio.
+   if(c==' '&&(answer.Length==0||answer[answer.Length-1]==' '))return;
+   answer+=c;
+  }
+
+  void Backspace(){if(answer.Length>0)answer=answer.Substring(0,answer.Length-1);}
 
   void DrawManuscript(){
    var l=manuscriptLayout;
