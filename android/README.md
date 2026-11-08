@@ -13,10 +13,11 @@ No descifra localmente: las operaciones se delegan en la API oficial por HTTPS.
   Orden e Imagen. La comprobación se lanza automáticamente al abrir.
 - **Orden**: descifrado César con campos vacíos y pistas. El usuario introduce
   el texto y un desplazamiento válido de 1 a 25. Acepta texto escrito o un TXT
-  UTF-8 de hasta 1 MiB recibido por *Abrir con* / *Compartir*.
-- **Imagen**: descifrado AES multipart. Incluye el vector de prueba
-  `image.png.enc` y la clave de demostración precargada. Permite seleccionar
-  otro `.enc`, exige `X-Integrity: verified` y muestra la vista previa.
+  UTF-8 de hasta 1 MiB recibido por *Abrir con* / *Compartir*. Al tocar el
+  resultado, el texto descifrado se copia al portapapeles.
+- **Imagen**: descifrado AES multipart. La pestaña arranca sin archivo y sin
+  clave: el usuario selecciona su propio `.enc` y escribe la suya. Exige
+  `X-Integrity: verified` y muestra la vista previa.
 - **Navegación**: barra inferior Orden / Imagen / Inicio y filas de
   acceso rápido en Inicio. Recibe archivos mediante `ACTION_SEND` y
   `ACTION_VIEW` (texto, imagen u octet-stream).
@@ -35,7 +36,6 @@ No descifra localmente: las operaciones se delegan en la API oficial por HTTPS.
 - `app/src/main/java/.../domain`: validación César y mensajes de error.
 - `app/src/main/java/.../security`: reconstrucción del token por fragmentos.
 - `app/src/main/java/.../ui`: Inicio, Orden e Imagen.
-- `app/src/main/assets/demo/image.png.enc`: vector AES de demostración.
 - `app/src/main/res`: cabecera, layouts, navegación, colores y textos.
 - `app/src/test`: 6 suites JUnit/Robolectric con 19 pruebas.
 - `gradle/wrapper`: Gradle 8.9; no requiere instalación global.

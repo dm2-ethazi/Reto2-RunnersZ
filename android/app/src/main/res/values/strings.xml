@@ -25,14 +25,14 @@
     <string name="order_shift_hint">1 a 25</string>
     <string name="btn_decrypt_order">Descifrar orden</string>
     <string name="order_decrypting">Descifrando…</string>
-    <string name="result_label">Resultado:</string>
+    <string name="result_label">Resultado (toca para copiar)</string>
+    <string name="result_copied">Resultado copiado al portapapeles</string>
     <string name="order_empty_text">Introduce el texto cifrado</string>
     <string name="order_file_too_large">El archivo de texto supera 1 MiB</string>
 
     <string name="image_title">Imagen - Descifrar AES</string>
     <string name="image_file_label">Archivo .enc:</string>
     <string name="image_no_file">Ningún archivo seleccionado</string>
-    <string name="image_demo_file">image.png.enc (vector de prueba)</string>
     <string name="image_aes_key_label">Clave AES:</string>
     <string name="image_aes_key_hint">Contraseña para descifrar</string>
     <string name="btn_decrypt_image">Descifrar imagen</string>
@@ -47,7 +47,6 @@
     <string name="image_too_large">El archivo supera el límite de 100 MiB</string>
     <string name="image_corrupt">La imagen descifrada no se pudo abrir</string>
     <string name="image_select_file">Seleccionar archivo .enc</string>
-    <string name="image_demo_ready">Vector de prueba listo para descifrar</string>
     <string name="share_copy_failed">No se pudo abrir el archivo compartido</string>
 
 </resources>

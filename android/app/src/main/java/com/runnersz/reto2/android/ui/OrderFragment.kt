@@ -1,11 +1,15 @@
 package com.runnersz.reto2.android.ui
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import androidx.fragment.app.Fragment
@@ -124,6 +128,9 @@ class OrderFragment : Fragment(R.layout.fragment_order) {
                 if (isError) R.color.red else R.color.navy,
             ),
         )
+        card.isClickable = !isError
+        card.isFocusable = !isError
+        card.setOnClickListener { copyResult() }
         val scroll = currentView as? ScrollView ?: return
         if (!reveal) return
         scroll.post {
@@ -131,6 +138,21 @@ class OrderFragment : Fragment(R.layout.fragment_order) {
             val bottom = card.top + card.height + margin - scroll.height
             val target = bottom.coerceIn(0, maxOf(0, card.top))
             if (bottom > scroll.scrollY) scroll.smoothScrollTo(0, target)
+        }
+    }
+
+    /**
+     * Copia el resultado al portapapeles. Desde Android 13 el sistema ya muestra
+     * su propio aviso, así que el Toast solo se usa en versiones anteriores.
+     */
+    private fun copyResult() {
+        val currentView = view ?: return
+        val text = currentView.findViewById<TextView>(R.id.tvResult).text?.toString().orEmpty()
+        if (viewModel.resultIsError || text.isBlank()) return
+        val clipboard = requireContext().getSystemService<ClipboardManager>() ?: return
+        clipboard.setPrimaryClip(ClipData.newPlainText(getString(R.string.app_name), text))
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+            Toast.makeText(requireContext(), R.string.result_copied, Toast.LENGTH_SHORT).show()
         }
     }
 

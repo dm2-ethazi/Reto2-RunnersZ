@@ -17,7 +17,6 @@ class ImageViewModel : ViewModel() {
 
     var file: File? = null
     var displayName: String? = null
-    var demo = false
     var key: String = ""
     var status: String? = null
     var statusColorRes: Int = 0

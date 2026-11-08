@@ -57,7 +57,7 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
         button.setOnClickListener { decrypt() }
 
         if (viewModel.file == null) {
-            prepareDemo(view)
+            showEmpty(view)
         } else {
             restore(view)
         }
@@ -66,7 +66,7 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
     private fun restore(view: View) {
         val file = viewModel.file
         if (file == null || !file.exists()) {
-            prepareDemo(view)
+            showEmpty(view)
             return
         }
 
@@ -88,27 +88,17 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
         }
     }
 
-    private fun prepareDemo(view: View) {
-        val destination = File(requireContext().cacheDir, "image.png.enc")
-        try {
-            if (!destination.exists()) {
-                requireContext().assets.open(DEMO_ASSET).use { input ->
-                    FileOutputStream(destination).use { output -> input.copyTo(output) }
-                }
-            }
-            viewModel.file = destination
-            viewModel.demo = true
-            viewModel.displayName = getString(R.string.image_demo_file)
-            viewModel.key = DEMO_KEY
-            viewModel.status = null
-            viewModel.bitmap = null
+    /** Estado inicial: sin archivo y sin clave, cada usuario elige el suyo. */
+    private fun showEmpty(view: View) {
+        viewModel.file = null
+        viewModel.displayName = null
+        viewModel.key = ""
+        viewModel.status = null
+        viewModel.bitmap = null
 
-            view.findViewById<TextView>(R.id.tvFileName).text = viewModel.displayName
-            view.findViewById<EditText>(R.id.etClave).setText(DEMO_KEY)
-            showStatus(getString(R.string.image_demo_ready), R.color.muted)
-        } catch (_: Exception) {
-            showStatus(getString(R.string.image_no_file_error), R.color.red)
-        }
+        view.findViewById<TextView>(R.id.tvFileName).text = getString(R.string.image_no_file)
+        view.findViewById<EditText>(R.id.etClave).setText("")
+        showStatus("", R.color.muted)
     }
 
     private fun copySelection(uri: Uri) {
@@ -133,12 +123,11 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
                 return
             }
 
-            viewModel.file?.takeIf { !viewModel.demo && it != destination }?.delete()
+            viewModel.file?.takeIf { it != destination }?.delete()
             viewModel.bitmap?.recycle()
             viewModel.bitmap = null
 
             viewModel.file = destination
-            viewModel.demo = false
             viewModel.displayName = name
             viewModel.key = ""
             viewModel.status = null
@@ -276,8 +265,6 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
     companion object {
         private const val ARG_PATH = "path"
         private const val ARG_NAME = "name"
-        private const val DEMO_ASSET = "demo/image.png.enc"
-        private const val DEMO_KEY = "RunnersZ-Demo-2026"
 
         fun newInstance(path: String, name: String): ImageFragment =
             ImageFragment().apply {

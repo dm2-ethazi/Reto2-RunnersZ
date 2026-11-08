@@ -145,6 +145,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
             android:visibility="gone"
             app:cardBackgroundColor="@color/white"
             app:cardCornerRadius="10dp"
@@ -174,7 +177,6 @@
                     android:accessibilityLiveRegion="polite"
                     android:fontFamily="monospace"
                     android:textColor="@color/navy"
-                    android:textIsSelectable="true"
                     android:textSize="15sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
