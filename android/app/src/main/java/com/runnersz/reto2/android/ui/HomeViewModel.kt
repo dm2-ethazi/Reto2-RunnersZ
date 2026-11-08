@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 /**
  * Evita repetir la comprobación de la API en cada giro cuando ya hay un resultado.
  *
- * @author jairoben
+ * @author Jairo
  */
 class HomeViewModel : ViewModel() {
     var statusText: String? = null

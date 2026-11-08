@@ -5,7 +5,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * @author jairoben
+ * Comprueba que [SecureTokenProvider] reconstruye el token esperado sin guardar literales.
+ *
+ * @author Jairo
  */
 class SecureTokenProviderTest {
 

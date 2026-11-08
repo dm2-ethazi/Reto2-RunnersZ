@@ -25,8 +25,10 @@ import com.runnersz.reto2.android.ui.OrderFragment
 import java.io.File
 import java.io.FileOutputStream
 
-/**
- * @author jairoben
+/** Actividad única de la app: aloja las tres pestañas, pinta la barra inferior y
+ * reparte los archivos que llegan por *Abrir con* o *Compartir*.
+ *
+ * @author Jairo
  */
 class MainActivity : AppCompatActivity() {
 
@@ -34,6 +36,9 @@ class MainActivity : AppCompatActivity() {
 
     private var currentTab = Tab.INICIO
 
+    /**
+     * Prepara la barra inferior, los márgenes del sistema y la pestaña inicial.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -47,6 +52,9 @@ class MainActivity : AppCompatActivity() {
         setupNavigation()
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            /**
+             * Vuelve a Inicio antes de dejar que el sistema cierre la actividad.
+             */
             override fun handleOnBackPressed() {
                 if (currentTab != Tab.INICIO) {
                     goHome()
@@ -67,23 +75,41 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Atiende un archivo que llega mientras la app ya está abierta.
+     */
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
         handleIncomingIntent(intent)
     }
 
+    /**
+     * Guarda la pestaña activa para restaurarla tras un giro o un cierre del proceso.
+     */
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putInt(KEY_TAB, currentTab.ordinal)
         super.onSaveInstanceState(outState)
     }
 
+/**
+ * Muestra la pestaña Inicio.
+ */
     fun goHome() = showTab(Tab.INICIO)
 
+/**
+ * Muestra la pestaña Orden.
+ */
     fun goToOrder() = showTab(Tab.ORDEN)
 
+/**
+ * Muestra la pestaña Imagen.
+ */
     fun goToImage() = showTab(Tab.IMAGEN)
 
+/**
+ * Conecta los tres botones de la barra inferior con su pestaña.
+ */
     private fun setupNavigation() {
         findViewById<View>(R.id.navInicio).setOnClickListener { showTab(Tab.INICIO) }
         findViewById<View>(R.id.navOrden).setOnClickListener { showTab(Tab.ORDEN) }
@@ -146,18 +172,34 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+/**
+ * Crea el fragmento que corresponde a la pestaña indicada.
+ *
+ *  * @param tab pestaña que se quiere mostrar
+ */
     private fun createFragment(tab: Tab): Fragment = when (tab) {
         Tab.INICIO -> HomeFragment()
         Tab.ORDEN -> OrderFragment()
         Tab.IMAGEN -> ImageFragment()
     }
 
+/**
+ * Colorea la barra inferior según la pestaña activa.
+ */
     private fun paintNavigation(tab: Tab) {
         setNavItem(R.id.navInicio, R.id.navInicioIcon, R.id.navInicioLabel, tab == Tab.INICIO)
         setNavItem(R.id.navOrden, R.id.navOrdenIcon, R.id.navOrdenLabel, tab == Tab.ORDEN)
         setNavItem(R.id.navImagen, R.id.navImagenIcon, R.id.navImagenLabel, tab == Tab.IMAGEN)
     }
 
+/**
+ * Marca un elemento de la barra inferior como activo o inactivo.
+ *
+ *  * @param itemId contenedor pulsable del elemento
+ *  * @param iconId icono que cambia de color
+ *  * @param labelId texto que cambia de color
+ *  * @param active `true` si la pestaña está visible
+ */
     private fun setNavItem(itemId: Int, iconId: Int, labelId: Int, active: Boolean) {
         val color = ContextCompat.getColor(
             this,
@@ -168,6 +210,11 @@ class MainActivity : AppCompatActivity() {
         findViewById<View>(itemId).isSelected = active
     }
 
+/**
+ * Aplica los márgenes de las barras del sistema y del recorte de pantalla a la cabecera,
+ *  * el contenido y la navegación inferior. En horizontal oculta el subtítulo para dejar
+ *  * más sitio al contenido.
+ */
     private fun applyInsets() {
         val header = findViewById<View>(R.id.header)
         val bottomNav = findViewById<View>(R.id.bottomNav)
@@ -221,6 +268,10 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+/**
+ * Reparte un archivo recibido desde otra aplicación: lo copia al caché y abre la
+ *  * pestaña de imagen u orden según su tipo.
+ */
     private fun handleIncomingIntent(intent: Intent?) {
         val uri = when (intent?.action) {
             Intent.ACTION_SEND -> streamUri(intent)
@@ -244,6 +295,9 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+/**
+ * Lee el `Uri` del archivo adjunto, con la API moderna desde Android 13.
+ */
     @Suppress("DEPRECATION")
     private fun streamUri(intent: Intent): Uri? =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -252,6 +306,11 @@ class MainActivity : AppCompatActivity() {
             intent.getParcelableExtra(Intent.EXTRA_STREAM)
         }
 
+/**
+ * Consulta el nombre visible del archivo en el proveedor de contenido.
+ *
+ *  * @return el nombre, o `null` si el proveedor no lo expone
+ */
     private fun displayName(uri: Uri): String? = try {
         contentResolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
             ?.use { cursor ->
@@ -266,6 +325,13 @@ class MainActivity : AppCompatActivity() {
         null
     }
 
+/**
+ * Copia al caché el archivo recibido y descarta los que superan el límite de subida.
+ *
+ *  * @param uri origen del archivo
+ *  * @param name nombre original, que se conserva en la copia
+ *  * @return la copia local, o `null` si no se pudo leer o es demasiado grande
+ */
     private fun copyToCache(uri: Uri, name: String): File? {
         return try {
             val safeName = File(name).name.ifBlank { "archivo" }

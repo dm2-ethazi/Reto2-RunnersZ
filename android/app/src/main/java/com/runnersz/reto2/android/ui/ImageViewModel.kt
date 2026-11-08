@@ -11,7 +11,7 @@ import java.io.File
  * La clave se mantiene solo en memoria: nunca se guarda en el [android.os.Bundle], para
  * que no acabe escrita en el estado persistido del proceso.
  *
- * @author jairoben
+ * @author Jairo
  */
 class ImageViewModel : ViewModel() {
 
@@ -23,6 +23,9 @@ class ImageViewModel : ViewModel() {
     var bitmap: Bitmap? = null
     var loading = false
 
+    /**
+     * Libera la imagen descifrada y borra la copia temporal del archivo.
+     */
     override fun onCleared() {
         bitmap?.recycle()
         bitmap = null

@@ -6,7 +6,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * @author jairoben
+ * Comprueba los valores fijos de [ApiConfig].
+ *
+ * @author Jairo
  */
 class ApiConfigTest {
 

@@ -27,12 +27,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * @author jairoben
+ * Pestaña Orden: descifrado César de 1 a 25 contra la API y copia del resultado al tocarlo.
+ *
+ * @author Jairo
  */
 class OrderFragment : Fragment(R.layout.fragment_order) {
 
     private val viewModel: OrderViewModel by viewModels()
 
+    /**
+     * Conecta el formulario, restaura el último resultado y carga el archivo recibido.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -53,6 +58,12 @@ class OrderFragment : Fragment(R.layout.fragment_order) {
         }
     }
 
+    /**
+     * Carga en el campo el texto de un archivo recibido desde otra aplicación.
+     *
+     * @param etTexto campo donde se escribe
+     * @param path ruta de la copia en el caché
+     */
     private fun loadFileText(etTexto: EditText, path: String) {
         val file = File(path)
         when {
@@ -73,6 +84,9 @@ class OrderFragment : Fragment(R.layout.fragment_order) {
         }
     }
 
+    /**
+     * Valida el texto y el desplazamiento y pide el descifrado a la API.
+     */
     private fun decrypt(etTexto: EditText, etShift: EditText, button: MaterialButton) {
         if (viewModel.loading) return
 
@@ -103,12 +117,21 @@ class OrderFragment : Fragment(R.layout.fragment_order) {
         }
     }
 
+    /**
+     * Guarda el resultado en el ViewModel y lo muestra.
+     *
+     * @param text resultado o mensaje de error
+     * @param isError `true` si el texto es un error
+     */
     private fun presentResult(text: String, isError: Boolean) {
         viewModel.result = text
         viewModel.resultIsError = isError
         showResult(text, isError)
     }
 
+    /**
+     * Bloquea el botón y cambia su texto mientras se descifra.
+     */
     private fun paintLoading(button: MaterialButton, loading: Boolean) {
         button.isEnabled = !loading
         button.text = getString(
@@ -116,6 +139,13 @@ class OrderFragment : Fragment(R.layout.fragment_order) {
         )
     }
 
+    /**
+     * Pinta la tarjeta de resultado y la colorea según sea error o no.
+     *
+     * @param text contenido a mostrar
+     * @param isError `true` si es un error
+     * @param reveal `true` para desplazar la tarjeta hasta la vista
+     */
     private fun showResult(text: String, isError: Boolean, reveal: Boolean = true) {
         val currentView = view ?: return
         val card = currentView.findViewById<View>(R.id.resultCard)
@@ -156,6 +186,9 @@ class OrderFragment : Fragment(R.layout.fragment_order) {
         }
     }
 
+    /**
+     * Oculta el teclado en pantalla antes de lanzar la petición.
+     */
     private fun hideKeyboard() {
         val currentView = view ?: return
         val manager = requireContext().getSystemService<InputMethodManager>() ?: return
@@ -166,6 +199,12 @@ class OrderFragment : Fragment(R.layout.fragment_order) {
         private const val ARG_PATH = "path"
         private const val MAX_TEXT_BYTES = 1024L * 1024L
 
+        /**
+         * Crea el fragmento con el archivo de texto recibido desde otra aplicación.
+         *
+         * @param path ruta de la copia en el caché
+         * @param name nombre original del archivo
+         */
         fun newInstance(path: String, name: String): OrderFragment =
             OrderFragment().apply {
                 arguments = Bundle().apply {

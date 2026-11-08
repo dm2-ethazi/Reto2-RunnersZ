@@ -1,24 +1,43 @@
 package com.runnersz.reto2.android.domain
 
-/**
- * @author jairoben
+/** Mensaje de error ya redactado para mostrarse tal cual al usuario.
+ *
+ * @property texto texto visible en la interfaz
+ * @author Jairo
  */
 data class ErrorMensaje(val texto: String)
 
 /**
- * @author jairoben
+ * Traduce los códigos de error del servidor y los estados HTTP a mensajes en español.
+ *
+ * @author Jairo
  */
 object ErrorMessages {
     const val SIN_CONEXION = "No se pudo conectar con el servidor"
     const val RESPUESTA_INVALIDA = "Respuesta inesperada del servidor"
 
+/**
+ * Fallo de red o de transporte.
+ */
     fun sinConexion(): ErrorMensaje = ErrorMensaje(SIN_CONEXION)
 
+/**
+ * El servidor respondió algo que no se pudo interpretar.
+ */
     fun respuestaInvalida(): ErrorMensaje = ErrorMensaje(RESPUESTA_INVALIDA)
 
+/**
+ * La respuesta del archivo no traía `X-Integrity: verified`.
+ */
     fun sinIntegridad(): ErrorMensaje =
         ErrorMensaje("El servidor no confirmó la integridad del archivo")
 
+/**
+ * Elige el mensaje a partir del código del cuerpo o, si no lo hay, del estado HTTP.
+ *
+ *  * @param codigo valor de `code` devuelto por el servidor
+ *  * @param estadoHttp estado HTTP de la respuesta
+ */
     fun porCodigo(codigo: String?, estadoHttp: Int): ErrorMensaje {
         when (codigo?.uppercase()) {
             "UNAUTHORIZED" -> return ErrorMensaje("No se pudo autenticar con el servidor")

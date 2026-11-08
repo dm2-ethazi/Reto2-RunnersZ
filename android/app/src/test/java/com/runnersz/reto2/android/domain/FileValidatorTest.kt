@@ -5,7 +5,9 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 /**
- * @author jairoben
+ * Comprueba los límites y la extensión que acepta [FileValidator].
+ *
+ * @author Jairo
  */
 class FileValidatorTest {
 

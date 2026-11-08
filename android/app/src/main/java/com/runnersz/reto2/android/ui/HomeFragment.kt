@@ -13,12 +13,17 @@ import com.runnersz.reto2.android.data.ApiClient
 import com.runnersz.reto2.android.data.ApiResult
 
 /**
- * @author jairoben
+ * Pestaña Inicio: bienvenida, accesos rápidos a Orden e Imagen y estado de la API.
+ *
+ * @author Jairo
  */
 class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private val viewModel: HomeViewModel by viewModels()
 
+    /**
+     * Conecta los accesos rápidos, restaura el estado guardado y comprueba la API la primera vez.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -38,6 +43,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
+    /**
+     * Repinta el último estado guardado para no repetir la comprobación al volver a la pestaña.
+     */
     private fun restoreStatus(view: View) {
         val text = viewModel.statusText ?: return
         val status = view.findViewById<TextView>(R.id.tvStatus)
@@ -45,6 +53,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         status.setTextColor(ContextCompat.getColor(requireContext(), viewModel.statusColorRes))
     }
 
+    /**
+     * Lanza `GET /auth/check` y pinta el resultado en el estado del cliente.
+     */
     private fun checkApi() {
         if (viewModel.checking) return
         val currentView = view ?: return
@@ -80,6 +91,9 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
     }
 
+    /**
+     * Bloquea el botón y cambia su texto mientras dura la comprobación.
+     */
     private fun paintLoading(view: View, loading: Boolean) {
         val button = view.findViewById<MaterialButton>(R.id.btnCheckApi)
         button.isEnabled = !loading

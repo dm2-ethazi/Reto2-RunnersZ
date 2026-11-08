@@ -4,7 +4,9 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * @author jairoben
+ * Comprueba el cálculo del factor de muestreo de [ImageSampler].
+ *
+ * @author Jairo
  */
 class ImageSamplerTest {
 

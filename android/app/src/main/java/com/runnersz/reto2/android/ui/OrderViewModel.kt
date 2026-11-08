@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
  * pestaña. El texto y el desplazamiento los restaura el propio [android.widget.EditText]
  * a partir del estado de la vista.
  *
- * @author jairoben
+ * @author Jairo
  */
 class OrderViewModel : ViewModel() {
     var result: String? = null

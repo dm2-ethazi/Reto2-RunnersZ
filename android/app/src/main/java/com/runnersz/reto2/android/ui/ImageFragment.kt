@@ -29,7 +29,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * @author jairoben
+ * Pestaña Imagen: descifrado AES multipart. Empieza sin archivo ni clave y el usuario elige
+ * su propio `.enc`.
+ *
+ * @author Jairo
  */
 class ImageFragment : Fragment(R.layout.fragment_image) {
 
@@ -40,6 +43,9 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
             if (uri != null) copySelection(uri)
         }
 
+    /**
+     * Prepara el selector de archivo, el campo de clave y el estado inicial vacío.
+     */
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -63,6 +69,9 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
         }
     }
 
+    /**
+     * Devuelve la vista al estado guardado en el [ImageViewModel] tras un giro o un cambio de pestaña.
+     */
     private fun restore(view: View) {
         val file = viewModel.file
         if (file == null || !file.exists()) {
@@ -101,6 +110,9 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
         showStatus("", R.color.muted)
     }
 
+    /**
+     * Copia el archivo elegido al caché, lo valida antes de subirlo y limpia el resultado anterior.
+     */
     private fun copySelection(uri: Uri) {
         try {
             val name = displayName(uri) ?: uri.lastPathSegment ?: "archivo.enc"
@@ -141,6 +153,9 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
         }
     }
 
+    /**
+     * Valida la clave y el archivo y envía la petición de descifrado a la API.
+     */
     private fun decrypt() {
         if (viewModel.loading) return
         val currentView = view ?: return
@@ -224,12 +239,20 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
         }
     }
 
+    /**
+     * Traduce a texto el motivo por el que se rechaza el archivo.
+     *
+     * @param problem motivo devuelto por [FileValidator]
+     */
     private fun problemText(problem: ProblemaArchivo): String = when (problem) {
         ProblemaArchivo.VACIO -> getString(R.string.image_empty_file)
         ProblemaArchivo.DEMASIADO_GRANDE -> getString(R.string.image_too_large)
         ProblemaArchivo.EXTENSION -> getString(R.string.image_wrong_extension)
     }
 
+    /**
+     * Bloquea el botón y cambia su texto mientras se descifra.
+     */
     private fun paintLoading(view: View, loading: Boolean) {
         val button = view.findViewById<MaterialButton>(R.id.btnDecryptImage)
         button.isEnabled = !loading
@@ -238,6 +261,11 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
         )
     }
 
+    /**
+     * Consulta el nombre visible del archivo en el proveedor de contenido.
+     *
+     * @return el nombre, o `null` si no lo expone
+     */
     private fun displayName(uri: Uri): String? = try {
         requireContext().contentResolver
             .query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null, null, null)
@@ -253,6 +281,12 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
         null
     }
 
+    /**
+     * Pinta el texto de estado y lo recuerda en el ViewModel.
+     *
+     * @param text mensaje visible
+     * @param colorRes color con el que se pinta
+     */
     private fun showStatus(text: String, colorRes: Int) {
         viewModel.status = text
         viewModel.statusColorRes = colorRes
@@ -266,6 +300,12 @@ class ImageFragment : Fragment(R.layout.fragment_image) {
         private const val ARG_PATH = "path"
         private const val ARG_NAME = "name"
 
+        /**
+         * Crea el fragmento con el archivo recibido desde otra aplicación.
+         *
+         * @param path ruta de la copia en el caché
+         * @param name nombre original del archivo
+         */
         fun newInstance(path: String, name: String): ImageFragment =
             ImageFragment().apply {
                 arguments = Bundle().apply {

@@ -19,11 +19,14 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 
+/**
+ * Pruebas de [ApiClient] contra un servidor falso: rutas, cabecera Bearer, integridad
+ * y traducción de los errores del backend.
+ *
+ * @author Jairo
+ */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34])
-/**
- * @author jairoben
- */
 class ApiClientTest {
 
     private lateinit var server: MockWebServer
@@ -34,17 +37,28 @@ class ApiClientTest {
         .retryOnConnectionFailure(false)
         .build()
 
+    /**
+     * Arranca un servidor HTTP falso para cada prueba.
+     */
     @Before
     fun setUp() {
         server = MockWebServer()
         server.start()
     }
 
+    /**
+     * Apaga el servidor tras cada prueba.
+     */
     @After
     fun tearDown() {
         server.shutdown()
     }
 
+    /**
+     * Crea un cliente apuntando al servidor falso con un token fijo.
+     *
+     * @param token token que devolverá el proveedor
+     */
     private fun api(token: String = "TOKEN-DE-PRUEBA"): ApiClient = ApiClient(
         base = server.url("/").toString().trimEnd('/'),
         tokenProvider = { token },
@@ -52,6 +66,11 @@ class ApiClientTest {
         mainHandler = Handler(Looper.getMainLooper()),
     )
 
+    /**
+     * Espera de forma acotada la respuesta asíncrona y avanza el Looper principal.
+     *
+     * @param block llamada que se lanza contra el cliente
+     */
     private fun <T> await(block: ((ApiResult<T>) -> Unit) -> Unit): ApiResult<T> {
         var result: ApiResult<T>? = null
         val latch = CountDownLatch(1)

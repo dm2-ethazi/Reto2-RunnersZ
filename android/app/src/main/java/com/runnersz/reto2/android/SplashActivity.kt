@@ -7,10 +7,15 @@ import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 
 /**
- * @author jairoben
+ * Pantalla de arranque: muestra el logotipo brevemente y cede el paso a [MainActivity].
+ *
+ * @author Jairo
  */
 class SplashActivity : AppCompatActivity() {
 
+    /**
+     * Muestra el logotipo y abre [MainActivity] en cuanto pasa el retardo.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_splash)

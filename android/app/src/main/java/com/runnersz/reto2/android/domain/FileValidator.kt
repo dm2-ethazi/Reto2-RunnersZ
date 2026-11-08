@@ -5,7 +5,7 @@ import com.runnersz.reto2.android.data.ApiConfig
 /**
  * Motivo por el que un archivo no se puede enviar al servidor.
  *
- * @author jairoben
+ * @author Jairo
  */
 enum class ProblemaArchivo { VACIO, DEMASIADO_GRANDE, EXTENSION }
 
@@ -14,12 +14,19 @@ enum class ProblemaArchivo { VACIO, DEMASIADO_GRANDE, EXTENSION }
  * contenido y tamaño. Evita enviar al servidor un archivo que nunca podrá descifrarse
  * y muestra un mensaje que el usuario puede entender.
  *
- * @author jairoben
+ * @author Jairo
  */
 object FileValidator {
 
     const val EXTENSION = ".enc"
 
+/**
+ * Devuelve el motivo por el que el archivo no se puede enviar.
+ *
+ *  * @param nombre nombre del archivo, con extensión
+ *  * @param bytes tamaño en bytes
+ *  * @return el motivo, o `null` si el archivo es válido
+ */
     fun problema(nombre: String, bytes: Long): ProblemaArchivo? = when {
         bytes <= 0L -> ProblemaArchivo.VACIO
         bytes > ApiConfig.MAX_UPLOAD_BYTES -> ProblemaArchivo.DEMASIADO_GRANDE

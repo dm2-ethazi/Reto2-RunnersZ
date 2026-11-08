@@ -5,7 +5,9 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * @author jairoben
+ * Comprueba el rango válido de [ShiftValidator].
+ *
+ * @author Jairo
  */
 class ShiftValidatorTest {
 
