@@ -8,7 +8,8 @@ la lógica vive en el servidor (§3 del contrato).
 
 - JDK 21 (Temurin 21.0.x probado).
 - Maven 3.9 o el wrapper incluido (`./mvnw`).
-- Sin dependencias nativas: el fat JAR funciona en Windows y en Linux con JDK 21.
+- Sin dependencias nativas que instalar aparte: el fat JAR lleva dentro las de JavaFX, así que
+  solo hay que generarlo una vez en cada sistema (Windows o Linux) y ejecutarlo con JDK 21.
 
 ## Compilación y pruebas
 
@@ -16,9 +17,35 @@ la lógica vive en el servidor (§3 del contrato).
 cd desktop
 ./mvnw clean verify        # compila, ejecuta JUnit 5 y aplica el umbral JaCoCo del 80 %
 ./mvnw javafx:run          # abre la aplicación desde el código fuente
-./mvnw package             # genera target/runnersz-desktop.jar (fat JAR)
-java -jar target/runnersz-desktop.jar
+./mvnw package             # genera el fat JAR del sistema actual
+java -jar target/runnersz-desktop-win.jar     # Windows
+java -jar target/runnersz-desktop-linux.jar   # Linux (Debian/Ubuntu)
 ```
+
+### Exportación para Windows y Linux
+
+El pliego (§4.8) pide **la misma aplicación para Windows y para Linux, cambiando solo la
+exportación**: el código es idéntico porque JavaFX lleva sus nativos dentro del JAR y cada sistema
+necesita los suyos. El `pom.xml` los elige con la propiedad `javafx.platform` (`win` por omisión,
+`linux` en Linux y `mac` en macOS) y el fat JAR toma ese sufijo en el nombre:
+
+| Sistema | Comando | Artefacto |
+|---|---|---|
+| Windows | `./mvnw -B package` | `target/runnersz-desktop-win.jar` |
+| Linux (Debian/Ubuntu) | `./mvnw -B package` en Linux | `target/runnersz-desktop-linux.jar` |
+| Linux desde Windows o macOS | `./mvnw -B package -Djavafx.platform=linux` | `target/runnersz-desktop-linux.jar` |
+
+Los dos artefactos arrancan con `java -jar` y JDK 21. Para comprobar que cada uno lleva los
+nativos de su sistema:
+
+```bash
+unzip -l target/runnersz-desktop-win.jar   | grep -c '\.dll$'   # 54
+unzip -l target/runnersz-desktop-linux.jar | grep -c '\.so$'    # 10
+```
+
+En Linux hace falta un entorno gráfico con GTK 3 (`libgtk-3-0`) y fontconfig, que es lo que el
+contrato llama «Linux Debian/Ubuntu con entorno gráfico». El JDK 21 no trae JavaFX: por eso el JAR
+incluye clases y nativos, y la entrada `Launcher` arranca sin configurar la ruta de módulos.
 
 `mvn verify` falla si la cobertura de líneas **del proyecto** baja del 80 %, el mínimo que pide el
 pliego (JaCoCo `check` sin filtros de paquete). El informe queda en `target/site/jacoco/index.html`.

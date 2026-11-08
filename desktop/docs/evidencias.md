@@ -67,11 +67,23 @@ cubierto por pruebas que se ejecutan en cada `mvn verify`.
 ## 3. Empaquetado
 
 ```bash
-./mvnw -B package
-java -jar target/runnersz-desktop.jar
+./mvnw -B package                       # fat JAR del sistema actual
+java -jar target/runnersz-desktop-win.jar     # Windows
+java -jar target/runnersz-desktop-linux.jar   # Linux (Debian/Ubuntu)
 ```
 
-- `target/runnersz-desktop.jar` ≈ 11,2 MB, arranca en Windows y en Linux con JDK 21.
+El mismo `pom.xml` exporta los dos artefactos: la propiedad `javafx.platform` elige los nativos
+(`win` por omisión, `linux` en Linux o con `-Djavafx.platform=linux`) y el nombre del JAR lo deja
+a la vista. Comprobación de que cada uno lleva lo suyo:
+
+```bash
+unzip -l target/runnersz-desktop-win.jar   | grep -c '\.dll$'   # 54
+unzip -l target/runnersz-desktop-linux.jar | grep -c '\.so$'    # 10
+```
+
+- `target/runnersz-desktop-win.jar` ≈ 11,6 MiB con 54 `.dll` de JavaFX y 0 `.so`.
+- `target/runnersz-desktop-linux.jar` ≈ 10,4 MiB con 10 `.so` (`glass`, GTK 3, prisma, fuentes) y
+  0 `.dll`.
 - Sin rutas absolutas de Windows ni lecturas de `os.name` en el código (`grep -rn "C:\\\\" src/main`).
 - La ventana se abre con el título «RunnersZ · Cliente de escritorio».
 

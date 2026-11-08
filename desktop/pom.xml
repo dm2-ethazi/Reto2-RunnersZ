@@ -12,6 +12,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>21.0.5</javafx.version>
         <ikonli.version>12.4.0</ikonli.version>
+        <!-- Plataforma de la exportacion. Se elige sola segun el sistema donde se compila y se
+             puede forzar con -Djavafx.platform=linux para generar el fat JAR del otro sistema
+             desde cualquier maquina: el codigo es el mismo, solo cambian los nativos. -->
+        <javafx.platform>win</javafx.platform>
+        <desktop.platform>${javafx.platform}</desktop.platform>
         <junit.version>5.11.4</junit.version>
         <slf4j.version>2.0.13</slf4j.version>
         <logback.version>1.5.6</logback.version>
@@ -56,7 +61,8 @@
         </dependency>
     </dependencies>
     <build>
-        <finalName>runnersz-desktop</finalName>
+        <!-- El nombre del fat JAR dice para que sistema es: no se pueden confundir los artefactos. -->
+        <finalName>runnersz-desktop-${desktop.platform}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -161,4 +167,29 @@
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <!-- En Linux la exportacion usa los nativos linux del propio JavaFX; en Windows, win. -->
+        <profile>
+            <id>linux</id>
+            <activation>
+                <os>
+                    <name>Linux</name>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>linux</javafx.platform>
+            </properties>
+        </profile>
+        <profile>
+            <id>macos</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <javafx.platform>mac</javafx.platform>
+            </properties>
+        </profile>
+    </profiles>
 </project>

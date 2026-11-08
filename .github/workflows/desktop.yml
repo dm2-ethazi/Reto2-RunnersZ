@@ -41,3 +41,29 @@ jobs:
           name: desktop-fat-jar
           path: desktop/target/*.jar
           if-no-files-found: error
+
+  desktop-windows:
+    name: Desktop (fat JAR de Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+      - name: Package fat JAR for Windows
+        # Pruebas y umbral JaCoCo ya se ejecutan en el job desktop (allí con Xvfb);
+        # este job solo comprueba que el artefacto de Windows se genera.
+        run: mvn --batch-mode -DskipTests package
+      - name: Upload fat JAR (Windows)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: desktop-fat-jar-windows
+          path: desktop/target/runnersz-desktop-win.jar
+          if-no-files-found: error
