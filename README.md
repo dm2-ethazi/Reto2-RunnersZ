@@ -1,34 +1,101 @@
-# RunnersZ · Reto 2 · Fase Discovery
+# RunnersZ - Unity
 
-Proyecto del Reto 2 para el cliente **Hogwarts**. Fecha de entrega: **12 de noviembre de 2026**.
+Minijuego autonomo de descifrado Cesar para Windows y Android, con Unity 6000.3.24f1.
+No consume la API del servidor. Responsable: Jairo (@jairoben).
+Rama de trabajo: feature/unity-v2.
 
-Arquitectura v2.0 (contrato `docs/contrato/Contrato_Tecnico_RunnersZ_v2.md`):
+## Jugar
 
-- **Servidor** Python (FastAPI) en **Docker Compose**: concentra toda la lógica de cifrado y expone la API HTTP.
-- **Cliente de escritorio** JavaFX: usa la API solo por HTTP.
-- **App Android**: usa la API solo por HTTP.
-- **Minijuego Unity 6.3**: autónomo (no usa la API).
+Abre `unity/Builds/Windows/RunnersZ.exe` en el ordenador de desarrollo.
+Para compartirlo, conserva toda la carpeta Windows, incluidos los datos y DLL.
+El ejecutable no se incluye en Git: se puede regenerar desde el proyecto.
 
-## Estructura del monorepo
+En Unity Hub abre la carpeta `unity`, carga `Assets/Scenes/Game.unity`
+y pulsa Play. El menu `RunnersZ/Build Game Scene` regenera la escena inicial.
 
-| Carpeta | Contenido |
-|---|---|
-| `backend/` | Servidor FastAPI + Docker Compose |
-| `desktop/` | Cliente de escritorio JavaFX |
-| `android/` | Aplicación Android |
-| `unity/` | Minijuego Unity 6.3 |
-| `scripts/` | Utilidades del equipo (p. ej. `board.py` del tablero) |
-| `docs/` | Contrato, workflow, planificación, plan de pruebas, evidencias |
+Selecciona Facil, Normal o Dificil. Introduce el mensaje descifrado y pulsa
+Validar o Enter. Cesar rota A-Z; conserva espacios y signos. Facil muestra el
+desplazamiento. Hay tres rondas, tres vidas y 3/2/1 pistas segun dificultad.
+Cada acierto suma 100 puntos. Cada pista resta 50, con minimo cero.
+Un fallo acerca a los enemigos; cuando llegan a la puerta se pierde una vida.
+Resolver tres mensajes produce victoria. Perder tres vidas produce derrota.
+Reiniciar restaura vidas, puntuacion y ronda; puedes cambiar de dificultad.
 
-## Estado
+La interfaz y los enemigos usan formas basicas dibujadas por RunnerGame.
+Los scripts Door/EnemyHopper se conservan como componentes previos; la escena
+entregada ejecuta RunnerGame y su simulacion de avance, sin depender de tags.
 
-**Reinicio del repositorio (29-oct-2026).** Se arranca de cero: `main` contiene solo la base y la
-estructura vacía; el material de la v1 rechazada se conserva como material reutilizable, no como
-referencia. El trabajo de integración vive en la rama `prototype/runnersz`.
+## Jugar en Android
 
-## Equipo
+El APK se genera en `unity/Builds/Android/RunnersZ.apk` (arm64-v8a, IL2CPP,
+OpenGL ES 3, minSdk 25) y no se incluye en Git. Para instalarlo en un telefono
+con depuracion USB activa:
 
-- **Alain** (`@GH_ALAIN`): servidor, cliente JavaFX, CI/hooks y documentación de servidor/escritorio.
-- **Jairo** (`@jairoben`): Android, Unity y arranque del repositorio.
+```powershell
+adb install -r unity/Builds/Android/RunnersZ.apk
+```
 
-Flujo de trabajo: ver `docs/WORKFLOW.md`. Tablero: <https://github.com/orgs/dm2-ethazi/projects/14>.
+La partida va en apaisado y a 60 fps. Todo se resuelve tocando la pantalla:
+el boton Manuscrito abre la rueda de pares, el campo de respuesta despliega el
+teclado del sistema, y Validar, Pista, Reiniciar y Cambiar dificultad son
+botones de 48 dp. La barra atras de Android cierra el manuscrito, vuelve al
+menu y, si ya estas en el menu, sale del juego.
+
+La interfaz se mide en dp sobre el area segura del dispositivo: el lienzo llena
+la pantalla sin barras negras, respeta el recorte del notch y mantiene el campo
+de respuesta visible cuando aparece el teclado. Si el sistema no tiene Georgia
+ni Times New Roman, el texto serif usa la fuente incluida en Unity.
+
+## Validacion del 5 de noviembre de 2026
+
+- EditMode: 25 pruebas aprobadas, 0 fallos. Cinco son nuevas y recorren nueve
+  perfiles de pantalla (moviles 16:9 y 19.5:9 con notch, tablets 4:3, 21:9,
+  escritorio y una densidad extrema) comprobando limites, area segura, solapes,
+  tamano tactil en dp y que el lienzo llena la pantalla.
+- PlayMode: 2 pruebas aprobadas, 0 fallos, sin excepciones en ejecucion.
+- APK Android: generado con 0 errores; `aapt2` confirma paquete
+  `com.runnersz.game`, `targetSdkVersion 36`, `native-code arm64-v8a` y la
+  caracteristica `android.hardware.screen.landscape`.
+- Geometria revisada a ojo con `RunnersZ/Render Layout Previews`, que pinta los
+  rectangulos reales de cada pantalla en PNG.
+- Limitacion: no se ha instalado ni probado el APK en un telefono fisico, asi
+  que el teclado tactil y el rendimiento real siguen sin verificar en hardware.
+
+## Validacion del 2 de noviembre de 2026
+
+- Generacion de escena y compilacion de scripts con Unity: correctas.
+- EditMode: 10 pruebas aprobadas, 0 fallos.
+- PlayMode: 2 pruebas aprobadas, 0 fallos.
+- Windows x64: ejecutable generado; proceso iniciado y registro inspeccionado.
+- Evidencias XML: `docs/evidencias/unity/`.
+- Seguimiento y limitaciones: `docs/planificacion/unity-tareas.md`.
+
+Las pruebas cubren Cesar, normalizacion, dificultad, rondas, puntuacion,
+pistas, victoria, derrota por enemigos y reinicio. No se ha medido cobertura.
+
+## Regenerar Windows
+
+Desde la raiz del repositorio, con Unity instalado y licencia activa:
+
+```powershell
+& 'C:\Program Files\Unity\Hub\Editor\6000.3.24f1\Editor\Unity.exe' `
+  -batchmode -nographics -projectPath "$PWD/unity" `
+  -executeMethod RunnersZ.Editor.SceneBuilder.BuildWindows -quit `
+  -logFile "$PWD/unity/windows-build.log"
+```
+
+## Regenerar Android
+
+El modulo Android del editor debe estar instalado. La configuracion (apaisado,
+ARM64, IL2CPP, OpenGL ES 3, paquete `com.runnersz.game`) la aplica el propio
+script antes de compilar:
+
+```powershell
+& 'C:\Program Files\Unity\Hub\Editor\6000.3.24f1\Editor\Unity.exe' `
+  -batchmode -nographics -projectPath "$PWD/unity" `
+  -executeMethod RunnersZ.Editor.AndroidBuild.BuildBatch `
+  -logFile "$PWD/unity/android-build.log"
+```
+
+Las pruebas se ejecutan desde Window > General > Test Runner: EditMode y
+PlayMode. Los ensamblados de pruebas estan incluidos en el proyecto.
