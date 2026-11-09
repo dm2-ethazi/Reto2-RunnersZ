@@ -101,16 +101,37 @@
     -fx-border-color: transparent;
 }
 
-.content-scroll, .content-scroll > .viewport { -fx-background-color: -rz-parchment; }
-.scroll-bar:vertical, .scroll-bar:horizontal { -fx-background-color: transparent; }
-.scroll-bar .thumb { -fx-background-color: #C3B08B; -fx-background-radius: 999; }
-.scroll-bar .thumb:hover { -fx-background-color: #B5A075; }
+/* Desplazamiento con la paleta de la página: carril claro, pulgar dorado y sin flechas, para que
+ * el formulario largo se lea igual que el resto de la tarjeta. */
+.content-scroll, .content-scroll > .viewport, .content-scroll > .corner {
+    -fx-background-color: -rz-parchment;
+    -fx-background: -rz-parchment;
+    -fx-background-insets: 0;
+}
+.content-scroll { -fx-padding: 0; -fx-background-insets: 0; -fx-border-color: transparent; }
+.content-scroll:focused { -fx-background-insets: 0; -fx-background-color: -rz-parchment; }
+.scroll-bar:vertical { -fx-pref-width: 13px; -fx-padding: 0 2 0 0; -fx-background-color: transparent; }
+.scroll-bar:horizontal { -fx-background-color: transparent; }
+.scroll-bar .track {
+    -fx-background-color: #E1D3B4;
+    -fx-background-radius: 999;
+    -fx-background-insets: 1 2 1 2;
+    -fx-border-color: transparent;
+}
+.scroll-bar .thumb {
+    -fx-background-color: -rz-gold;
+    -fx-background-radius: 999;
+    -fx-background-insets: 2 3 2 3;
+}
+.scroll-bar .thumb:hover { -fx-background-color: #D8BC82; }
+.scroll-bar .thumb:pressed { -fx-background-color: #B7944F; }
 .scroll-bar .increment-button, .scroll-bar .decrement-button {
     -fx-background-color: transparent;
-    -fx-padding: 2;
+    -fx-pref-height: 0;
+    -fx-pref-width: 0;
+    -fx-padding: 0;
 }
 .scroll-bar .increment-arrow, .scroll-bar .decrement-arrow { -fx-shape: " "; -fx-padding: 0; }
-.content-scroll { -fx-padding: 0; -fx-background-insets: 0; }
 .content { -fx-padding: 24 30 28 30; -fx-background-color: -rz-parchment; }
 
 /* ------------------------------------------------------------------ tipografía */
@@ -219,6 +240,18 @@
 .primary-button:hover { -fx-background-color: #D8BC82; }
 .primary-button:pressed { -fx-background-color: #C2A468; }
 .primary-button .font-icon { -fx-icon-color: #23282B; }
+
+/* Ojo de los campos con clave: solo icono, cuadrado como el botón «?» de la cabecera, para que
+ * quede a la derecha del campo sin robarle ancho ni cambiar de tamaño al alternar. */
+.reveal-button {
+    -fx-padding: 1 0;
+    -fx-graphic-text-gap: 0;
+    -fx-min-width: 36px;
+    -fx-max-width: 36px;
+    -fx-min-height: 36px;
+    -fx-max-height: 36px;
+}
+.reveal-button .font-icon { -fx-icon-color: -rz-navy; }
 
 /* ---------------------------------------------------------------- pie de página */
 

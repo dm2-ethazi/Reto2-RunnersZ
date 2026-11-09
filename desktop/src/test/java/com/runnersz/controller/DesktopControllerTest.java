@@ -312,7 +312,12 @@ class DesktopControllerTest {
         });
     assertTrue(onFx(() -> root.lookup("#passwordPlain").isVisible()));
     assertFalse(onFx(() -> root.lookup("#passwordField").isVisible()));
-    assertEquals("Ocultar", onFx(() -> ((ToggleButton) root.lookup("#showPassword")).getText()));
+    String label = onFx(() -> ((ToggleButton) root.lookup("#showPassword")).getText());
+    assertTrue(label == null || label.isEmpty(), "el ojo no lleva texto, solo el icono");
+    assertEquals(
+        "Ocultar",
+        onFx(() -> ((ToggleButton) root.lookup("#showPassword")).getAccessibleText()),
+        "el nombre accesible anuncia el estado");
 
     onFx(
         () -> {
@@ -328,6 +333,24 @@ class DesktopControllerTest {
         });
     assertTrue(onFx(() -> root.lookup("#passwordField").isVisible()));
     assertEquals("clave", onFx(controller::snapshot).password());
+
+    // La clave de Vigenère se escribe enmascarada y el ojo la enseña sin perder el texto.
+    assertTrue(onFx(() -> root.lookup("#keyMasked").isVisible()), "la clave arranca enmascarada");
+    assertFalse(onFx(() -> root.lookup("#keyField").isVisible()));
+    onFx(
+        () -> {
+          ((PasswordField) root.lookup("#keyMasked")).setText("CLAVE");
+          return null;
+        });
+    assertEquals("CLAVE", text("#keyField"), "los dos campos comparten el texto");
+    onFx(
+        () -> {
+          ((ToggleButton) root.lookup("#showKey")).setSelected(true);
+          return null;
+        });
+    assertTrue(onFx(() -> root.lookup("#keyField").isVisible()));
+    assertFalse(onFx(() -> root.lookup("#keyMasked").isVisible()));
+    assertEquals("CLAVE", onFx(controller::snapshot).key());
   }
 
   @Test
@@ -480,9 +503,11 @@ class DesktopControllerTest {
       fireLater("encryptButton");
       waitUntil(this::dialogShowing);
 
+      assertNull(onFx(() -> dialogPane().getHeaderText()), "el aviso no lleva cabecera");
       assertEquals(
-          "Asegúrate de que tienes la contraseña guardada",
-          onFx(() -> dialogPane().getHeaderText()));
+          "La clave se borrará de la aplicación al cerrar este aviso.",
+          onFx(() -> texts(dialogPane().getContent())).trim(),
+          "el aviso solo muestra el texto del borrado");
       clickDialogButton("Copiar contraseña");
       waitUntil(() -> !dialogShowing());
 
@@ -515,8 +540,11 @@ class DesktopControllerTest {
       fireLater("vigenereEncryptButton");
       waitUntil(this::dialogShowing);
 
+      assertNull(onFx(() -> dialogPane().getHeaderText()), "el aviso no lleva cabecera");
       assertEquals(
-          "Asegúrate de que tienes la clave guardada", onFx(() -> dialogPane().getHeaderText()));
+          "La clave se borrará de la aplicación al cerrar este aviso.",
+          onFx(() -> texts(dialogPane().getContent())).trim(),
+          "el aviso solo muestra el texto del borrado");
       clickDialogButton("Cerrar");
       waitUntil(() -> !dialogShowing());
 

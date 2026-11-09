@@ -110,7 +110,9 @@ public final class DesktopController {
   @FXML private Button decryptButton;
 
   @FXML private TextArea plainText;
+  @FXML private PasswordField keyMasked;
   @FXML private TextField keyField;
+  @FXML private ToggleButton showKey;
   @FXML private Button vigenereEncryptButton;
   @FXML private Button vigenereDecryptButton;
   @FXML private TextArea vigenereResult;
@@ -206,6 +208,7 @@ public final class DesktopController {
     accessible(passwordField, "files.password");
     accessible(passwordPlain, "files.password");
     accessible(keyField, "vigenere.key");
+    accessible(keyMasked, "vigenere.key");
     accessible(plainText, "text.input");
     accessible(vigenereResult, "vigenere.result");
     accessible(caesarText, "caesar.text");
@@ -213,16 +216,9 @@ public final class DesktopController {
     accessible(shiftSlider, "caesar.shift");
 
     passwordPlain.textProperty().bindBidirectional(passwordField.textProperty());
-    showPassword.selectedProperty().addListener((observable, previous, visible) -> {
-      passwordPlain.setVisible(visible);
-      passwordPlain.setManaged(visible);
-      passwordField.setVisible(!visible);
-      passwordField.setManaged(!visible);
-      (visible ? passwordPlain : passwordField).requestFocus();
-      showPassword.setText(text(visible ? "password.hide" : "password.show"));
-      showPassword.setAccessibleText(text(visible ? "password.hide" : "password.show"));
-    });
-    showPassword.setText(text("password.show"));
+    keyField.textProperty().bindBidirectional(keyMasked.textProperty());
+    reveal(showPassword, passwordField, passwordPlain);
+    reveal(showKey, keyMasked, keyField);
 
     plainText.textProperty().addListener((observable, previous, value) -> updateCounter(value, textCounter));
     caesarText.textProperty().addListener((observable, previous, value) -> updateCounter(value, caesarCounter));
@@ -276,6 +272,8 @@ public final class DesktopController {
     tip(textCounter, "text.counter.help");
     tip(swapTextButton, "text.swap.help");
     tip(keyField, "vigenere.key.help");
+    tip(keyMasked, "vigenere.key.help");
+    tip(showKey, "password.show.help");
     tip(vigenereEncryptButton, "vigenere.encrypt.help");
     tip(vigenereDecryptButton, "vigenere.decrypt.help");
     tip(vigenereResult, "vigenere.result.help");
@@ -465,8 +463,8 @@ public final class DesktopController {
           passwordPlain.clear();
           showToast(text(encrypt ? "file.encrypted" : "file.decrypted", value.toString()));
           setStatus("status.ready");
-          // Al cifrar, la contraseña desaparece del formulario: conviene tenerla guardada.
-          if (encrypt) warnSavePassword(password, false);
+          // La contraseña desaparece del formulario: conviene tenerla guardada.
+          warnSavePassword(password, false);
         },
         () -> handleFileOperation(encrypt));
   }
@@ -986,8 +984,8 @@ public final class DesktopController {
   }
 
   /**
-   * Aviso tras cifrar: la contraseña o la clave se borran de la interfaz, así que se ofrecen
-   * copiarlas antes de cerrar el aviso. Sin ellas el resultado no se puede descifrar.
+   * Aviso tras cifrar o descifrar: la contraseña o la clave se borran de la interfaz, así que se
+   * ofrecen copiarlas antes de cerrar el aviso. El aviso muestra solo el texto del borrado.
    *
    * @param secret contraseña AES o clave de Vigenère que se acaba de usar
    * @param key {@code true} si el secreto es la clave de Vigenère
@@ -996,8 +994,8 @@ public final class DesktopController {
     Alert alert = new Alert(Alert.AlertType.WARNING);
     alert.initOwner(stage);
     alert.setTitle(text(key ? "reminder.key.title" : "reminder.title"));
-    alert.setHeaderText(text(key ? "reminder.key.header" : "reminder.header"));
-    alert.getDialogPane().setContent(wrapped(text(key ? "reminder.key.body" : "reminder.body")));
+    alert.setHeaderText(null);
+    alert.getDialogPane().setContent(wrapped(text("reminder.body")));
     alert.getDialogPane().setPrefWidth(620);
     ButtonType copy =
         new ButtonType(
@@ -1217,6 +1215,39 @@ public final class DesktopController {
     button.setGraphic(icon);
   }
 
+  /**
+   * Convierte el ToggleButton en el ojo que enseña u oculta un campo protegido: el campo en claro
+   * solo existe mientras el botón está pulsado y comparte el texto con el campo enmascarado. El
+   * botón no lleva texto, así que el nombre accesible es el que anuncia su estado.
+   *
+   * @param button botón con el icono del ojo
+   * @param masked campo que dibuja puntos
+   * @param plain campo que muestra el texto
+   */
+  private void reveal(ToggleButton button, TextInputControl masked, TextInputControl plain) {
+    button
+        .selectedProperty()
+        .addListener(
+            (observable, previous, visible) -> {
+              plain.setVisible(visible);
+              plain.setManaged(visible);
+              masked.setVisible(!visible);
+              masked.setManaged(!visible);
+              (visible ? plain : masked).requestFocus();
+              button.setAccessibleText(text(visible ? "password.hide" : "password.show"));
+              eye(button, visible);
+            });
+    button.setAccessibleText(text("password.show"));
+    eye(button, false);
+  }
+
+  /** Ojo abierto cuando el secreto se ve y ojo tachado cuando está oculto. */
+  private static void eye(ToggleButton button, boolean shown) {
+    FontIcon icon = new FontIcon(shown ? "far-eye-slash" : "far-eye");
+    icon.setIconSize(15);
+    button.setGraphic(icon);
+  }
+
   private int shift() {
     return (int) Math.round(shiftSlider.getValue());
   }
@@ -1365,6 +1396,7 @@ public final class DesktopController {
     role(languageBox, AccessibleRole.COMBO_BOX);
     role(connectionChip, AccessibleRole.TEXT);
     role(showPassword, AccessibleRole.TOGGLE_BUTTON);
+    role(showKey, AccessibleRole.TOGGLE_BUTTON);
     role(shiftSlider, AccessibleRole.SLIDER);
     role(caesarShiftValue, AccessibleRole.TEXT);
     role(textCounter, AccessibleRole.TEXT);
@@ -1379,6 +1411,7 @@ public final class DesktopController {
     role(outputPath, AccessibleRole.TEXT_FIELD);
     role(passwordField, AccessibleRole.PASSWORD_FIELD);
     role(passwordPlain, AccessibleRole.TEXT_FIELD);
+    role(keyMasked, AccessibleRole.PASSWORD_FIELD);
     role(keyField, AccessibleRole.TEXT_FIELD);
     role(plainText, AccessibleRole.TEXT_AREA);
     role(vigenereResult, AccessibleRole.TEXT_AREA);

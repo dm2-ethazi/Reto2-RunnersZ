@@ -75,7 +75,8 @@
                                                        promptText="%files.password.prompt"
                                                        accessibleHelp="%files.password.help"/>
                                         </StackPane>
-                                        <ToggleButton fx:id="showPassword" minHeight="36"/>
+                                        <ToggleButton fx:id="showPassword" styleClass="reveal-button"
+                                                      accessibleText="%password.show" minHeight="36"/>
                                     </HBox>
 
                                     <Label fx:id="filesNote" styleClass="helper" text="%files.note" wrapText="true"/>
@@ -121,8 +122,17 @@
                                     </HBox>
 
                                     <Label fx:id="keyLabel" styleClass="field-label" text="%vigenere.key"/>
-                                    <TextField fx:id="keyField" promptText="%vigenere.key.prompt"
-                                               accessibleHelp="%vigenere.key.help"/>
+                                    <HBox spacing="10" alignment="CENTER_LEFT">
+                                        <StackPane HBox.hgrow="ALWAYS">
+                                            <PasswordField fx:id="keyMasked" promptText="%vigenere.key.prompt"
+                                                           accessibleHelp="%vigenere.key.help"/>
+                                            <TextField fx:id="keyField" visible="false" managed="false"
+                                                       promptText="%vigenere.key.prompt"
+                                                       accessibleHelp="%vigenere.key.help"/>
+                                        </StackPane>
+                                        <ToggleButton fx:id="showKey" styleClass="reveal-button"
+                                                      accessibleText="%password.show" minHeight="36"/>
+                                    </HBox>
 
                                     <HBox spacing="12">
                                         <Button fx:id="vigenereEncryptButton" styleClass="primary-button"

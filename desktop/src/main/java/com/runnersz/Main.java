@@ -12,6 +12,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -68,12 +69,28 @@ public final class Main extends Application {
       stage.setMinWidth(860);
       stage.setMinHeight(660);
       stage.setTitle(I18n.text("app.title"));
+      installIcon(stage);
       if (state != null) next.applyState(state);
       stage.show();
       controller = next;
     } catch (IOException ex) {
       LOG.error("No se pudo cargar la vista", ex);
       throw new IllegalStateException("No se pudo cargar la vista", ex);
+    }
+  }
+
+  /**
+   * Icono de la ventana y de la barra de tareas: el PNG empaquetado en recursos. Se carga una sola
+   * vez, aunque la vista se recree al cambiar de idioma.
+   *
+   * @param window ventana principal
+   */
+  private static void installIcon(Stage window) {
+    if (!window.getIcons().isEmpty()) return;
+    try (InputStream stream = Main.class.getResourceAsStream("/com/runnersz/icono/javafx.png")) {
+      if (stream != null) window.getIcons().add(new Image(stream));
+    } catch (IOException ex) {
+      LOG.debug("No se pudo cargar el icono de la ventana: %s", ex);
     }
   }
 
