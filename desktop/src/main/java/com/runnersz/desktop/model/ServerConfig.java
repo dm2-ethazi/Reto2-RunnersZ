@@ -1,0 +1,2 @@
+package com.runnersz.desktop.model;
+public record ServerConfig(String baseUrl,String token){public ServerConfig{if(baseUrl==null||baseUrl.isBlank())throw new IllegalArgumentException("URL requerida");if(token==null||token.isBlank())throw new IllegalArgumentException("Token requerido");}}

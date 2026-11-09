@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name">CipherSprint</string>
+    <string name="header_subtitle">Cifrado Seguro · Hogwarts V2</string>
+    <string name="a11y_secure_connection">Conexión protegida</string>
+
+    <string name="home_welcome_title">Bienvenido a CipherSprint</string>
+    <string name="home_welcome_body">Cliente oficial para descifrado de órdenes y streaming de imágenes.</string>
+    <string name="btn_test_api">Probar API</string>
+    <string name="btn_test_api_loading">Comprobando…</string>
+    <string name="home_status_label">Estado del cliente:</string>
+    <string name="home_status_checking">Comprobando conexión…</string>
+    <string name="home_status_ok">API responde correctamente</string>
+    <string name="row_order">Orden (César 1-25)</string>
+    <string name="row_image">Imagen (AES Multipart)</string>
+
+    <string name="nav_order">Orden</string>
+    <string name="nav_image">Imagen</string>
+    <string name="nav_home">Inicio</string>
+    <string name="back">Volver</string>
+
+    <string name="order_title">Orden - Descifrar César</string>
+    <string name="order_text_label">Texto cifrado:</string>
+    <string name="order_text_hint">Escribe o pega el texto cifrado</string>
+    <string name="order_shift_label">Desplazamiento (1-25):</string>
+    <string name="order_shift_hint">1 a 25</string>
+    <string name="btn_decrypt_order">Descifrar orden</string>
+    <string name="order_decrypting">Descifrando…</string>
+    <string name="result_label">Resultado (toca para copiar)</string>
+    <string name="result_copied">Resultado copiado al portapapeles</string>
+    <string name="order_empty_text">Introduce el texto cifrado</string>
+    <string name="order_file_too_large">El archivo de texto supera 1 MiB</string>
+
+    <string name="image_title">Imagen - Descifrar AES</string>
+    <string name="image_file_label">Archivo .enc:</string>
+    <string name="image_no_file">Ningún archivo seleccionado</string>
+    <string name="image_aes_key_label">Clave AES:</string>
+    <string name="image_aes_key_hint">Contraseña para descifrar</string>
+    <string name="btn_decrypt_image">Descifrar imagen</string>
+    <string name="image_processing">Procesando…</string>
+    <string name="image_decrypting">Descifrando imagen…</string>
+    <string name="image_integrity_ok">Integridad verificada</string>
+    <string name="image_decrypted_desc">Imagen descifrada</string>
+    <string name="image_empty_key">Introduce la clave AES</string>
+    <string name="image_no_file_error">Selecciona un archivo .enc</string>
+    <string name="image_wrong_extension">El archivo debe tener extensión .enc</string>
+    <string name="image_empty_file">El archivo está vacío</string>
+    <string name="image_too_large">El archivo supera el límite de 100 MiB</string>
+    <string name="image_corrupt">La imagen descifrada no se pudo abrir</string>
+    <string name="image_select_file">Seleccionar archivo .enc</string>
+    <string name="share_copy_failed">No se pudo abrir el archivo compartido</string>
+
+</resources>
