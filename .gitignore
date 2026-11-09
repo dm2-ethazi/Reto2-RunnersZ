@@ -1,5 +1,7 @@
 # Variables de entorno y secretos
 .env
+.env.*
+!.env.example
 backend/.env
 
 # Python
@@ -36,6 +38,7 @@ unity/Recordings/
 unity/UserSettings/
 unity/*.csproj
 unity/*.sln
+unity/.utmp/
 
 # Sistema y editores
 Thumbs.db
@@ -43,7 +46,8 @@ Thumbs.db
 .idea/
 *.iml
 
-# Logs
+# Logs (el registro se escribe en la carpeta del usuario, nunca en el repositorio)
 *.log
+*.log.gz
 *.err
-unity/.utmp/
+logs/

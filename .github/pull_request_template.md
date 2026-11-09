@@ -16,7 +16,7 @@
 
 ## Evidencias
 
-<!-- Salida de tests (nº de tests, cobertura), capturas, rutas en docs/evidencias/ -->
+<!-- Salida de tests, cobertura y enlaces a evidencias externas al repositorio. -->
 
 ## Riesgos y limitaciones
 
