@@ -1,36 +1,60 @@
-"""Contrato de autenticación y declaración OpenAPI (§3.4)."""
+"""Contrato de estado, autenticación y declaración OpenAPI (§3.3 y §3.4)."""
+
+from __future__ import annotations
+
 import pytest
 from fastapi.testclient import TestClient
+
 from runnersz.main import app
-from runnersz import routes
 
-@pytest.fixture
-def client(monkeypatch):
-    """Usa credenciales ficticias; nunca lee el entorno privado."""
-    monkeypatch.setattr(routes, "TOKEN", "fixture-local")
-    with TestClient(app) as session:
-        yield session
 
-@pytest.mark.parametrize("value,status", [(None,401),("Bearer incorrecto",401),("Bearer fixture-local",204),("fixture-local",401)])
-def test_authentication(client,value,status):
-    """Acepta solo Bearer válido y conserva el estado contractual."""
-    headers = {} if value is None else {"Authorization":value}
-    response=client.get("/api/v1/auth/check",headers=headers)
+def test_health_no_requiere_token(client):
+    """El estado es público y no expone detalles internos."""
+    response = client.get("/api/v1/health")
+    assert response.status_code == 200
+    assert response.json() == {"status": "ok", "version": "2.0.0"}
+
+
+@pytest.mark.parametrize(
+    ("value", "status"),
+    [
+        (None, 401),
+        ("Bearer incorrecto", 401),
+        ("token-de-prueba", 401),
+        ("Bearer token-de-prueba", 204),
+    ],
+)
+def test_auth_check(client, value, status):
+    """Solo acepta el Bearer exacto; el resto responde 401 UNAUTHORIZED."""
+    headers = {} if value is None else {"Authorization": value}
+    response = client.get("/api/v1/auth/check", headers=headers)
     assert response.status_code == status
     if status == 401:
-        assert response.json()["code"] == "UNAUTHORIZED"
+        body = response.json()
+        assert body["code"] == "UNAUTHORIZED"
+        assert body["message"] == "Token no válido. Revisa los ajustes"
 
-def test_swagger_security(client):
-    """Swagger declara Bearer en todos los endpoints protegidos."""
-    schema=client.get("/openapi.json").json()
-    assert schema["components"]["securitySchemes"]["HTTPBearer"] == {"type":"http","scheme":"bearer"}
-    for path,methods in schema["paths"].items():
-        if path != "/api/v1/health":
-            for operation in methods.values():
-                assert {"HTTPBearer":[]} in operation["security"]
 
-def test_authorized_text(client):
-    """El token válido alcanza el servicio de texto."""
-    response=client.post("/api/v1/text/caesar",headers={"Authorization":"Bearer fixture-local"},json={"text":"Ataque","shift":3})
-    assert response.status_code == 200
-    assert response.json() == {"result":"Dwdtxh"}
+def test_auth_sin_token_configurado(monkeypatch):
+    """Sin RZ_API_TOKEN el servicio rechaza todo, también con cabecera."""
+    monkeypatch.delenv("RZ_API_TOKEN", raising=False)
+    with TestClient(app, raise_server_exceptions=False) as session:
+        response = session.get(
+            "/api/v1/auth/check", headers={"Authorization": "Bearer cualquiera"}
+        )
+    assert response.status_code == 401
+    assert response.json()["code"] == "UNAUTHORIZED"
+
+
+def test_swagger_declara_bearer(client):
+    """Swagger declara el esquema Bearer en todas las rutas protegidas."""
+    schema = client.get("/openapi.json").json()
+    assert schema["components"]["securitySchemes"]["HTTPBearer"] == {
+        "type": "http",
+        "scheme": "bearer",
+    }
+    for path, operations in schema["paths"].items():
+        if path == "/api/v1/health":
+            continue
+        for operation in operations.values():
+            assert {"HTTPBearer": []} in operation["security"]

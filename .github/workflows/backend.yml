@@ -1,0 +1,41 @@
+name: backend
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+
+jobs:
+  backend:
+    name: ruff, isort y cobertura
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Dependencias fijadas por uv.lock
+        run: uv sync --locked
+
+      - name: Estilo con ruff
+        run: uv run ruff check .
+
+      - name: Orden de imports con isort
+        run: uv run isort . --check-only
+
+      - name: Tests con cobertura mínima del 80 %
+        run: uv run pytest
+
+      - name: Publicar el informe de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura-backend
+          path: backend/coverage.xml
+          if-no-files-found: warn

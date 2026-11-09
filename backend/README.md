@@ -1,15 +1,18 @@
 # RunnersZ · API de cifrado
 
-API REST de desarrollo en Python 3.12 con FastAPI. JavaFX y Android envían texto
-JSON o contenido de ficheros multipart; los algoritmos residen en el servidor.
-El contrato técnico v2 manda sobre las decisiones de implementación.
+API REST en Python 3.12 con FastAPI. JavaFX y Android envían texto JSON o
+contenido de ficheros multipart; los algoritmos residen en el servidor y el
+contrato técnico v2 manda sobre cualquier decisión de implementación.
 
 ## Estado actual
 
-Rama: `feature/i02-api-base`. PR: https://github.com/dm2-ethazi/Reto2-RunnersZ/pull/30.
-Hay rutas de estado, autenticación, Vigenère, César y ficheros AES.
-La API sigue en desarrollo: no se acredita todavía cumplimiento completo del
-contrato ni del pliego. No usar este formato `.enc` como formato definitivo.
+Rama: `feature/api`. PR: https://github.com/dm2-ethazi/Reto2-RunnersZ/pull/30.
+
+El backend cubre los apartados 4.3, 4.4, 4.5, 4.7, 4.12 y 4.13 del pliego y las
+secciones 3, 5.3, 6, 7 y 11 del contrato: Vigenère, César, AES-256-GCM por
+bloques, errores `{code, message}`, formato RZEN con nonce de 96 bits, tests con
+cobertura bloqueante y hooks de pre-commit y pre-push. Lo que sigue sin
+acreditarse está en «Pendientes».
 
 ## Requisitos e instalación
 
@@ -18,29 +21,28 @@ contrato ni del pliego. No usar este formato `.enc` como formato definitivo.
 - Ejecutar los comandos desde esta carpeta `backend/`.
 
 ```powershell
-cd C:\Users\dm2\Documents\Reto2-RunnersZ\backend
+cd backend
 uv sync --locked
 ```
 
-No hace falta activar manualmente `.venv`. `uv.lock` fija las dependencias.
+No hace falta activar manualmente `.venv`. `uv.lock` fija las dependencias y
+`uv sync --locked` falla si el lock no está al día, igual que en el CI.
 
 ## Configuración y arranque en Windows
 
-Crea `.env` dentro de `backend/`, con las siguientes variables. El valor mostrado
-es ficticio: sustitúyelo por un token local propio, sin compartirlo ni versionarlo.
+Crea `.env` dentro de `backend/`. El valor mostrado es ficticio: sustitúyelo por
+un token local propio, sin compartirlo ni versionarlo.
 
 ```dotenv
 RZ_API_TOKEN=CAMBIA_ESTE_VALOR_LOCAL
 RZ_MAX_UPLOAD_MIB=100
 ```
 
-El límite por defecto es 100 MiB. Reinicia la API si cambias el token o el límite:
-las rutas actuales cargan estas variables al importar el módulo.
+Opcional: `RZ_TMP_DIR` cambia la carpeta de los temporales `.part` (por defecto
+la del sistema; Docker usa `/var/tmp/runnersz`). La configuración se lee en cada
+petición, así que no hay que reiniciar al cambiar el token o el límite.
 
 ```powershell
-# Evita que un token temporal de PowerShell prevalezca sobre .env.
-Remove-Item Env:RZ_API_TOKEN -ErrorAction SilentlyContinue
-
 uv run --python 3.12 uvicorn runnersz.main:app --app-dir src --env-file .env --host 127.0.0.1 --port 8000 --reload
 ```
 
@@ -53,6 +55,19 @@ en una red local controlada (§3.4).
 
 En Linux, desde `backend/`, el comando de uvicorn es el mismo. Si existe una
 variable temporal con otro token, elimínala antes con `unset RZ_API_TOKEN`.
+
+## Despliegue con Docker Compose
+
+```bash
+cd backend
+cp .env.example .env      # y define RZ_API_TOKEN
+docker compose up -d --build
+```
+
+La imagen usa `python:3.12-slim`, instala con `uv sync --locked`, corre con el
+usuario `appuser`, guarda los `.part` en un `tmpfs` efímero y declara un
+healthcheck sobre `/api/v1/health`. El token entra desde `.env`; nunca se
+versiona (solo `.env.example`).
 
 ## Probar en el navegador
 
@@ -79,8 +94,8 @@ Todas las rutas usan el prefijo `/api/v1`. Salvo `health`, requieren la cabecera
 | GET | `/auth/check` | Token Bearer | 204 sin cuerpo |
 | POST | `/text/vigenere` | JSON: `text`, `key`, `mode` | 200 con `result` |
 | POST | `/text/caesar` | JSON: `text`, `shift`, `mode` | 200 con `result` |
-| POST | `/files/encrypt` | Multipart: `file`, `password` | Bytes cifrados |
-| POST | `/files/decrypt` | Multipart: `file`, `password` | Bytes recuperados y cabecera de integridad |
+| POST | `/files/encrypt` | Multipart: `file`, `password` | Bytes cifrados, `Content-Disposition` con nombre sugerido y `Content-Length` |
+| POST | `/files/decrypt` | Multipart: `file`, `password` | Bytes recuperados, `X-Integrity: verified` y nombre sugerido |
 
 Ejemplo Vigenère:
 
@@ -88,79 +103,118 @@ Ejemplo Vigenère:
 {"text":"Hola Mundo, ¿qué tal?","key":"LUNA","mode":"encrypt"}
 ```
 
+Devuelve `{"result":"Siya Xoadz, ¿khé tlf?"}`, el ejemplo del contrato §6.1.
+
 Ejemplo César:
 
 ```json
 {"text":"Ataque al amanecer","shift":3,"mode":"encrypt"}
 ```
 
-`mode` selecciona `encrypt` o `decrypt`. César admite enteros de 1 a 25;
-Vigenère requiere una clave no vacía formada por letras ASCII. Las letras con
-tildes, la Ñ, signos y espacios se conservan sin avanzar la clave (§6.1/§6.3).
-La validación exhaustiva del modo y tipos sigue pendiente.
+`mode` solo admite `encrypt` o `decrypt`. César admite enteros de 1 a 25,
+también enviados como texto (`"3"`); `0`, `26`, negativos y valores no enteros
+devuelven `INVALID_SHIFT`. Vigenère exige una clave de letras ASCII. Las letras
+con tildes, la Ñ, los signos y los espacios se conservan sin avanzar la clave.
 
-## Organización y decisiones
+## Errores
+
+Todo error responde JSON `{code, message}`, nunca con la contraseña ni el token.
+Los 422 de validación de FastAPI se convierten en 400 con la misma forma.
+
+| code | HTTP | Mensaje y cuándo ocurre |
+|---|---|---|
+| `UNAUTHORIZED` | 401 | «Token no válido. Revisa los ajustes». |
+| `EMPTY_FILE` | 400 | «El archivo está vacío». |
+| `EMPTY_PASSWORD` | 400 | «La contraseña está vacía». |
+| `INVALID_KEY` | 400 | «La clave no es válida: usa solo letras A-Z». |
+| `INVALID_SHIFT` | 400 | «El desplazamiento debe ser un entero entre 1 y 25». |
+| `INVALID_REQUEST` | 400 | Cuerpo o formulario incompletos; `mode` fuera de `encrypt\|decrypt`. |
+| `FILE_TOO_LARGE` | 413 | Supera `RZ_MAX_UPLOAD_MIB` (100 MiB por defecto). |
+| `DECRYPT_FAILED` | 422 | «clave incorrecta o fichero dañado»: contraseña distinta, bloque alterado, reordenado, truncado o huella que no cuadra. |
+| `INTERNAL_ERROR` | 500 | Fallo inesperado; se borran los temporales. |
+
+## Formato del fichero .enc (§5.3 y §6.2)
+
+| Campo | Bytes | Contenido |
+|---|---|---|
+| Magic | 4 | `RZEN` |
+| Versión | 1 | `1` |
+| KDF | 1 | `1` = PBKDF2-HMAC-SHA256 |
+| Iteraciones | 4 | 600 000, big-endian |
+| Sal | 16 | Aleatoria por fichero |
+| Prefijo de nonce | 4 | Aleatorio por fichero |
+| Tamaño de bloque | 4 | 1 048 576 B (1 MiB) en claro |
+| Bloques | variable | Texto cifrado + etiqueta GCM de 16 B; el último incluye el SHA-256 del original (32 B) |
+
+- Clave de 256 bits por fichero: `PBKDF2-HMAC-SHA256(contraseña, sal, 600 000)`.
+- Nonce de 96 bits: prefijo de 4 B + contador de bloque de 8 B, siempre distinto.
+- AAD de cada bloque: cabecera completa + índice de bloque + indicador de último
+  bloque. Reordenar, borrar o truncar bloques rompe la autenticación.
+- Escritura en `.part` y renombrado atómico; el original nunca se modifica.
+- El número de bloques se deduce del tamaño total, así que un fichero múltiplo
+  exacto de 1 MiB (1 MiB, 20 MiB…) se recupera sin ambigüedad.
+
+## Pruebas y calidad
+
+```bash
+uv run pytest          # cobertura bloqueante: falla por debajo del 80 %
+uv run ruff check .
+uv run isort . --check-only
+```
+
+Última ejecución: **62 pruebas, 0 fallos, 97,7 % de cobertura**. Cubren formato y
+cabecera, tamaños de 1 B, 1 MiB exacto, 2 MiB, 20 MiB, 0 B rechazado, contraseña
+vacía e incorrecta, byte alterado, bloques reordenados, ficheros truncados, los
+ejemplos de Vigenère y César del contrato, los 401 y las cabeceras de descarga.
+
+CI: `.github/workflows/backend.yml` ejecuta `uv sync --locked`, ruff, isort y
+pytest con cobertura en cada push a `main`/`develop` y en cada PR, y publica
+`coverage.xml` como artefacto. En local, el mismo pipeline se simula con
+`.actrc` y `act push -j backend`.
+
+## Hooks
+
+```bash
+uv run pre-commit install --hook-type pre-commit --hook-type pre-push
+```
+
+- **pre-commit**: espacios finales, fin de fichero, YAML/TOML/JSON, conflictos de
+  merge, ficheros grandes, ruff, ruff-format, isort, tests rápidos sin cobertura
+  y bloqueo de commits directos en `main` y `develop`.
+- **pre-push**: `uv run pytest` con cobertura mínima del 80 % y bloqueo del push
+  directo a `main` y `develop` leyendo `PRE_COMMIT_REMOTE_BRANCH`.
+
+## Organización
 
 ```text
 backend/
   src/runnersz/
-    main.py       # Compone FastAPI y registra las rutas.
-    routes.py     # Endpoints, esquema Bearer y orquestación HTTP actual.
-    crypto.py     # Servicios AES, PBKDF2 y lectura/escritura del formato.
-    text.py       # Algoritmos Vigenère y César independientes de HTTP.
-    config.py     # Configuración auxiliar pendiente de integrar.
-    auth.py       # Autenticación auxiliar pendiente de integrar.
-    errors.py     # Errores auxiliares pendientes de integrar.
-    models.py     # Modelos auxiliares pendientes de integrar.
-  tests/          # Pruebas de algoritmos y autenticación/OpenAPI.
-  pyproject.toml  # Dependencias y configuración de pytest.
+    main.py       # Compone FastAPI y registra los handlers de error.
+    routes.py     # Endpoints, esquema Bearer, streaming y cabeceras.
+    crypto.py     # AES-256-GCM, PBKDF2 y formato RZEN.
+    text.py       # Vigenère y César, independientes de HTTP.
+    config.py     # Token, límite de subida y carpeta temporal.
+    auth.py       # Validación del Bearer en tiempo constante.
+    errors.py     # ApiError y handlers {code, message}.
+    models.py     # Pydantic: TextRequest.
+  tests/          # Algoritmos, formato, API y errores.
+  pyproject.toml  # Dependencias, pytest, ruff e isort.
   uv.lock         # Versiones resueltas.
   Dockerfile
   docker-compose.yml
 ```
 
-`main.py` se mantiene pequeño para separar la composición de la aplicación de las
-rutas y los algoritmos. Los servicios pueden probarse sin arrancar un servidor.
-La API comparte la implementación entre clientes y evita duplicar cifrado en ellos.
-Los docstrings en español documentan parámetros, resultados y errores; los
-comentarios explican decisiones de seguridad y liberación de recursos.
+La subida se guarda por bloques de 1 MiB en un `.part` con el límite aplicado
+mientras se lee, y la respuesta se sirve como fichero, sin cargar el contenido
+completo en memoria. Los temporales se borran en éxito y en error.
 
-La autenticación activa está en `routes.py`: `HTTPBearer` declara correctamente
-el esquema OpenAPI y la comparación del token utiliza `secrets.compare_digest`.
-Los módulos auxiliares listados arriba aún no son la implementación activa;
-no cambies solo `auth.py` esperando modificar el comportamiento del servidor.
+## Pendientes
 
-## Errores y diagnóstico
-
-| Caso | Comportamiento actual o comprobación |
-|---|---|
-| 401 `UNAUTHORIZED` | Revisa que `.env` esté en `backend/`, reinicia con `--env-file .env`, elimina la variable temporal y vuelve a autorizar. |
-| 400 `EMPTY_FILE` | Elige un fichero que tenga contenido. |
-| 413 `FILE_TOO_LARGE` | El fichero supera el límite configurado. |
-| Error al descifrar | Revisa contraseña y fichero; la normalización completa a `DECRYPT_FAILED` está pendiente. |
-| 422 por campos ausentes | La validación predeterminada de FastAPI sigue pendiente de adaptar al JSON y estados del contrato. |
-| Puerto ocupado | Detén la instancia anterior antes de volver a arrancar. |
-
-Nunca pegues tokens ni contraseñas en incidencias, capturas o comentarios de PR.
-
-## Pruebas y límites conocidos
-
-```powershell
-uv run --python 3.12 pytest -q
-```
-
-Última verificación del código (commit `59aba86`): **15 passed**, con un aviso de
-obsolescencia de Starlette/AnyIO. Incluye autenticación válida/inválida/ausente y
-esquema Bearer en OpenAPI. No acredita todos los criterios de aceptación.
-
-Pendientes contractuales que no deben darse por hechos:
-
-- Recepción y respuesta de ficheros en streaming con memoria acotada (§5.1/§7.1).
-- Revisión del formato RZEN, nonce, AAD, bloques exactos y truncados (§5.3/§6.2).
-- Pruebas reales de 20 MiB, 21 MiB con límite de 20 MiB, y todos los casos de §7.3.
-- Gestión uniforme de errores y limpieza ante disco lleno o desconexión (§4/§7.2).
-- Integración de módulos auxiliares y configuración completa de calidad (§11.2–§11.6).
-- Validación del despliegue Docker; el comando local anterior es el camino verificado.
+- Probar el despliegue Docker en un equipo con Docker (en esta máquina no hay
+  motor disponible): `docker compose up -d --build` y `/api/v1/health`.
+- Ejecutar `act push -j backend` y adjuntar la evidencia al apartado 11.8.
+- Añadir las capturas de `pre-commit run --all-files` en verde.
+- Probar 21 MiB con `RZ_MAX_UPLOAD_MIB=20` desde los clientes reales.
 
 ## Mantenimiento de esta guía
 
@@ -174,3 +228,7 @@ expresa. No añadir funcionalidades fuera de contrato sin indicarlas al humano.
 - 2026-10-29: inicia API y separa composición, HTTP y algoritmos.
 - 2026-10-29: corrige autenticación Bearer de Swagger (`59aba86`).
 - 2026-10-29: concentra aquí la guía de uso y mantenimiento; vacía el README raíz.
+- 2026-11-09: corrige el último bloque en múltiplos exactos de 1 MiB, nonce de
+  96 bits con AAD por índice, errores `{code, message}` del contrato, subida y
+  descarga por bloques, cobertura bloqueante al 80 %, workflow de CI, hooks,
+  Docker con `uv sync --locked` y `docker-compose` leyendo `.env`.

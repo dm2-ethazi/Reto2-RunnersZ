@@ -1,46 +1,70 @@
-"""Capa text.py de RunnersZ.
+"""Algoritmos Vigenère y César independientes de HTTP (§6.1 y §6.3).
 
-Autor: Alain. Versión: 2.0."""
+Solo se transforman letras ASCII A-Z y a-z; espacios, dígitos, signos, la Ñ y
+las letras acentuadas se conservan en su posición y no avanzan la clave.
+"""
+
+from __future__ import annotations
+
 import re
 
-def vigenere(text, key, decrypt=False):
-    """Transforma letras ASCII conservando el resto (§6.1).
+_KEY_PATTERN = re.compile(r"[A-Za-z]+")
 
-Args:
-    text: Texto original.
-    key: Clave alfabética ASCII.
-    decrypt: Invierte el desplazamiento.
-Returns:
-    Texto transformado.
-Raises:
-    ValueError: Clave no válida."""
-    if not key or not re.fullmatch('[A-Za-z]+', key):
-        raise ValueError('INVALID_KEY')
-    key = key.upper()
-    out = []
-    i = 0
-    for c in text:
-        if c.isascii() and c.isalpha():
-            base = 65 if c.isupper() else 97
-            s = ord(key[i % len(key)]) - 65
-            out.append(chr((ord(c) - base + (-s if decrypt else s)) % 26 + base))
-            i += 1
+
+def vigenere(text: str, key: str, decrypt: bool = False) -> str:
+    """Aplica Vigenère conservando mayúsculas, espacios y símbolos.
+
+    Args:
+        text: Texto original.
+        key: Clave formada solo por letras ASCII.
+        decrypt: Invierte el desplazamiento.
+
+    Returns:
+        Texto transformado.
+
+    Raises:
+        ValueError: Clave vacía o con caracteres no válidos (INVALID_KEY).
+    """
+    if not key or not _KEY_PATTERN.fullmatch(key):
+        raise ValueError("INVALID_KEY")
+    keyword = key.upper()
+    result = []
+    position = 0
+    for character in text:
+        if character.isascii() and character.isalpha():
+            base = 65 if character.isupper() else 97
+            shift = ord(keyword[position % len(keyword)]) - 65
+            if decrypt:
+                shift = -shift
+            result.append(chr((ord(character) - base + shift) % 26 + base))
+            position += 1
         else:
-            out.append(c)
-    return ''.join(out)
+            result.append(character)
+    return "".join(result)
 
-def caesar(text, shift, decrypt=False):
-    """Aplica un desplazamiento entre 1 y 25 (§6.3).
 
-Args:
-    text: Texto original.
-    shift: Desplazamiento entero.
-    decrypt: Invierte el desplazamiento.
-Returns:
-    Texto transformado.
-Raises:
-    ValueError: Desplazamiento inválido."""
-    if isinstance(shift, bool) or not isinstance(shift, int) or (not 1 <= shift <= 25):
-        raise ValueError('INVALID_SHIFT')
-    s = -shift if decrypt else shift
-    return ''.join((chr((ord(c) - (65 if c.isupper() else 97) + s) % 26 + (65 if c.isupper() else 97)) if c.isascii() and c.isalpha() else c for c in text))
+def caesar(text: str, shift: int, decrypt: bool = False) -> str:
+    """Aplica un desplazamiento entero entre 1 y 25.
+
+    Args:
+        text: Texto original.
+        shift: Desplazamiento entre 1 y 25.
+        decrypt: Invierte el desplazamiento.
+
+    Returns:
+        Texto transformado.
+
+    Raises:
+        ValueError: Desplazamiento fuera de rango (INVALID_SHIFT).
+    """
+    if isinstance(shift, bool) or not isinstance(shift, int) or not 1 <= shift <= 25:
+        raise ValueError("INVALID_SHIFT")
+    offset = -shift if decrypt else shift
+    result = []
+    for character in text:
+        if character.isascii() and character.isalpha():
+            base = 65 if character.isupper() else 97
+            result.append(chr((ord(character) - base + offset) % 26 + base))
+        else:
+            result.append(character)
+    return "".join(result)

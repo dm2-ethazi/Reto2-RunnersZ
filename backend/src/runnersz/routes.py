@@ -1,163 +1,229 @@
-"""Capa routes.py de RunnersZ.
+"""Endpoints HTTP de RunnersZ (§3.3).
 
-Autor: Alain. Versión: 2.0."""
-import os, tempfile
-import secrets
+Los algoritmos viven en text y crypto; aquí solo se valida, se autentica y se
+orquesta el tratamiento de ficheros con temporales que se borran siempre.
+"""
+
+from __future__ import annotations
+
+import re
+import tempfile
 from pathlib import Path
+
 from fastapi import APIRouter, Depends, File, Form, UploadFile
-from fastapi.responses import Response, JSONResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from pydantic import BaseModel
-from .crypto import CryptoError, encrypt_file, decrypt_file
-from .text import vigenere, caesar
+from starlette.background import BackgroundTask
+
+from .auth import require_token
+from .config import Settings, load_settings
+from .crypto import CryptoError, decrypt_file, encrypt_file
+from .errors import ApiError
+from .models import TextRequest
+from .text import caesar, vigenere
+
 router = APIRouter()
-TOKEN = os.getenv('RZ_API_TOKEN', '')
-LIMIT = int(os.getenv('RZ_MAX_UPLOAD_MIB', '100')) * 1048576
-
-
 bearer_scheme = HTTPBearer(auto_error=False)
 
-def authorization_header(credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme)) -> str | None:
-    """Extrae Bearer y declara la autenticación en OpenAPI.
+CHUNK_SIZE = 1024 * 1024
+MESSAGES = {
+    "EMPTY_FILE": "El archivo está vacío",
+    "EMPTY_PASSWORD": "La contraseña está vacía",
+    "FILE_TOO_LARGE": "El archivo supera el tamaño máximo permitido",
+    "INVALID_KEY": "La clave no es válida: usa solo letras A-Z",
+    "INVALID_SHIFT": "El desplazamiento debe ser un entero entre 1 y 25",
+    "DECRYPT_FAILED": "clave incorrecta o fichero dañado",
+}
+_SHIFT_PATTERN = re.compile(r"^[+-]?\d+$")
+
+
+def authorization_header(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> str | None:
+    """Extrae la cabecera Bearer para declararla en OpenAPI.
 
     Args:
-        credentials: Credenciales enviadas por el cliente, si existen.
+        credentials: Credenciales que envía el cliente, si existen.
+
     Returns:
-        Cabecera normalizada o None; auth conserva el error 401 contractual.
+        Cabecera normalizada o None; la validación real la hace require_token.
     """
     if credentials is None:
         return None
     return f"Bearer {credentials.credentials}"
 
-class Text(BaseModel):
-    """Datos de entrada de los endpoints textuales."""
-    text: str
-    key: str | None = None
-    shift: int | None = None
-    mode: str = 'encrypt'
 
-def auth(a):
-    """Valida la cabecera de autorización.
+def _error(code: str, status: int) -> ApiError:
+    """Construye un ApiError con el mensaje del contrato."""
+    return ApiError(code, status, MESSAGES[code])
 
-Args:
-    a: Cabecera Bearer recibida.
-Raises:
-    ValueError: Si falta el token o es incorrecto."""
-    # §3.4: se comparan bytes para admitir UTF-8 en tiempo constante.
-    if not TOKEN or a is None or not secrets.compare_digest(a.encode('utf-8'), f'Bearer {TOKEN}'.encode('utf-8')):
-        raise ValueError('UNAUTHORIZED')
 
-def fail(code, status):
-    """Construye un error JSON uniforme.
+def _shift_value(value: object) -> int:
+    """Convierte y valida el desplazamiento de César.
 
-Args:
-    code: Código público de error.
-    status: Estado HTTP.
-Returns:
-    Respuesta JSON sin credenciales."""
-    return JSONResponse({'code': code, 'message': code}, status_code=status)
+    Args:
+        value: Valor recibido en JSON, número o texto.
 
-@router.get('/api/v1/health')
-def health():
-    """Devuelve el estado y la versión del servicio público."""
-    return {'status': 'ok', 'version': '2.0.0'}
+    Returns:
+        Desplazamiento entre 1 y 25.
 
-@router.get('/api/v1/auth/check', status_code=204)
-def check(authorization: str | None=Depends(authorization_header)):
-    """Comprueba el token.
+    Raises:
+        ApiError: Si no es numérico o queda fuera de rango (INVALID_SHIFT).
+    """
+    if isinstance(value, bool) or value is None:
+        raise _error("INVALID_SHIFT", 400)
+    if isinstance(value, int):
+        shift = value
+    elif isinstance(value, str) and _SHIFT_PATTERN.match(value.strip()):
+        shift = int(value.strip())
+    else:
+        raise _error("INVALID_SHIFT", 400)
+    if not 1 <= shift <= 25:
+        raise _error("INVALID_SHIFT", 400)
+    return shift
 
-Args:
-    authorization: Cabecera Bearer.
-Returns:
-    Respuesta vacía o error de autorización."""
+
+def _suggested_name(filename: str | None, decrypting: bool) -> str:
+    """Propone un nombre de descarga sin rutas ni sobrescrituras."""
+    name = Path(filename).name if filename else "archivo"
+    if decrypting:
+        return name[:-4] if name.lower().endswith(".enc") else f"{name}.recuperado"
+    return f"{name}.enc"
+
+
+async def _spool(file: UploadFile, settings: Settings) -> Path:
+    """Guarda la subida por bloques en un temporal .part acotado.
+
+    Args:
+        file: Fichero multipart recibido.
+        settings: Configuración con el límite y la carpeta temporal.
+
+    Returns:
+        Ruta del .part ya escrito.
+
+    Raises:
+        ApiError: Fichero vacío (EMPTY_FILE) o excesivo (FILE_TOO_LARGE).
+    """
+    descriptor, name = tempfile.mkstemp(
+        prefix="rz-", suffix=".part", dir=settings.tmp_dir
+    )
+    path = Path(name)
+    total = 0
     try:
-        auth(authorization)
-    except ValueError:
-        return fail('UNAUTHORIZED', 401)
+        with open(descriptor, "wb") as target:
+            while chunk := await file.read(CHUNK_SIZE):
+                total += len(chunk)
+                if total > settings.max_upload_bytes:
+                    raise _error("FILE_TOO_LARGE", 413)
+                target.write(chunk)
+    except BaseException:
+        path.unlink(missing_ok=True)
+        raise
+    if total == 0:
+        path.unlink(missing_ok=True)
+        raise _error("EMPTY_FILE", 400)
+    return path
 
-async def upload(file):
-    """Recibe un fichero temporal.
 
-Args:
-    file: Fichero multipart recibido.
-Returns:
-    Ruta temporal y error opcional.
-Nota:
-    Pendiente migrar la recepción a streaming acotado (§5.1)."""
-    data = await file.read(LIMIT + 1)
-    if not data:
-        return (None, 'EMPTY_FILE')
-    if len(data) > LIMIT:
-        return (None, 'FILE_TOO_LARGE')
-    p = Path(tempfile.mktemp())
-    p.write_bytes(data)
-    return (p, None)
+async def _file_operation(
+    file: UploadFile, password: str, authorization: str | None, decrypting: bool
+) -> FileResponse:
+    """Orquesta token, límite, cifrado o descifrado y limpieza de temporales.
 
-@router.post('/api/v1/text/vigenere')
-def vig(x: Text, authorization: str | None=Depends(authorization_header)):
-    """Atiende la transformación Vigenère (§6.1).
+    Args:
+        file: Fichero multipart.
+        password: Contraseña AES de la operación.
+        authorization: Cabecera Bearer.
+        decrypting: Selecciona descifrado frente a cifrado.
 
-Args:
-    x: Texto, clave y modo.
-    authorization: Cabecera Bearer.
-Returns:
-    Resultado o error JSON."""
+    Returns:
+        Respuesta de descarga con nombre sugerido y tamaño.
+
+    Raises:
+        ApiError: Cualquier error de autenticación o de la operación.
+    """
+    settings = load_settings()
+    require_token(settings, authorization)
+    if not password:
+        raise _error("EMPTY_PASSWORD", 400)
+
+    source = await _spool(file, settings)
+    destination = source.with_suffix(".out")
     try:
-        auth(authorization)
-        return {'result': vigenere(x.text, x.key or '', x.mode == 'decrypt')}
-    except ValueError as e:
-        return fail(str(e), 401 if str(e) == 'UNAUTHORIZED' else 400)
-
-@router.post('/api/v1/text/caesar')
-def ces(x: Text, authorization: str | None=Depends(authorization_header)):
-    """Atiende la transformación César (§6.3).
-
-Args:
-    x: Texto, desplazamiento y modo.
-    authorization: Cabecera Bearer.
-Returns:
-    Resultado o error JSON."""
-    try:
-        auth(authorization)
-        return {'result': caesar(x.text, x.shift or 0, x.mode == 'decrypt')}
-    except ValueError as e:
-        return fail(str(e), 401 if str(e) == 'UNAUTHORIZED' else 400)
-
-async def fileop(file, password, authorization, dec):
-    """Orquesta el servicio de ficheros y libera temporales.
-
-Args:
-    file: Entrada multipart.
-    password: Contraseña de la operación.
-    authorization: Cabecera Bearer.
-    dec: Selecciona descifrado.
-Returns:
-    Bytes procesados o error público."""
-    try:
-        auth(authorization)
-    except ValueError:
-        return fail('UNAUTHORIZED', 401)
-    src, err = await upload(file)
-    if err:
-        return fail(err, 413 if err == 'FILE_TOO_LARGE' else 400)
-    dst = src.with_suffix('.out')
-    try:
-        (decrypt_file if dec else encrypt_file)(src, dst, password)
-        return Response(dst.read_bytes(), media_type='application/octet-stream', headers={'X-Integrity': 'verified'})
-    except CryptoError as e:
-        return fail(str(e), 400 if str(e) in ('EMPTY_PASSWORD', 'EMPTY_FILE') else 422)
-    # Se liberan recursos tanto en éxito como en error (§4).
+        (decrypt_file if decrypting else encrypt_file)(source, destination, password)
+    except CryptoError as exc:
+        if decrypting:
+            raise _error("DECRYPT_FAILED", 422) from exc
+        raise ApiError("INTERNAL_ERROR", 500, "Error interno del servidor") from exc
     finally:
-        src.unlink(missing_ok=True)
-        dst.unlink(missing_ok=True)
-        dst.with_name(dst.name + '.part').unlink(missing_ok=True)
+        source.unlink(missing_ok=True)
 
-@router.post('/api/v1/files/encrypt')
-async def enc(file: UploadFile=File(...), password: str=Form(...), authorization: str | None=Depends(authorization_header)):
-    """Expone el cifrado multipart; delega en fileop."""
-    return await fileop(file, password, authorization, False)
+    headers = {"X-Integrity": "verified"} if decrypting else {}
+    return FileResponse(
+        destination,
+        media_type="application/octet-stream",
+        filename=_suggested_name(file.filename, decrypting),
+        headers=headers,
+        background=BackgroundTask(destination.unlink, missing_ok=True),
+    )
 
-@router.post('/api/v1/files/decrypt')
-async def dec(file: UploadFile=File(...), password: str=Form(...), authorization: str | None=Depends(authorization_header)):
-    """Expone el descifrado multipart; delega en fileop."""
-    return await fileop(file, password, authorization, True)
+
+@router.get("/api/v1/health")
+def health() -> dict[str, str]:
+    """Estado público del servicio; no exige token."""
+    settings = load_settings()
+    return {"status": "ok", "version": settings.version}
+
+
+@router.get("/api/v1/auth/check", status_code=204)
+def check_token(
+    authorization: str | None = Depends(authorization_header),
+) -> Response:
+    """Comprueba el token: 204 si es válido, 401 si no."""
+    require_token(load_settings(), authorization)
+    return Response(status_code=204)
+
+
+@router.post("/api/v1/text/vigenere")
+def vigenere_text(
+    payload: TextRequest,
+    authorization: str | None = Depends(authorization_header),
+) -> dict[str, str]:
+    """Cifra o descifra texto con Vigenère (§6.1)."""
+    require_token(load_settings(), authorization)
+    try:
+        result = vigenere(payload.text, payload.key or "", payload.mode == "decrypt")
+    except ValueError as exc:
+        raise _error("INVALID_KEY", 400) from exc
+    return {"result": result}
+
+
+@router.post("/api/v1/text/caesar")
+def caesar_text(
+    payload: TextRequest,
+    authorization: str | None = Depends(authorization_header),
+) -> dict[str, str]:
+    """Cifra o descifra texto con César (§6.3)."""
+    require_token(load_settings(), authorization)
+    shift = _shift_value(payload.shift)
+    return {"result": caesar(payload.text, shift, payload.mode == "decrypt")}
+
+
+@router.post("/api/v1/files/encrypt")
+async def encrypt_endpoint(
+    file: UploadFile = File(...),
+    password: str = Form(...),
+    authorization: str | None = Depends(authorization_header),
+) -> FileResponse:
+    """Cifra un fichero con AES-256-GCM y devuelve el .enc."""
+    return await _file_operation(file, password, authorization, decrypting=False)
+
+
+@router.post("/api/v1/files/decrypt")
+async def decrypt_endpoint(
+    file: UploadFile = File(...),
+    password: str = Form(...),
+    authorization: str | None = Depends(authorization_header),
+) -> FileResponse:
+    """Descifra un .enc verificando integridad y devuelve los bytes originales."""
+    return await _file_operation(file, password, authorization, decrypting=True)
