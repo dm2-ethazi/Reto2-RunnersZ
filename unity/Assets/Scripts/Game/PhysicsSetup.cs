@@ -1,0 +1,2 @@
+using UnityEngine;
+namespace RunnersZ.Game { public sealed class PhysicsSetup:MonoBehaviour { [SerializeField] int enemyLayer=6; [SerializeField] int doorLayer=7; void Awake(){for(int a=0;a<32;a++)for(int b=0;b<32;b++)Physics2D.IgnoreLayerCollision(a,b,true);Physics2D.IgnoreLayerCollision(enemyLayer,doorLayer,false);}}}
