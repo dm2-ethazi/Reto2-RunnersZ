@@ -1,8 +1,8 @@
 name: backend
 
 on:
+  # El pliego (§4.12) exige que los tests se ejecuten en cada push.
   push:
-    branches: [main, develop]
   pull_request:
 
 jobs:
