@@ -11,6 +11,7 @@ namespace RunnersZ.Editor {
   const string Package="com.runnersz.game";
   const string Scene="Assets/Scenes/Game.unity";
   const string Apk="Builds/Android/RunnersZ.apk";
+  const string Icon="Assets/Art/app-icon.png";
 
   [MenuItem("RunnersZ/Configure Android")]
   public static void Configure(){
@@ -33,8 +34,31 @@ namespace RunnersZ.Editor {
    // OpenGL ES 3 evita los fallos de IMGUI con Vulkan en moviles modestos.
    PlayerSettings.SetUseDefaultGraphicsAPIs(BuildTarget.Android,false);
    PlayerSettings.SetGraphicsAPIs(BuildTarget.Android,new[]{GraphicsDeviceType.OpenGLES3});
+   ApplyIcon();
    AssetDatabase.SaveAssets();
    Debug.Log("ANDROID_CONFIG_OK package="+Package+" orientation=Landscape ARM64/IL2CPP GLES3");
+  }
+
+  // El icono del juego sale del PNG de Assets/Art: se importa sin mipmaps y se asigna a Android y
+  // a Windows, de modo que el APK y el ejecutable comparten la misma imagen.
+  [MenuItem("RunnersZ/Apply app icon")]
+  public static void ApplyIcon(){
+   var importer=AssetImporter.GetAtPath(Icon) as TextureImporter;
+   if(importer!=null){
+    importer.textureType=TextureImporterType.Default;
+    importer.alphaIsTransparency=true;
+    importer.mipmapEnabled=false;
+    importer.npotScale=TextureImporterNPOTScale.None;
+    importer.maxTextureSize=2048;
+    importer.isReadable=false;
+    importer.SaveAndReimport();
+   }
+   var icon=AssetDatabase.LoadAssetAtPath<Texture2D>(Icon);
+   if(icon==null)throw new System.Exception("No se encontro el icono "+Icon);
+   PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Android,new[]{icon});
+   PlayerSettings.SetIconsForTargetGroup(BuildTargetGroup.Standalone,new[]{icon});
+   AssetDatabase.SaveAssets();
+   Debug.Log("ICON_OK "+Icon+" "+icon.width+"x"+icon.height);
   }
 
   [MenuItem("RunnersZ/Build Android APK")]
