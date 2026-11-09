@@ -1,3 +1,61 @@
+# Hook de pre-commit y pre-push del backend (§11.4 del contrato).
+# Instalación: uv run pre-commit install --hook-type pre-commit --hook-type pre-push
+default_language_version:
+  python: python3.12
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, develop]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/PyCQA/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+
+  - repo: local
+    hooks:
+      # Tests rápidos en cada commit, sin cobertura, para no ralentizar el ciclo.
+      - id: pytest-rapido
+        name: pytest (sin cobertura)
+        entry: uv run pytest --no-cov -q -x
+        language: system
+        files: \.py$
+        pass_filenames: false
+
+      # Cobertura bloqueante antes de publicar, tal como exige §11.2.
+      - id: pytest-cobertura
+        name: pytest con cobertura mínima del 80 %
+        entry: uv run pytest
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+        always_run: true
+
+      # Bloqueo de push directo a main y develop leyendo la rama remota.
+      - id: bloqueo-ramas-protegidas
+        name: Bloquea el push a main y develop
+        entry: python -c "import os, sys; sys.exit(1 if os.environ.get('PRE_COMMIT_REMOTE_BRANCH') in ('main', 'develop') else 0)"
+        language: system
+        stages: [pre-push]
+        pass_filenames: false
+        always_run: true
 minimum_pre_commit_version: '4.0.1'
 default_install_hook_types: [pre-commit, pre-push, commit-msg]
 repos:

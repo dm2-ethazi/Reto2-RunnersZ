@@ -38,6 +38,7 @@ unity/Recordings/
 unity/UserSettings/
 unity/*.csproj
 unity/*.sln
+unity/.utmp/
 
 # Sistema y editores
 Thumbs.db
