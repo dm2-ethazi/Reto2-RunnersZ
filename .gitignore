@@ -22,8 +22,6 @@ target/
 .kotlin/
 local.properties
 *.apk
-# Los binarios de entrega sí se versionan en release/ (ver README).
-!release/*.apk
 *.aab
 *.jks
 *.keystore
