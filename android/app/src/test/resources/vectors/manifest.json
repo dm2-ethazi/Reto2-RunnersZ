@@ -1,0 +1,26 @@
+{
+  "format": "HGAE v1",
+  "password": "RunnersZ-ñ-🔐",
+  "vectors": {
+    "empty": {
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "one": {
+      "size": 1,
+      "sha256": "bbeebd879e1dff6918546dc0c179fdde505f2a21591c9a9c96e36b054ec5af83"
+    },
+    "boundary": {
+      "size": 1048576,
+      "sha256": "fbbab289f7f94b25736c58be46a994c441fd02552cc6022352e3d86d2fab7c83"
+    },
+    "multi": {
+      "size": 1048577,
+      "sha256": "28e53c6d6255c166237723b8cfe834732d50f25dbc81396be5203e0f587b3c45"
+    },
+    "image": {
+      "size": 70,
+      "sha256": "4ff6ab670a58c14270e034e2090d9a432caa263a14e0a25785386b0c12f880b5"
+    }
+  }
+}

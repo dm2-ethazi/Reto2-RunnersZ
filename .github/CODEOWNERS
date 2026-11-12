@@ -1,6 +1,5 @@
-# Propiedad de ficheros (protocolo C.3 de docs/WORKFLOW.md).
-# Cada ruta la revisa su dueño. Nota: @alain8123 debe sustituirse por el
-# usuario real de Alain en GitHub (PENDIENTE-HUMANO hasta confirmarlo).
+# Propiedad de ficheros del repositorio; contrato y normas fuera del árbol Git.
+# Se conservan los usuarios ya configurados: @jairoben y @alain8123.
 
 # Alain (A): servidor, escritorio, CI y documentacion transversal
 /backend/                         @jairoben @alain8123
@@ -10,42 +9,17 @@
 /.github/workflows/desktop.yml    @jairoben @alain8123
 /.github/workflows/docker.yml     @jairoben @alain8123
 /.pre-commit-config.yaml          @jairoben @alain8123
-/.actrc                           @jairoben @alain8123
 /.github/CODEOWNERS               @jairoben @alain8123
 /.github/ISSUE_TEMPLATE/          @jairoben @alain8123
 /.github/pull_request_template.md @jairoben @alain8123
 /.gitignore                       @jairoben @alain8123
 /.gitattributes                   @jairoben @alain8123
 /README.md                        @jairoben @alain8123
-/docs/WORKFLOW.md                 @jairoben @alain8123
-/docs/api-contract.md             @jairoben @alain8123
-/docs/openapi.json                @jairoben @alain8123
-/docs/formato-enc-v2.md           @jairoben @alain8123
-/docs/vectors/                    @jairoben @alain8123
-/docs/decisiones.md               @jairoben @alain8123
-/docs/auditoria-v1-a-v2.md        @jairoben @alain8123
-/docs/planificacion/indice-issues.md            @jairoben @alain8123
-/docs/plan-de-pruebas/README.md                 @jairoben @alain8123
-/docs/plan-de-pruebas/servidor-escritorio.md    @jairoben @alain8123
-/docs/evidencias/                 @jairoben @alain8123
-/docs/manual-instalacion-servidor.md            @jairoben @alain8123
-/docs/manual-uso-escritorio.md                  @jairoben @alain8123
-/docs/demo.md                     @jairoben @alain8123
 
 # Jairo (J): Android, Unity y su documentacion
 /android/                         @jairoben
 /unity/                           @jairoben
 /.github/workflows/android.yml    @jairoben
 /.github/workflows/unity.yml      @jairoben
-/scripts/check_unity_coverage.py  @jairoben
-/docs/decisiones-android-unity.md @jairoben
-/docs/plan-de-pruebas/android-unity.md         @jairoben
-/docs/evidencias/android/          @jairoben
-/docs/evidencias/unity/            @jairoben
-/docs/manual-uso-android.md        @jairoben
-/docs/manual-uso-unity.md          @jairoben
-/docs/entregables/                 @jairoben
 
-# Solo el humano (cambios de contrato = decision de ambos)
-/docs/contrato/                   @jairoben @alain8123
-/docs/prompts/                    @jairoben @alain8123
+# Los cambios de contrato se acuerdan con ambos responsables y se documentan fuera del repositorio.

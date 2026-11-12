@@ -1,0 +1,375 @@
+/*
+ * RunnersZ · hoja de estilos del cliente de escritorio.
+ * Paleta del contrato (§9.1): azul noche #1B2A41, pergamino #E8DCC6, oro #C9A96A,
+ * piedra #2E2E33 y madera antigua #4A3520. Tipografías empaquetadas Inter y Open Sans (§9.2).
+ *
+ * Tamaños (§9.2): la base del cuerpo es 16 px, que son exactamente 12 pt. El resto se declara en
+ * em sobre esa base para que toda la interfaz se reescale cambiando un solo valor:
+ *   marca          1,875 em  = 30 px ≈ 22,5 pt
+ *   títulos        1,6875 em = 27 px ≈ 20,25 pt   (mínimo 20 pt)
+ *   cuerpo/ayudas  1 em      = 16 px = 12 pt      (mínimo 12 pt)
+ *   monoespaciada  1,1875 em = 19 px ≈ 14,25 pt   (mínimo 14 pt)
+ * Los em están elegidos para dar píxeles enteros: con 20 pt (26,67 px) o 14 pt (18,67 px) el texto
+ * cae en posiciones fraccionarias y se ve pixelado en pantallas con escalado.
+ * Los #DDD0B0 de los botones secundarios son un tono derivado del pergamino (#E8DCC6): #1B2A41
+ * sobre #DDD0B0 da ≈ 9:1 de contraste.
+ */
+
+.root {
+    -rz-navy: #1B2A41;
+    -rz-parchment: #E8DCC6;
+    -rz-gold: #C9A96A;
+    -rz-stone: #2E2E33;
+    -rz-wood: #4A3520;
+    -rz-surface: #FBF6EA;
+    -rz-surface-strong: #FFFDF8;
+    -rz-muted: #5B5140;
+    -rz-border: #C8B896;
+    -rz-success: #2F6B4F;
+    -rz-danger: #8C2F2F;
+    -rz-mono: "Consolas", "DejaVu Sans Mono", "Liberation Mono", monospace;
+
+    -fx-font-family: "Inter";
+    -fx-font-size: 16px;
+    -fx-text-fill: -rz-stone;
+    -fx-font-smoothing-type: gray;
+}
+
+.app-root { -fx-background-color: -rz-parchment; }
+
+/* ---------------------------------------------------------------- cabecera */
+
+.header {
+    -fx-background-color: linear-gradient(to bottom, #1B2A41 0%, #223354 100%);
+    -fx-padding: 20 30 18 30;
+    -fx-border-color: transparent transparent -rz-gold transparent;
+    -fx-border-width: 0 0 2 0;
+}
+.brand {
+    -fx-text-fill: #F6EFDE;
+    -fx-font-family: "Inter";
+    -fx-font-weight: 800;
+    -fx-font-size: 1.875em;
+}
+.eyebrow {
+    -fx-text-fill: -rz-gold;
+    -fx-font-family: "Inter";
+    -fx-font-weight: 600;
+    -fx-font-size: 1em;
+}
+.chip {
+    -fx-background-radius: 999;
+    -fx-padding: 5 12;
+    -fx-font-size: 1em;
+    -fx-font-weight: 600;
+}
+.chip-ok { -fx-background-color: #2F6B4F; -fx-text-fill: #F2F7EF; }
+.chip-ko { -fx-background-color: #4A3520; -fx-text-fill: #F0E3C8; }
+.chip-error { -fx-background-color: #8C2F2F; -fx-text-fill: #FBEDED; }
+
+.ghost-button {
+    -fx-background-color: transparent;
+    -fx-border-color: -rz-gold;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-text-fill: #F6EFDE;
+    -fx-font-weight: 600;
+    -fx-padding: 7 16;
+    -fx-cursor: hand;
+}
+.ghost-button:hover { -fx-background-color: #2A3C58; }
+
+/* ------------------------------------------------------------------ pestañas */
+
+.main-tabs { -fx-background-color: -rz-parchment; }
+.main-tabs > .tab-header-area { -fx-padding: 0 22 0 22; }
+.main-tabs > .tab-header-area > .tab-header-background { -fx-background-color: -rz-navy; }
+.main-tabs .tab {
+    -fx-background-color: transparent;
+    -fx-padding: 9 20;
+    -fx-background-radius: 8 8 0 0;
+}
+.main-tabs .tab .tab-label {
+    -fx-text-fill: #E7DECB;
+    -fx-font-weight: 600;
+    -fx-font-size: 1em;
+}
+.main-tabs .tab:hover .tab-label { -fx-text-fill: #FFFFFF; }
+.main-tabs .tab:selected { -fx-background-color: -rz-parchment; }
+.main-tabs .tab:selected .tab-label { -fx-text-fill: -rz-navy; -fx-font-weight: 700; }
+.main-tabs > .tab-header-area .headers-region .tab:selected .focus-indicator {
+    -fx-border-color: transparent;
+}
+
+/* Desplazamiento con la paleta de la página: carril claro, pulgar dorado y sin flechas, para que
+ * el formulario largo se lea igual que el resto de la tarjeta. */
+.content-scroll, .content-scroll > .viewport, .content-scroll > .corner {
+    -fx-background-color: -rz-parchment;
+    -fx-background: -rz-parchment;
+    -fx-background-insets: 0;
+}
+.content-scroll { -fx-padding: 0; -fx-background-insets: 0; -fx-border-color: transparent; }
+.content-scroll:focused { -fx-background-insets: 0; -fx-background-color: -rz-parchment; }
+.scroll-bar:vertical { -fx-pref-width: 13px; -fx-padding: 0 2 0 0; -fx-background-color: transparent; }
+.scroll-bar:horizontal { -fx-background-color: transparent; }
+.scroll-bar .track {
+    -fx-background-color: #E1D3B4;
+    -fx-background-radius: 999;
+    -fx-background-insets: 1 2 1 2;
+    -fx-border-color: transparent;
+}
+.scroll-bar .thumb {
+    -fx-background-color: -rz-gold;
+    -fx-background-radius: 999;
+    -fx-background-insets: 2 3 2 3;
+}
+.scroll-bar .thumb:hover { -fx-background-color: #D8BC82; }
+.scroll-bar .thumb:pressed { -fx-background-color: #B7944F; }
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-background-color: transparent;
+    -fx-pref-height: 0;
+    -fx-pref-width: 0;
+    -fx-padding: 0;
+}
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow { -fx-shape: " "; -fx-padding: 0; }
+.content { -fx-padding: 24 30 28 30; -fx-background-color: -rz-parchment; }
+
+/* ------------------------------------------------------------------ tipografía */
+
+.section-title {
+    -fx-text-fill: -rz-navy;
+    -fx-font-family: "Inter";
+    -fx-font-weight: 800;
+    -fx-font-size: 1.6875em;
+}
+.muted, .helper {
+    -fx-font-family: "Open Sans";
+    -fx-text-fill: -rz-muted;
+    -fx-font-size: 1em;
+}
+.helper { -fx-font-size: 1em; }
+.field-label {
+    -fx-text-fill: -rz-navy;
+    -fx-font-family: "Inter";
+    -fx-font-weight: 700;
+    -fx-font-size: 1em;
+}
+.drop-hint {
+    -fx-text-fill: -rz-wood;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: 1em;
+    -fx-border-color: -rz-border;
+    -fx-border-style: segments(6, 6);
+    -fx-border-radius: 6;
+    -fx-padding: 8 10;
+}
+.valid { -fx-text-fill: -rz-success; }
+.invalid { -fx-text-fill: -rz-danger; }
+.mono { -fx-font-family: -rz-mono; -fx-font-size: 1.1875em; }
+
+/* ------------------------------------------------------------------- tarjetas */
+
+.card {
+    -fx-background-color: -rz-surface-strong;
+    -fx-background-radius: 10;
+    -fx-border-color: -rz-border;
+    -fx-border-radius: 10;
+    -fx-padding: 20 22;
+    -fx-effect: dropshadow(gaussian, rgba(27, 42, 65, 0.08), 10, 0, 0, 2);
+}
+.card-drop {
+    -fx-border-color: -rz-gold;
+    -fx-border-width: 2;
+    -fx-border-style: solid;
+    -fx-background-color: #FFF8E7;
+}
+
+/* -------------------------------------------------------------- campos de texto */
+
+.text-field, .password-field, .text-area, .spinner {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #B6A583;
+    -fx-border-radius: 6;
+    -fx-background-radius: 6;
+    -fx-text-fill: -rz-stone;
+    -fx-prompt-text-fill: #857A66;
+    -fx-padding: 8 10;
+    -fx-font-family: "Open Sans";
+}
+.text-area { -fx-padding: 2; }
+.text-area .content { -fx-background-color: #FFFFFF; -fx-padding: 8; }
+.text-area:focused, .text-field:focused, .password-field:focused, .spinner:focused {
+    -fx-border-color: -rz-gold;
+    -fx-border-width: 2;
+}
+.text-field:disabled, .password-field:disabled, .text-area:disabled { -fx-opacity: 1; }
+.mono .content, .mono { -fx-font-family: -rz-mono; }
+.text-input:readonly { -fx-background-color: #F4EEE1; }
+
+/* --------------------------------------------------------------------- botones */
+
+.button, .toggle-button {
+    -fx-background-color: #DDD0B0;
+    -fx-background-radius: 6;
+    -fx-border-color: #A8926B;
+    -fx-border-radius: 6;
+    -fx-border-width: 1;
+    -fx-graphic-text-gap: 8;
+    -fx-text-fill: -rz-navy;
+    -fx-font-family: "Inter";
+    -fx-font-weight: 600;
+    -fx-font-size: 1em;
+    -fx-padding: 8 16;
+    -fx-min-height: 34px;
+    -fx-cursor: hand;
+}
+.button:hover, .toggle-button:hover { -fx-background-color: #D3C4A0; }
+.button:pressed, .toggle-button:selected { -fx-background-color: #C9B892; }
+.button .font-icon, .toggle-button .font-icon { -fx-icon-color: -rz-navy; }
+.button:disabled { -fx-opacity: 0.5; }
+.button:focused, .toggle-button:focused {
+    -fx-border-color: -rz-navy;
+    -fx-border-radius: 6;
+    -fx-border-width: 2;
+}
+.primary-button {
+    -fx-background-color: -rz-gold;
+    -fx-text-fill: #23282B;
+    -fx-font-weight: 700;
+}
+.primary-button:hover { -fx-background-color: #D8BC82; }
+.primary-button:pressed { -fx-background-color: #C2A468; }
+.primary-button .font-icon { -fx-icon-color: #23282B; }
+
+/* Ojo de los campos con clave: solo icono, cuadrado como el botón «?» de la cabecera, para que
+ * quede a la derecha del campo sin robarle ancho ni cambiar de tamaño al alternar. */
+.reveal-button {
+    -fx-padding: 1 0;
+    -fx-graphic-text-gap: 0;
+    -fx-min-width: 36px;
+    -fx-max-width: 36px;
+    -fx-min-height: 36px;
+    -fx-max-height: 36px;
+}
+.reveal-button .font-icon { -fx-icon-color: -rz-navy; }
+
+/* ---------------------------------------------------------------- pie de página */
+
+.footer-box { -fx-background-color: #DCCFB2; }
+.toast {
+    -fx-background-color: #FFF8E7;
+    -fx-border-color: transparent transparent transparent -rz-gold;
+    -fx-border-width: 0 0 0 4;
+    -fx-text-fill: -rz-navy;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: 1em;
+    -fx-padding: 9 14;
+}
+.footer {
+    -fx-background-color: #DCCFB2;
+    -fx-border-color: #C1AE87 transparent transparent transparent;
+    -fx-border-width: 1 0 0 0;
+    -fx-padding: 9 24;
+}
+.status-text {
+    -fx-text-fill: -rz-navy;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: 1em;
+}
+.progress-label {
+    -fx-text-fill: -rz-wood;
+    -fx-font-family: -rz-mono;
+    -fx-font-size: 1em;
+}
+.progress-bar > .track {
+    -fx-background-color: #C3B08B;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+}
+.progress-bar > .bar {
+    -fx-background-color: -rz-gold;
+    -fx-background-radius: 999;
+    -fx-background-insets: 0;
+    -fx-padding: 6;
+}
+.progress-indicator { -fx-progress-color: -rz-gold; }
+
+/* ------------------------------------------------------------------ ayuda */
+
+/* Ayuda emergente: vive en una ventana aparte, así que no hereda la base del .root. */
+.tooltip {
+    -fx-background-color: -rz-navy;
+    -fx-text-fill: #F6EFDE;
+    -fx-font-family: "Open Sans";
+    -fx-font-size: 16px;
+    -fx-background-radius: 6;
+    -fx-padding: 6 10;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.28), 8, 0, 0, 2);
+}
+
+/* ---------------------------------------------------------------- diálogos */
+
+.dialog-pane { -fx-background-color: -rz-parchment; }
+.dialog-pane .header-panel { -fx-background-color: #DCCFB2; }
+.dialog-pane .header-panel .label {
+    -fx-text-fill: -rz-navy;
+    -fx-font-family: "Inter";
+    -fx-font-weight: 700;
+}
+.dialog-pane .label { -fx-text-fill: -rz-stone; -fx-font-family: "Open Sans"; }
+.dialog-pane .button { -fx-min-height: 34px; }
+
+/* ------------------------------------------- barra de desplazamiento (César) */
+
+.shift-slider .track {
+    -fx-background-color: #C3B08B;
+    -fx-background-radius: 4;
+}
+.shift-slider .thumb {
+    -fx-background-color: -rz-gold;
+    -fx-background-radius: 6;
+}
+.shift-slider .thumb:hover { -fx-background-color: #D8BC82; }
+.shift-value {
+    -fx-background-color: -rz-navy;
+    -fx-text-fill: #F6EFDE;
+    -fx-background-radius: 6;
+    -fx-font-family: -rz-mono;
+    -fx-font-weight: 700;
+    -fx-font-size: 1.1875em;
+    -fx-padding: 4 10;
+    -fx-alignment: center;
+}
+
+/* ------------------------------------------------------------ ayuda y atajos */
+
+/* Botón «?» de la cabecera: hereda colores, borde y estados de .button y solo cambia la forma
+ * (redondo) y el tamaño, para que ocupe lo mismo que Ajustes sin crecer.
+ * El radio es 17 px, la mitad de los 34 px de lado: con un valor mayor JavaFX escala las esquinas
+ * y el botón se dibuja como un octógono en lugar de un círculo. */
+.help-button {
+    -fx-background-radius: 17px;
+    -fx-border-radius: 17px;
+    -fx-padding: 1 9;
+    -fx-min-width: 34px;
+    -fx-max-width: 34px;
+    -fx-min-height: 34px;
+    -fx-max-height: 34px;
+}
+
+/* El diálogo pinta sus etiquetas con Open Sans; estos dos estilos lo ajustan. */
+.dialog-pane .help-heading {
+    -fx-text-fill: -rz-navy;
+    -fx-font-family: "Inter";
+    -fx-font-weight: 700;
+    -fx-font-size: 1.125em;
+}
+.dialog-pane .shortcut-keys {
+    -fx-background-color: #E5D9BF;
+    -fx-background-radius: 5;
+    -fx-border-color: #C8B896;
+    -fx-border-radius: 5;
+    -fx-font-family: -rz-mono;
+    -fx-text-fill: -rz-navy;
+    -fx-padding: 2 8;
+}

@@ -1,0 +1,9 @@
+<resources>
+    <dimen name="screen_padding_horizontal">20dp</dimen>
+    <dimen name="screen_padding_vertical">20dp</dimen>
+    <dimen name="header_padding_horizontal">20dp</dimen>
+    <dimen name="header_padding_vertical">16dp</dimen>
+    <dimen name="header_title_size">26sp</dimen>
+    <dimen name="bottom_nav_height">64dp</dimen>
+    <dimen name="image_preview_height">240dp</dimen>
+</resources>

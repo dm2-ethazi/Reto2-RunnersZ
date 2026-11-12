@@ -1,0 +1,17 @@
+<resources>
+    <color name="navy">#1B2A41</color>
+    <color name="navy_dark">#121E2E</color>
+    <color name="navy_light">#2A3A52</color>
+    <color name="gold">#C9A96A</color>
+    <color name="gold_dark">#B39150</color>
+    <color name="cream">#F0E4D0</color>
+    <color name="cream_dark">#E3D2B8</color>
+    <color name="white">#FFFFFF</color>
+    <color name="ink">#1B2A41</color>
+    <color name="muted">#6D6355</color>
+    <color name="header_muted">#D8DEE8</color>
+    <color name="nav_inactive">#8FA0B5</color>
+    <color name="green">#1F8F62</color>
+    <color name="red">#B23A32</color>
+    <color name="white_12">#1FFFFFFF</color>
+</resources>

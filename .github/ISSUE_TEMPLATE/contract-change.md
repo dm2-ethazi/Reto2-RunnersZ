@@ -1,6 +1,6 @@
 ---
 name: Cambio de contrato
-about: Propuesta de cambio de API, formato .enc o códigos de error (protocolo C.9)
+about: Propuesta de cambio de API, formato .enc o códigos de error (contrato externo)
 title: "[contract-change] "
 labels: contract-change
 assignees: ''
@@ -8,7 +8,7 @@ assignees: ''
 
 ## Qué cambia
 
-<!-- docs/api-contract.md, formato `.enc`, códigos de error… -->
+<!-- Cita el apartado del contrato externo: API, formato .enc o códigos de error. -->
 
 ## Por qué
 
