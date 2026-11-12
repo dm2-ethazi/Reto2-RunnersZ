@@ -10,7 +10,11 @@
 
 Se conservan los responsables existentes y las plantillas; se retiran rutas
 de documentación antigua que ya no pertenece al repositorio.
-`workflows/` contiene solo un marcador y no ejecuta CI.
+`workflows/` contiene `backend.yml` (ruff, isort y pytest con cobertura) y
+`desktop.yml` (Maven con Xvfb, informe JaCoCo y fat JAR).
+Este fichero se llama `COLABORACION.md` a propósito: GitHub elige antes un
+`README.md` de `.github/` que el de la raíz, y la portada del repositorio debe
+ser el `README.md` raíz.
 
 ## Qué utiliza
 

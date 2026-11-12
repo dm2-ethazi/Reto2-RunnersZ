@@ -26,7 +26,7 @@ El pliego, el contrato técnico v2.0 y las normas del equipo se mantienen fuera 
 | `android/` | Proyecto Gradle de CipherSprint (`app/`), tests y capturas en `docs/` | [`android/README.md`](android/README.md) |
 | `unity/` | Proyecto Unity 6000.3.24f1: escena, scripts, tests y builds | [`unity/README.md`](unity/README.md) |
 | `scripts/` | `board.py` (tablero), `check_branch.py`, `check_commit_message.py`, `generate_vectors.py` | [`scripts/README.md`](scripts/README.md) |
-| `.github/` | `CODEOWNERS`, plantillas de issue y PR, workflows `backend.yml` y `desktop.yml` | [`.github/README.md`](.github/README.md) |
+| `.github/` | `CODEOWNERS`, plantillas de issue y PR, workflows `backend.yml` y `desktop.yml` | [`.github/COLABORACION.md`](.github/COLABORACION.md) |
 
 ## Cómo arrancar cada pieza
 
