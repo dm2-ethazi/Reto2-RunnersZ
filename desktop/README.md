@@ -8,8 +8,8 @@ la lógica vive en el servidor (§3 del contrato).
 
 - JDK 21 (Temurin 21.0.x probado).
 - Maven 3.9 o el wrapper incluido (`./mvnw`).
-- Sin dependencias nativas que instalar aparte: el fat JAR lleva dentro las de JavaFX, así que
-  solo hay que generarlo una vez en cada sistema (Windows o Linux) y ejecutarlo con JDK 21.
+- Sin dependencias nativas que instalar aparte: el fat JAR lleva dentro las de JavaFX de Windows y
+  de Linux, así que **el mismo fichero** se ejecuta en los dos sistemas con JDK 21.
 
 ## Compilación y pruebas
 
@@ -17,31 +17,32 @@ la lógica vive en el servidor (§3 del contrato).
 cd desktop
 ./mvnw clean verify        # compila, ejecuta JUnit 5 y aplica el umbral JaCoCo del 80 %
 ./mvnw javafx:run          # abre la aplicación desde el código fuente
-./mvnw package             # genera el fat JAR del sistema actual
-java -jar target/runnersz-desktop-win.jar     # Windows
-java -jar target/runnersz-desktop-linux.jar   # Linux (Debian/Ubuntu)
+./mvnw package             # genera el fat JAR único para Windows y Linux
+java -jar target/runnersz-desktop.jar         # Windows o Linux (Debian/Ubuntu)
 ```
 
-### Exportación para Windows y Linux
+### Exportación: un solo fat JAR para Windows y Linux
 
 El pliego (§4.8) pide **la misma aplicación para Windows y para Linux, cambiando solo la
-exportación**: el código es idéntico porque JavaFX lleva sus nativos dentro del JAR y cada sistema
-necesita los suyos. El `pom.xml` los elige con la propiedad `javafx.platform` (`win` por omisión,
-`linux` en Linux y `mac` en macOS) y el fat JAR toma ese sufijo en el nombre:
+exportación**: el código es idéntico porque JavaFX lleva sus nativos dentro del JAR. El `pom.xml`
+mete en un único artefacto los nativos de los dos sistemas, de modo que el mismo fichero arranca en
+ambos:
 
-| Sistema | Comando | Artefacto |
-|---|---|---|
-| Windows | `./mvnw -B package` | `target/runnersz-desktop-win.jar` |
-| Linux (Debian/Ubuntu) | `./mvnw -B package` en Linux | `target/runnersz-desktop-linux.jar` |
-| Linux desde Windows o macOS | `./mvnw -B package -Djavafx.platform=linux` | `target/runnersz-desktop-linux.jar` |
+| Comando | Artefacto |
+|---|---|
+| `./mvnw -B package` (en cualquier sistema) | `target/runnersz-desktop.jar` |
 
-Los dos artefactos arrancan con `java -jar` y JDK 21. Para comprobar que cada uno lleva los
-nativos de su sistema:
+Para comprobar que lleva los nativos de las dos plataformas:
 
 ```bash
-unzip -l target/runnersz-desktop-win.jar   | grep -c '\.dll$'   # 54
-unzip -l target/runnersz-desktop-linux.jar | grep -c '\.so$'    # 10
+unzip -l target/runnersz-desktop.jar | grep -c '\.dll$'   # 54 (Windows)
+unzip -l target/runnersz-desktop.jar | grep -c '\.so$'    # 10 (Linux)
 ```
+
+Las clases comunes de los dos clasificadores de JavaFX son idénticas byte a byte; cada plataforma
+solo añade lo suyo (en Windows `glass/ui/win` y `prism/d3d`, en Linux `glass/ui/gtk` y `prism/es2` con
+sus shaders), y el `pom.xml` copia del JAR de Linux únicamente esos paquetes y los `.so`, sin
+duplicar entradas. JavaFX carga en tiempo de ejecución los nativos de su sistema.
 
 En Linux hace falta un entorno gráfico con GTK 3 (`libgtk-3-0`) y fontconfig, que es lo que el
 contrato llama «Linux Debian/Ubuntu con entorno gráfico». El JDK 21 no trae JavaFX: por eso el JAR

@@ -12,26 +12,79 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javafx.version>21.0.5</javafx.version>
         <ikonli.version>12.4.0</ikonli.version>
-        <!-- Plataforma de la exportacion. Se elige sola segun el sistema donde se compila y se
-             puede forzar con -Djavafx.platform=linux para generar el fat JAR del otro sistema
-             desde cualquier maquina: el codigo es el mismo, solo cambian los nativos. -->
-        <javafx.platform>win</javafx.platform>
-        <desktop.platform>${javafx.platform}</desktop.platform>
         <junit.version>5.11.4</junit.version>
         <slf4j.version>2.0.13</slf4j.version>
         <logback.version>1.5.6</logback.version>
         <jacoco.version>0.8.12</jacoco.version>
     </properties>
     <dependencies>
+        <!-- Un unico fat JAR para Windows y Linux. Los JAR sin clasificador de OpenJFX son cascarones
+             sin clases: todo esta en el artefacto con clasificador. De base, controls, fxml y de
+             graphics se toma el de Windows; de graphics se anade ademas el de Linux, del que el
+             empaquetado copia solo lo que no existe en el de Windows (nativos .so y sus clases y
+             shaders propios). Las clases comunes de los dos clasificadores son identicas byte a byte,
+             asi que no se duplica ninguna: JavaFX carga en ejecucion los nativos de su sistema.
+             Se excluyen los org.openjfx transitivos para que el JAR salga igual en cualquier maquina
+             y no arrastre los nativos del sistema donde se compila. -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>win</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>win</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+            <classifier>linux</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>${javafx.version}</version>
+            <classifier>win</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
+            <classifier>win</classifier>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.kordamp.ikonli</groupId>
@@ -61,8 +114,8 @@
         </dependency>
     </dependencies>
     <build>
-        <!-- El nombre del fat JAR dice para que sistema es: no se pueden confundir los artefactos. -->
-        <finalName>runnersz-desktop-${desktop.platform}</finalName>
+        <!-- Un unico fat JAR para Windows y Linux: el mismo fichero arranca en los dos sistemas. -->
+        <finalName>runnersz-desktop</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -153,6 +206,18 @@
                                         <exclude>META-INF/*.RSA</exclude>
                                     </excludes>
                                 </filter>
+                                <!-- Del JAR de Linux solo entra lo que no existe en el de Windows: los
+                                     nativos .so, las clases de GTK y el pipeline ES2 con sus shaders.
+                                     El resto (clases comunes) es identico y ya viene del de Windows. -->
+                                <filter>
+                                    <artifact>org.openjfx:javafx-graphics:jar:linux</artifact>
+                                    <includes>
+                                        <include>*.so</include>
+                                        <include>com/sun/glass/ui/gtk/**</include>
+                                        <include>com/sun/prism/es2/**</include>
+                                        <include>com/sun/scenario/effect/impl/es2/**</include>
+                                    </includes>
+                                </filter>
                             </filters>
                             <transformers>
                                 <!-- Conserva META-INF/services: sin esto el fat JAR pierde el proveedor de SLF4J. -->
@@ -167,29 +232,5 @@
             </plugin>
         </plugins>
     </build>
-    <profiles>
-        <!-- En Linux la exportacion usa los nativos linux del propio JavaFX; en Windows, win. -->
-        <profile>
-            <id>linux</id>
-            <activation>
-                <os>
-                    <name>Linux</name>
-                </os>
-            </activation>
-            <properties>
-                <javafx.platform>linux</javafx.platform>
-            </properties>
-        </profile>
-        <profile>
-            <id>macos</id>
-            <activation>
-                <os>
-                    <family>mac</family>
-                </os>
-            </activation>
-            <properties>
-                <javafx.platform>mac</javafx.platform>
-            </properties>
-        </profile>
-    </profiles>
+
 </project>

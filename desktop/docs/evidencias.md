@@ -67,23 +67,22 @@ cubierto por pruebas que se ejecutan en cada `mvn verify`.
 ## 3. Empaquetado
 
 ```bash
-./mvnw -B package                       # fat JAR del sistema actual
-java -jar target/runnersz-desktop-win.jar     # Windows
-java -jar target/runnersz-desktop-linux.jar   # Linux (Debian/Ubuntu)
+./mvnw -B package                       # fat JAR único para Windows y Linux
+java -jar target/runnersz-desktop.jar   # Windows o Linux (Debian/Ubuntu)
 ```
 
-El mismo `pom.xml` exporta los dos artefactos: la propiedad `javafx.platform` elige los nativos
-(`win` por omisión, `linux` en Linux o con `-Djavafx.platform=linux`) y el nombre del JAR lo deja
-a la vista. Comprobación de que cada uno lleva lo suyo:
+El `pom.xml` genera **un solo artefacto** con los nativos de los dos sistemas: JavaFX los elige en
+tiempo de ejecución. Comprobación de que lleva los de ambos:
 
 ```bash
-unzip -l target/runnersz-desktop-win.jar   | grep -c '\.dll$'   # 54
-unzip -l target/runnersz-desktop-linux.jar | grep -c '\.so$'    # 10
+unzip -l target/runnersz-desktop.jar | grep -c '\.dll$'   # 54
+unzip -l target/runnersz-desktop.jar | grep -c '\.so$'    # 10
 ```
 
-- `target/runnersz-desktop-win.jar` ≈ 11,6 MiB con 54 `.dll` de JavaFX y 0 `.so`.
-- `target/runnersz-desktop-linux.jar` ≈ 10,4 MiB con 10 `.so` (`glass`, GTK 3, prisma, fuentes) y
-  0 `.dll`.
+- `target/runnersz-desktop.jar` ≈ 13,4 MiB con 54 `.dll` de JavaFX y 10 `.so` (`glass`, GTK 3,
+  prisma, fuentes), sin entradas duplicadas.
+- Las clases comunes de los dos clasificadores son idénticas byte a byte; del JAR de Linux solo se
+  copian sus paquetes propios (`glass/ui/gtk`, `prism/es2` con sus shaders) y los `.so`.
 - Sin rutas absolutas de Windows ni lecturas de `os.name` en el código (`grep -rn "C:\\\\" src/main`).
 - La ventana se abre con el título «RunnersZ · Cliente de escritorio».
 

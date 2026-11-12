@@ -2,6 +2,8 @@
 
 Minijuego **autónomo** de descifrado César para **Windows y Android**. No consume la API del servidor: toda la lógica cabe en el propio juego.
 
+> 🐧 **¿Linux?** Los comandos equivalentes están en [14 · Ejecutar todo en Linux](14-Linux.md). El APK de Android se genera igual; el ejecutable de Windows requiere Windows.
+
 ---
 
 ## Antes de empezar

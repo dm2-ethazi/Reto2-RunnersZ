@@ -46,6 +46,8 @@ Sigue este orden. Cada paso enlaza a su página con los comandos exactos.
 
 **Si solo quieres ver algo funcionando ya:** el servidor público de la demo responde en `https://runnersz-api.onrender.com/api/v1/health`, y la app Android ya apunta a él. Puedes saltar al [uso de Android](08-Uso-android.md) e instalar el APK compilado.
 
+**¿Trabajas en Linux?** Los mismos pasos, con los comandos de Ubuntu/Debian (JDK 21, uv, Docker, SDK de Android y Unity), están en [14 · Ejecutar todo en Linux](14-Linux.md).
+
 ---
 
 ## 3. Índice completo
@@ -57,6 +59,7 @@ Sigue este orden. Cada paso enlaza a su página con los comandos exactos.
 - [03 · Instalación del cliente de escritorio](03-Instalacion-escritorio.md)
 - [04 · Instalación de la app Android](04-Instalacion-android.md)
 - [05 · Instalación del minijuego Unity](05-Instalacion-unity.md)
+- [14 · Ejecutar todo en Linux](14-Linux.md) — comandos para cada apartado en Ubuntu/Debian
 
 ### Uso
 
@@ -104,7 +107,7 @@ Datos verificados al escribir esta wiki (12 de noviembre de 2026):
 
 ## 5. Convenciones de esta wiki
 
-- Los comandos están en **PowerShell** salvo que se indique `Linux/macOS`.
+- Los comandos están en **PowerShell**; para Linux, usa los equivalentes de [14 · Ejecutar todo en Linux](14-Linux.md).
 - Sustituye lo que va entre `<>`: `<TU_TOKEN>`, `<IP_DEL_PC>`, `<ruta-del-repositorio>`.
 - Cada paso termina con una **comprobación** (✅) que dice qué debes ver. Si no lo ves, ve a [Problemas frecuentes](11-Problemas-frecuentes.md) antes de continuar.
 - Los enlaces a otras páginas son archivos `.md` relativos, así que funcionan igual en GitHub, en VS Code y en Obsidian.

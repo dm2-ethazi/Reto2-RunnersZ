@@ -4,6 +4,8 @@ El servidor concentra **toda** la criptografía: Vigenère, César y AES-256-GCM
 
 Tienes dos formas de arrancarlo. Empieza por la **A** (desarrollo y demo local); la **B** es el despliegue reproducible con Docker.
 
+> 🐧 **¿Linux?** Los comandos equivalentes están en [14 · Ejecutar todo en Linux](14-Linux.md).
+
 ---
 
 ## Antes de empezar
