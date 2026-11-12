@@ -146,7 +146,7 @@ Decisiones relevantes:
 
 ## Pruebas
 
-`./mvnw verify` ejecuta 64 pruebas JUnit 5 contra un servidor HTTP local (`StubApi`), sin Docker ni
+`./mvnw verify` ejecuta 83 pruebas JUnit 5 contra un servidor HTTP local (`StubApi`), sin Docker ni
 red externa:
 
 | Clase | Qué comprueba |

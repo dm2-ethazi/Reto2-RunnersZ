@@ -84,7 +84,7 @@ Los ejecutables se generan en `unity/Builds/` (Windows y Android) y no se versio
 | `backend/` | 62 pruebas, 0 fallos | 97,7 % (falla por debajo del 80 %) | Imagen Docker |
 | `desktop/` | 83 pruebas, 0 fallos | umbral 80 % en `mvn verify` | `target/runnersz-desktop.jar` |
 | `android/` | 19 pruebas en 6 suites, 0 fallos | no medida | APK firmado con clave debug |
-| `unity/` | 25 EditMode y 2 PlayMode, 0 fallos | no medida | Builds de Windows y Android |
+| `unity/` | 24 EditMode y 2 PlayMode, 0 fallos | no medida | Builds de Windows y Android |
 
 Límites conocidos, detallados en cada manual: el APK de Android y el de Unity no se han probado en
 un teléfono físico, el JAR de escritorio se ha ejecutado en Windows (falta la prueba en Linux con

@@ -48,7 +48,7 @@ ni Times New Roman, el texto serif usa la fuente incluida en Unity.
 
 ## Validacion del 5 de noviembre de 2026
 
-- EditMode: 25 pruebas aprobadas, 0 fallos. Cinco son nuevas y recorren nueve
+- EditMode: 24 pruebas aprobadas, 0 fallos. Cinco son nuevas y recorren nueve
   perfiles de pantalla (moviles 16:9 y 19.5:9 con notch, tablets 4:3, 21:9,
   escritorio y una densidad extrema) comprobando limites, area segura, solapes,
   tamano tactil en dp y que el lienzo llena la pantalla.

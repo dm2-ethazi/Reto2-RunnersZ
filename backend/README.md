@@ -6,7 +6,7 @@ contrato técnico v2 manda sobre cualquier decisión de implementación.
 
 ## Estado actual
 
-Rama: `feature/api`. PR: https://github.com/dm2-ethazi/Reto2-RunnersZ/pull/30.
+Rama: `feature/api`.
 
 El backend cubre los apartados 4.3, 4.4, 4.5, 4.7, 4.12 y 4.13 del pliego y las
 secciones 3, 5.3, 6, 7 y 11 del contrato: Vigenère, César, AES-256-GCM por
@@ -239,8 +239,7 @@ completo en memoria. Los temporales se borran en éxito y en error.
 
 Por indicación de Alain, **cada cambio de código, configuración o comportamiento
 debe actualizar este `backend/README.md` en el mismo commit**, con uso, decisiones,
-pruebas y pendientes afectados. El README de la raíz se mantiene vacío por petición
-expresa. No añadir funcionalidades fuera de contrato sin indicarlas al humano.
+pruebas y pendientes afectados. No añadir funcionalidades fuera de contrato sin indicarlas al humano.
 
 ## Historial
 
