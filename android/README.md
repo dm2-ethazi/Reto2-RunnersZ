@@ -99,7 +99,7 @@ En Windows también puede usarse `gradlew.bat`; en Linux, `./gradlew`.
 El JDK del sistema debe ser 21: Gradle 8.9 no admite JDK 25.
 
 - APK generado: `app/build/outputs/apk/release/app-release.apk`.
-- APK de la entrega (release **v1.0.0**): [`release/CipherSprint-android_v1.0.0.apk`](../release/CipherSprint-android_v1.0.0.apk).
+- APK de la entrega (release **v1.0.0**): [descarga desde la página de releases](https://github.com/dm2-ethazi/Reto2-RunnersZ/releases/download/v1.0.0/CipherSprint-android_v1.0.0.apk).
 - SHA-256 del APK de entrega: `8d986baf9d28fa815fa88dc213f576968a37670afcd02db9ea6454c7740ab094`.
 - Tamaño: 3.314.773 bytes.
 - `versionName 2.0.0` (`versionCode 2`) es la versión interna de la app; **v1.0.0** es la etiqueta de la entrega.

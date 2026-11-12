@@ -27,21 +27,24 @@ El pliego, el contrato técnico v2.0 y las normas del equipo se mantienen fuera 
 | `unity/` | Proyecto Unity 6000.3.24f1: escena, scripts, tests y builds | [`unity/README.md`](unity/README.md) |
 | `scripts/` | `board.py` (tablero), `check_branch.py`, `check_commit_message.py`, `generate_vectors.py` | [`scripts/README.md`](scripts/README.md) |
 | `.github/` | `CODEOWNERS`, plantillas de issue y PR, workflows `backend.yml` y `desktop.yml` | [`.github/COLABORACION.md`](.github/COLABORACION.md) |
-| `release/` | Binarios de la entrega **v1.0.0**: los dos APK y el fat JAR del escritorio | — |
 
 ## Release v1.0.0
 
-El release de entrega del Reto 2 se etiqueta **v1.0.0** y sus binarios están versionados en `release/`:
+El release de entrega del Reto 2 se etiqueta **v1.0.0** y sus binarios se publican como adjuntos en
+la página de releases del repositorio, no dentro del árbol de Git:
 
-| Fichero | Qué es | Versión interna |
+**<https://github.com/dm2-ethazi/Reto2-RunnersZ/releases/tag/v1.0.0>**
+
+| Descarga | Qué es | Versión interna |
 |---|---|---|
-| `release/CipherSprint-android_v1.0.0.apk` | App Android (CipherSprint) | `versionName 2.0.0` (`versionCode 2`) |
-| `release/RunnersZ-unity_v1.0.0.apk` | Minijuego Unity para Android | `bundleVersion 1.0` |
-| `release/runnersz-desktop_v1.0.0.jar` | Cliente de escritorio (fat JAR único) | `2.1.0` en `pom.xml` |
+| [CipherSprint-android_v1.0.0.apk](https://github.com/dm2-ethazi/Reto2-RunnersZ/releases/download/v1.0.0/CipherSprint-android_v1.0.0.apk) | App Android (CipherSprint) | `versionName 2.0.0` (`versionCode 2`) |
+| [RunnersZ-unity_v1.0.0.apk](https://github.com/dm2-ethazi/Reto2-RunnersZ/releases/download/v1.0.0/RunnersZ-unity_v1.0.0.apk) | Minijuego Unity para Android | `bundleVersion 1.0` |
+| [runnersz-desktop_v1.0.0.jar](https://github.com/dm2-ethazi/Reto2-RunnersZ/releases/download/v1.0.0/runnersz-desktop_v1.0.0.jar) | Cliente de escritorio (fat JAR único) | `2.1.0` en `pom.xml` |
 
 **v1.0.0 es la versión de la entrega, no la de cada aplicación.** Los dos APK y el JAR se generan
 desde el código de `develop` con las versiones internas de la tabla; el nombre del fichero no
-cambia las versiones de `build.gradle` ni del `pom.xml`.
+cambia las versiones de `build.gradle` ni del `pom.xml`. Una entrega nueva se publica como un
+release etiquetado, no como una carpeta dentro del repositorio.
 
 ## Cómo arrancar cada pieza
 

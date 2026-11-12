@@ -9,8 +9,8 @@ Rama de trabajo: feature/unity-v2.
 Abre `unity/Builds/Windows/RunnersZ.exe` en el ordenador de desarrollo.
 Para compartirlo, conserva toda la carpeta Windows, incluidos los datos y DLL.
 El ejecutable de Windows no se versiona: se regenera desde el proyecto. El APK de la entrega
-(release **v1.0.0**, `bundleVersion 1.0`) sí está en
-[`release/RunnersZ-unity_v1.0.0.apk`](../release/RunnersZ-unity_v1.0.0.apk).
+(release **v1.0.0**, `bundleVersion 1.0`) sí se publica en la página de releases:
+[descarga del APK](https://github.com/dm2-ethazi/Reto2-RunnersZ/releases/download/v1.0.0/RunnersZ-unity_v1.0.0.apk).
 
 En Unity Hub abre la carpeta `unity`, carga `Assets/Scenes/Game.unity`
 y pulsa Play. El menu `RunnersZ/Build Game Scene` regenera la escena inicial.
@@ -31,7 +31,7 @@ entregada ejecuta RunnerGame y su simulacion de avance, sin depender de tags.
 
 El APK se genera en `unity/Builds/Android/RunnersZ.apk` (arm64-v8a, IL2CPP,
 OpenGL ES 3, minSdk 25) y no se versiona; la copia de la entrega es la del release
-(`release/RunnersZ-unity_v1.0.0.apk`). Para instalarlo en un telefono
+(página de releases del repositorio). Para instalarlo en un telefono
 con depuracion USB activa:
 
 ```powershell
