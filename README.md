@@ -11,13 +11,10 @@ repositorio, en `C:\Users\dm2\ia\reglas`, por indicación del responsable:
 - **App Android**: usa la API solo por HTTP.
 - **Minijuego Unity 6.3**: autónomo (no usa la API).
 
-## Wiki: instalación y uso paso a paso
+## Documentación de cada apartado
 
-La guía completa para instalar y usar cada apartado (con comandos, resultados esperados
-y solución de problemas) está en **[wiki](wiki/Home.md)**.
-
-Empieza por la portada y sigue el orden: requisitos → servidor → escritorio → Android → Unity →
-verificación y demo. Incluye la checklist de extremo a extremo y el guion de la demo.
+Cada módulo tiene su propio manual, con los comandos, los resultados esperados y la solución de
+problemas: `backend/README.md`, `desktop/README.md`, `android/README.md` y `unity/README.md`.
 
 ## Estructura del monorepo
 

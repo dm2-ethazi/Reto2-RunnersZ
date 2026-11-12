@@ -67,8 +67,7 @@ ni Times New Roman, el texto serif usa la fuente incluida en Unity.
 - EditMode: 10 pruebas aprobadas, 0 fallos.
 - PlayMode: 2 pruebas aprobadas, 0 fallos.
 - Windows x64: ejecutable generado; proceso iniciado y registro inspeccionado.
-- Evidencias XML: `docs/evidencias/unity/`.
-- Seguimiento y limitaciones: `docs/planificacion/unity-tareas.md`.
+- Evidencias XML: resultados del Test Runner (no se conservan en el repositorio).
 
 Las pruebas cubren Cesar, normalizacion, dificultad, rondas, puntuacion,
 pistas, victoria, derrota por enemigos y reinicio. No se ha medido cobertura.
