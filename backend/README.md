@@ -60,14 +60,34 @@ variable temporal con otro token, elimínala antes con `unset RZ_API_TOKEN`.
 
 ```bash
 cd backend
-cp .env.example .env      # y define RZ_API_TOKEN
 docker compose up -d --build
 ```
 
+No hace falta preparar nada: el servicio arranca con el token de reserva
+`change-me` y el límite de 100 MiB. Para usar un token propio, copia
+`.env.example` a `.env` (ese fichero no se versiona); si existe, sus valores
+sustituyen a los de reserva.
+
+```bash
+cp .env.example .env    # opcional: define RZ_API_TOKEN
+```
+
 La imagen usa `python:3.12-slim`, instala con `uv sync --locked`, corre con el
-usuario `appuser`, guarda los `.part` en un `tmpfs` efímero y declara un
-healthcheck sobre `/api/v1/health`. El token entra desde `.env`; nunca se
-versiona (solo `.env.example`).
+usuario `appuser` (uid 10001) y declara un healthcheck sobre `/api/v1/health`.
+Los temporales `.part` se guardan en `/var/tmp/runnersz`, montado como `tmpfs`
+en RAM con el `uid`, `gid` y `mode` del usuario del contenedor: nada toca el
+disco y todo desaparece al parar. Como el `tmpfs` vive en memoria, cada subida
+ocupa RAM mientras dura la operación.
+
+Comprobar que cifra de verdad, no solo que responde:
+
+```bash
+curl -s http://127.0.0.1:8000/api/v1/health
+curl -s -H "Authorization: Bearer change-me" -o /tmp/README.md.enc \
+  -F "file=@README.md" -F "password=secreta" \
+  http://127.0.0.1:8000/api/v1/files/encrypt
+docker compose down
+```
 
 ## Probar en el navegador
 
@@ -202,6 +222,7 @@ backend/
   uv.lock         # Versiones resueltas.
   Dockerfile
   docker-compose.yml
+  .dockerignore
 ```
 
 La subida se guarda por bloques de 1 MiB en un `.part` con el límite aplicado
@@ -210,8 +231,6 @@ completo en memoria. Los temporales se borran en éxito y en error.
 
 ## Pendientes
 
-- Probar el despliegue Docker en un equipo con Docker (en esta máquina no hay
-  motor disponible): `docker compose up -d --build` y `/api/v1/health`.
 - Ejecutar `act push -j backend` y adjuntar la evidencia al apartado 11.8.
 - Añadir las capturas de `pre-commit run --all-files` en verde.
 - Probar 21 MiB con `RZ_MAX_UPLOAD_MIB=20` desde los clientes reales.
@@ -232,3 +251,7 @@ expresa. No añadir funcionalidades fuera de contrato sin indicarlas al humano.
   96 bits con AAD por índice, errores `{code, message}` del contrato, subida y
   descarga por bloques, cobertura bloqueante al 80 %, workflow de CI, hooks,
   Docker con `uv sync --locked` y `docker-compose` leyendo `.env`.
+
+- 2026-11-12: el `docker compose` arranca sin `.env` (token de reserva) y el
+  `tmpfs` usa el uid/gid/mode de `appuser`, que era la causa de los 500 al
+  cifrar ficheros; se documenta todo el paquete y se añade `.dockerignore`.

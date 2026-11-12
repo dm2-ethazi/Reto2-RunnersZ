@@ -11,6 +11,14 @@ repositorio, en `C:\Users\dm2\ia\reglas`, por indicación del responsable:
 - **App Android**: usa la API solo por HTTP.
 - **Minijuego Unity 6.3**: autónomo (no usa la API).
 
+## Wiki: instalación y uso paso a paso
+
+La guía completa para instalar y usar cada apartado (con comandos, resultados esperados
+y solución de problemas) está en **[wiki](wiki/Home.md)**.
+
+Empieza por la portada y sigue el orden: requisitos → servidor → escritorio → Android → Unity →
+verificación y demo. Incluye la checklist de extremo a extremo y el guion de la demo.
+
 ## Estructura del monorepo
 
 | Carpeta | Contenido |
@@ -28,8 +36,8 @@ repositorio, en `C:\Users\dm2\ia\reglas`, por indicación del responsable:
   hoja de estilos con la paleta y las tipografías del contrato.
 - API por HTTP con `java.net.http.HttpClient`, envío y recepción por bloques de 64 KiB, progreso real,
   cancelación y timeout de 120 s.
-- JUnit 5 + JaCoCo con umbral del 80 % (`mvn verify` falla por debajo) y fat JAR ejecutable en
-  `desktop/target/runnersz-desktop-win.jar` y `desktop/target/runnersz-desktop-linux.jar`.
+- JUnit 5 + JaCoCo con umbral del 80 % (`mvn verify` falla por debajo) y un único fat JAR ejecutable
+  en Windows y en Linux: `desktop/target/runnersz-desktop.jar`.
 - Idiomas: español, euskera e inglés. Accesibilidad según §9.3.
 
 Detalles de uso, configuración de la API y pruebas en [desktop/README.md](desktop/README.md).
@@ -103,8 +111,6 @@ ni Times New Roman, el texto serif usa la fuente incluida en Unity.
 - EditMode: 10 pruebas aprobadas, 0 fallos.
 - PlayMode: 2 pruebas aprobadas, 0 fallos.
 - Windows x64: ejecutable generado; proceso iniciado y registro inspeccionado.
-- Evidencias XML: `docs/evidencias/unity/`.
-- Seguimiento y limitaciones: `docs/planificacion/unity-tareas.md`.
 
 Las pruebas cubren César, normalización, dificultad, rondas, puntuación,
 pistas, victoria, derrota por enemigos y reinicio. No se ha medido cobertura.
@@ -158,8 +164,8 @@ contrato, y su manual está en `desktop/README.md`.
 
 1. Instala JDK 21 (el wrapper descarga Maven 3.9 si hace falta).
 2. `cd desktop && ./mvnw clean verify` compila, ejecuta las pruebas y aplica el umbral de cobertura.
-3. `./mvnw javafx:run` o `java -jar target/runnersz-desktop-win.jar` (en Linux,
-   `java -jar target/runnersz-desktop-linux.jar`) para abrir la aplicación.
+3. `./mvnw javafx:run` o `java -jar target/runnersz-desktop.jar` para abrir la aplicación, en
+   Windows y en Linux.
 4. Configura la dirección y el token del servidor en **Ajustes**; no hay credenciales en el código.
 
 ## Equipo (roles del Anexo I.2)

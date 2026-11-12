@@ -25,7 +25,9 @@ from .text import caesar, vigenere
 router = APIRouter()
 bearer_scheme = HTTPBearer(auto_error=False)
 
+# La subida se lee por bloques de 1 MiB: nunca se carga entera en memoria.
 CHUNK_SIZE = 1024 * 1024
+# Mensaje en español que acompaña a cada código de error del contrato.
 MESSAGES = {
     "EMPTY_FILE": "El archivo está vacío",
     "EMPTY_PASSWORD": "La contraseña está vacía",
@@ -170,7 +172,11 @@ async def _file_operation(
 
 @router.get("/api/v1/health")
 def health() -> dict[str, str]:
-    """Estado público del servicio; no exige token."""
+    """Estado público del servicio; no exige token.
+
+    Returns:
+        Versión del servidor, sin detalles internos ni secretos.
+    """
     settings = load_settings()
     return {"status": "ok", "version": settings.version}
 
@@ -179,7 +185,14 @@ def health() -> dict[str, str]:
 def check_token(
     authorization: str | None = Depends(authorization_header),
 ) -> Response:
-    """Comprueba el token: 204 si es válido, 401 si no."""
+    """Comprueba el token: 204 si es válido, 401 si no.
+
+    Args:
+        authorization: Cabecera Bearer recibida.
+
+    Raises:
+        ApiError: UNAUTHORIZED (401) si el token falta o no coincide.
+    """
     require_token(load_settings(), authorization)
     return Response(status_code=204)
 
@@ -189,7 +202,18 @@ def vigenere_text(
     payload: TextRequest,
     authorization: str | None = Depends(authorization_header),
 ) -> dict[str, str]:
-    """Cifra o descifra texto con Vigenère (§6.1)."""
+    """Cifra o descifra texto con Vigenère (§6.1).
+
+    Args:
+        payload: Texto, clave y modo validados por Pydantic.
+        authorization: Cabecera Bearer recibida.
+
+    Returns:
+        Diccionario con el texto transformado en «result».
+
+    Raises:
+        ApiError: UNAUTHORIZED (401) o INVALID_KEY (400).
+    """
     require_token(load_settings(), authorization)
     try:
         result = vigenere(payload.text, payload.key or "", payload.mode == "decrypt")
@@ -203,7 +227,18 @@ def caesar_text(
     payload: TextRequest,
     authorization: str | None = Depends(authorization_header),
 ) -> dict[str, str]:
-    """Cifra o descifra texto con César (§6.3)."""
+    """Cifra o descifra texto con César (§6.3).
+
+    Args:
+        payload: Texto, desplazamiento y modo.
+        authorization: Cabecera Bearer recibida.
+
+    Returns:
+        Diccionario con el texto transformado en «result».
+
+    Raises:
+        ApiError: UNAUTHORIZED (401) o INVALID_SHIFT (400).
+    """
     require_token(load_settings(), authorization)
     shift = _shift_value(payload.shift)
     return {"result": caesar(payload.text, shift, payload.mode == "decrypt")}
@@ -215,7 +250,20 @@ async def encrypt_endpoint(
     password: str = Form(...),
     authorization: str | None = Depends(authorization_header),
 ) -> FileResponse:
-    """Cifra un fichero con AES-256-GCM y devuelve el .enc."""
+    """Cifra un fichero con AES-256-GCM y devuelve el .enc.
+
+    Args:
+        file: Fichero multipart que se va a cifrar.
+        password: Contraseña de la operación.
+        authorization: Cabecera Bearer recibida.
+
+    Returns:
+        Descarga del .enc con el nombre sugerido.
+
+    Raises:
+        ApiError: UNAUTHORIZED, EMPTY_FILE, EMPTY_PASSWORD,
+            FILE_TOO_LARGE o INTERNAL_ERROR.
+    """
     return await _file_operation(file, password, authorization, decrypting=False)
 
 
@@ -225,5 +273,18 @@ async def decrypt_endpoint(
     password: str = Form(...),
     authorization: str | None = Depends(authorization_header),
 ) -> FileResponse:
-    """Descifra un .enc verificando integridad y devuelve los bytes originales."""
+    """Descifra un .enc verificando integridad y devuelve los bytes originales.
+
+    Args:
+        file: Fichero .enc recibido por multipart.
+        password: Contraseña de la operación.
+        authorization: Cabecera Bearer recibida.
+
+    Returns:
+        Descarga del contenido original con la cabecera X-Integrity.
+
+    Raises:
+        ApiError: UNAUTHORIZED, EMPTY_FILE, EMPTY_PASSWORD,
+            FILE_TOO_LARGE o DECRYPT_FAILED.
+    """
     return await _file_operation(file, password, authorization, decrypting=True)

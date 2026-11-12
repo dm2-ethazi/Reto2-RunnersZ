@@ -3,10 +3,18 @@ services:
     build: .
     ports:
       - "8000:8000"
+    # .env es opcional: si existe se cargan sus valores y, si no, se usan los
+    # de reserva de «environment» para que el servicio arranque recién clonado.
     env_file:
-      - .env
+      - path: .env
+        required: false
     environment:
+      RZ_API_TOKEN: "${RZ_API_TOKEN:-change-me}"
+      RZ_MAX_UPLOAD_MIB: "${RZ_MAX_UPLOAD_MIB:-100}"
       RZ_TMP_DIR: /var/tmp/runnersz
+    # Los temporales .part se escriben en RAM. uid/gid/mode son los del usuario
+    # que corre el proceso (appuser, 10001): un tmpfs se monta con root:root y
+    # sin ellos la API no podría crear sus ficheros y respondería 500.
     tmpfs:
-      - /var/tmp/runnersz
+      - /var/tmp/runnersz:uid=10001,gid=10001,mode=1777
     restart: unless-stopped

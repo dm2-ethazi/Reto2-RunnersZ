@@ -7,7 +7,9 @@ import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 
+# Límite de subida por defecto en MiB; se cambia con RZ_MAX_UPLOAD_MIB.
 DEFAULT_MAX_UPLOAD_MIB = 100
+# Versión que publican /health y la documentación interactiva.
 VERSION = "2.0.0"
 
 

@@ -16,6 +16,7 @@ class ApiError(Exception):
     """Error controlado que se serializa sin credenciales ni detalles internos."""
 
     def __init__(self, code: str, status: int, message: str) -> None:
+        """Guarda el código del contrato, el estado HTTP y el mensaje visible."""
         super().__init__(code)
         self.code = code
         self.status = status
@@ -23,6 +24,7 @@ class ApiError(Exception):
 
 
 def _payload(code: str, message: str, status: int) -> JSONResponse:
+    """Construye la respuesta JSON homogénea {code, message}."""
     return JSONResponse({"code": code, "message": message}, status_code=status)
 
 

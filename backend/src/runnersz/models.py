@@ -14,4 +14,6 @@ class TextRequest(BaseModel):
     key: str | None = Field(default=None, description="Clave de Vigenère (A-Z)")
     # Any deja que el validador devuelva INVALID_SHIFT en lugar de un 422.
     shift: Any = Field(default=None, description="Desplazamiento de César entre 1 y 25")
-    mode: Literal["encrypt", "decrypt"] = "encrypt"
+    mode: Literal["encrypt", "decrypt"] = Field(
+        default="encrypt", description="Sentido de la transformación"
+    )
