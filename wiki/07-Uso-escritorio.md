@@ -140,6 +140,73 @@ El código está separado en capas (`controller`, `service`, `model`, `utiles`);
 
 ---
 
+## 10. Ejecutar en Linux
+
+El cliente es el mismo en Windows y Linux: solo cambian los **nativos de JavaFX** que van dentro del JAR. En Linux necesitas **JDK 21**, **GTK 3** y **fontconfig**.
+
+### Paquetes y JDK
+
+```bash
+sudo apt update
+sudo apt install -y libgtk-3-0 fontconfig
+sudo apt install -y openjdk-21-jdk      # o temurin-21-jdk si tu distro no lo tiene
+export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
+```
+
+✅ Debe decir `openjdk version "21.x"`. Gradle y Maven no aceptan JDK 25 para este proyecto.
+
+### Compilar, probar y abrir
+
+```bash
+cd ~/Reto2-RunnersZ/desktop
+chmod +x mvnw
+./mvnw clean verify
+./mvnw -B package
+java -jar target/runnersz-desktop-linux.jar
+```
+
+✅ `BUILD SUCCESS`, cobertura igual o superior al 80 % y se abre la ventana **RunnersZ**.
+
+- El perfil de Maven elige solo la plataforma `linux`, así que el JAR lleva los nativos `.so` de JavaFX. Comprobación: `unzip -l target/runnersz-desktop-linux.jar | grep -c '\.so$'` → **10**.
+- También puedes abrirlo desde el código con `./mvnw javafx:run`.
+- El JAR se ejecuta con `java -jar` y JDK 21; no hace falta configurar la ruta de módulos de JavaFX.
+
+### Generar el JAR de Windows desde Linux
+
+```bash
+./mvnw -B package -Djavafx.platform=win
+```
+
+Genera `target/runnersz-desktop-win.jar`. Ese artefacto se ejecuta en Windows, no en Linux.
+
+### Sin entorno gráfico
+
+```bash
+sudo apt install -y xvfb
+xvfb-run --auto-servernum ./mvnw verify
+```
+
+Así se ejecutan las pruebas (cargan el FXML real) en un servidor. La aplicación en sí necesita una sesión gráfica: por SSH sin X11 verás `Unable to open DISPLAY`.
+
+### Conectar con la API
+
+**Ajustes** → `http://localhost:8000` (o `http://<IP_DEL_PC>:8000`, sin `/api/v1`) → token → **Probar** → **Guardar**. Si el servidor está en otro equipo, arráncalo con `--host 0.0.0.0` y permite el puerto 8000 en el cortafuegos (`sudo ufw allow 8000/tcp`).
+
+### Problemas típicos en Linux
+
+| Síntoma | Causa | Solución |
+|---|---|---|
+| `./mvnw: Permission denied` | Sin permiso de ejecución | `chmod +x mvnw` |
+| `libgtk-3.so.0: cannot open shared object file` | Falta GTK 3 | `sudo apt install libgtk-3-0` |
+| `Unable to open DISPLAY` | Sin sesión gráfica | Abre la app en el escritorio o usa `xvfb-run` para pruebas |
+| `java -version` no es 21 | JDK del sistema | Instala JDK 21 y exporta `JAVA_HOME` |
+| `ExceptionInInitializerError` en JavaFX | JAR de otra plataforma | Recompila en Linux con `./mvnw -B package` |
+| El JAR de Windows no arranca | Nativos de Windows | Ejecútalo en Windows, no en Linux |
+
+---
+
 ## Siguiente paso
 
 - [08 · Uso de Android](08-Uso-android.md)

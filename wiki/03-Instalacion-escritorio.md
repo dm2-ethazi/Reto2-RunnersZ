@@ -2,8 +2,6 @@
 
 Aplicación **Java 21 + JavaFX** que cifra y descifra ficheros a través de la API, y ofrece las pestañas de Vigenère y César. **No implementa criptografía**: todo ocurre en el servidor.
 
-> 🐧 **¿Linux?** Los comandos equivalentes están en [14 · Ejecutar todo en Linux](14-Linux.md).
-
 ---
 
 ## Antes de empezar

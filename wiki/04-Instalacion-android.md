@@ -2,8 +2,6 @@
 
 **CipherSprint** es la app nativa Kotlin del Reto 2: tres pestañas (Inicio, Orden, Imagen) que delegan todas las operaciones en la API por HTTPS. No cifra nada en el dispositivo.
 
-> 🐧 **¿Linux?** Los comandos equivalentes están en [14 · Ejecutar todo en Linux](14-Linux.md).
-
 ---
 
 ## Antes de empezar
