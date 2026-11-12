@@ -32,6 +32,11 @@ ambos:
 |---|---|
 | `./mvnw -B package` (en cualquier sistema) | `target/runnersz-desktop.jar` |
 
+El JAR de la entrega (release **v1.0.0**) está en
+[`release/runnersz-desktop_v1.0.0.jar`](../release/runnersz-desktop_v1.0.0.jar): 14.080.130 B y
+SHA-256 `b42c1e84e649c0f7476a540e3ed1d4497bc12d856d6a009bf7b03a8544daf6e6`. El `pom.xml` declara
+`2.1.0` como versión interna de la aplicación; **v1.0.0** identifica la entrega del Reto 2.
+
 Para comprobar que lleva los nativos de las dos plataformas:
 
 ```bash
