@@ -79,7 +79,9 @@ fase `package`, mete además todas las dependencias en un único fichero. El JAR
 un árbol limpio, sin haber arrancado la aplicación: `mvn clean package` genera el fat JAR y
 `mvn compile jar:jar` un JAR ejecutable que arranca con las dependencias de `target/lib`. `mvn jar:jar`
 suelto no compila (Maven no ejecuta fases al invocar un goal) y, ya que no habría contenido, no crea
-un JAR vacío. Comprobación de que lleva los de ambos:
+un JAR vacío. El wrapper (`mvnw` y `mvnw.cmd`) traduce el goal `jar:jar` al ciclo `package`, así que
+`./mvnw jar:jar` en frío compila, pasa las pruebas y deja el fat JAR; con el binario `mvn` a secas ese
+goal no compila y el comando es `mvn package`. Comprobación de que lleva los de ambos:
 
 ```bash
 unzip -l target/runnersz-desktop.jar | grep -c '\.dll$'   # 54

@@ -33,6 +33,11 @@ declara en el `Class-Path` del manifiesto: `./mvnw compile jar:jar` deja un
 `target/runnersz-desktop.jar` ejecutable con `java -jar`. Sobre un árbol limpio, `jar:jar` no genera
 un JAR vacío (`skipIfEmpty`): el artefacto completo sale del ciclo `package`.
 
+Por eso el wrapper traduce el goal: **`./mvnw jar:jar` (y `./mvnw clean jar:jar`) se ejecuta como
+`./mvnw package`**, de forma que en frío deja el fat JAR completo en `target/runnersz-desktop.jar`
+sin haber arrancado la aplicación. Con el binario `mvn` a secas el goal sigue sin compilar nada
+(Maven no ejecuta fases al invocar un goal suelto): ahí el comando es `mvn package`.
+
 ### Exportación: un solo fat JAR para Windows y Linux
 
 El pliego (§4.8) pide **la misma aplicación para Windows y para Linux, cambiando solo la
