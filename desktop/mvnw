@@ -147,6 +147,18 @@ MAVEN_HOME="${MAVEN_USER_HOME}/wrapper/dists/${distributionUrlNameMain-}/$(hash_
 
 exec_maven() {
   unset MVNW_VERBOSE MVNW_USERNAME MVNW_PASSWORD MVNW_REPOURL || :
+  # Maven no ejecuta ninguna fase al invocar un goal suelto: `jar:jar` solo empaqueta lo que
+  # haya en target/classes, asi que en frio daria un JAR vacio. El ciclo `package` compila y
+  # genera el fat JAR ejecutable, de modo que el wrapper traduce ese goal antes de llamar a Maven.
+  if [ $# -gt 0 ]; then
+    _mvnw_args="$(printf '%s\n' "$@" | sed 's/^jar:jar$/package/')"
+    set --
+    while IFS= read -r _mvnw_arg; do
+      if [ -n "$_mvnw_arg" ]; then set -- "$@" "$_mvnw_arg"; fi
+    done <<MVNW_ARGS
+$_mvnw_args
+MVNW_ARGS
+  fi
   exec "$MAVEN_HOME/bin/$MVN_CMD" "$@" || die "cannot exec $MAVEN_HOME/bin/$MVN_CMD"
 }
 

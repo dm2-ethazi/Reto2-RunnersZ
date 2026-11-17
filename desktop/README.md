@@ -21,6 +21,23 @@ cd desktop
 java -jar target/runnersz-desktop.jar         # Windows o Linux (Debian/Ubuntu)
 ```
 
+El JAR de entrega lo produce el ciclo `package`: compila las fuentes, empaqueta `target/classes` y
+`shade` sustituye ese artefacto por el fat JAR con las dependencias y el `Main-Class`. Por eso sale
+completo desde un árbol limpio, **sin necesidad de haber ejecutado antes la aplicación**
+(`./mvnw clean package` o `./mvnw clean verify`, que además pasa las pruebas y la cobertura).
+
+El goal suelto `mvn jar:jar` **no compila nada**: Maven ejecuta ese goal y ninguna fase, así que
+empaqueta lo que ya exista en `target/classes`. Para que ese JAR también arranque sin haber lanzado
+la aplicación, el `pom.xml` copia las dependencias a `target/lib` en `process-resources` y las
+declara en el `Class-Path` del manifiesto: `./mvnw compile jar:jar` deja un
+`target/runnersz-desktop.jar` ejecutable con `java -jar`. Sobre un árbol limpio, `jar:jar` no genera
+un JAR vacío (`skipIfEmpty`): el artefacto completo sale del ciclo `package`.
+
+Por eso el wrapper traduce el goal: **`./mvnw jar:jar` (y `./mvnw clean jar:jar`) se ejecuta como
+`./mvnw package`**, de forma que en frío deja el fat JAR completo en `target/runnersz-desktop.jar`
+sin haber arrancado la aplicación. Con el binario `mvn` a secas el goal sigue sin compilar nada
+(Maven no ejecuta fases al invocar un goal suelto): ahí el comando es `mvn package`.
+
 ### Exportación: un solo fat JAR para Windows y Linux
 
 El pliego (§4.8) pide **la misma aplicación para Windows y para Linux, cambiando solo la
@@ -57,8 +74,7 @@ incluye clases y nativos, y la entrada `Launcher` arranca sin configurar la ruta
 pliego (JaCoCo `check` sin filtros de paquete). El informe queda en `target/site/jacoco/index.html`.
 
 Medición actual: **82,0 %** (936 de 1142 líneas), también por encima del 80 % en cada capa. El
-desglose por paquete y el procedimiento para repetirlo están en
-[`docs/evidencias.md`](docs/evidencias.md).
+desglose por paquete queda en `target/site/jacoco/index.html`.
 
 ## Configuración de la conexión
 
@@ -195,13 +211,6 @@ esperado, porque al ejecutar la aplicación sí aparecen.
   que el editor usará la fuente del sistema.
 - El controlador no está en el classpath del editor: el panel *Controller* sale vacío y los `onAction`
   se conservan como texto en el FXML.
-
-## Documentación
-
-- [`docs/codigo.md`](docs/codigo.md): qué hace cada capa del cliente, cómo se reparten los hilos y
-  por qué está separada así.
-- [`docs/evidencias.md`](docs/evidencias.md): pruebas, cobertura por paquete, empaquetado y el
-  procedimiento de las pruebas manuales del Anexo VI.4 (0 B, 1 B, 1 MiB, 20 MiB).
 
 ## Problemas frecuentes
 

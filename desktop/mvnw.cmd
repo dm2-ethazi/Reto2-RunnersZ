@@ -40,7 +40,12 @@
 @SET __MVNW_ARG0_NAME__=
 @SET MVNW_USERNAME=
 @SET MVNW_PASSWORD=
-@IF NOT "%__MVNW_CMD__%"=="" ("%__MVNW_CMD__%" %*)
+@REM Maven no ejecuta ninguna fase al invocar un goal suelto: `jar:jar` solo empaqueta
+@REM target\classes, asi que en frio daria un JAR vacio. Se traduce ese goal al ciclo
+@REM `package`, que compila y genera el fat JAR ejecutable.
+@SET "__MVNW_ARGS__=%*"
+@SET "__MVNW_ARGS__=%__MVNW_ARGS__:jar:jar=package%"
+@IF NOT "%__MVNW_CMD__%"=="" ("%__MVNW_CMD__%" %__MVNW_ARGS__%)
 @echo Cannot start maven from wrapper >&2 && exit /b 1
 @GOTO :EOF
 : end batch / begin powershell #>
