@@ -188,6 +188,26 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <!-- jar:jar solo empaqueta target/classes: si el proyecto no se ha compilado antes,
+                         el JAR salia de 3 KB y sin ejecutable. Con skipIfEmpty no se genera un artefacto
+                         vacio y el manifiesto se declara aqui, no solo en shade, para que cualquier JAR
+                         del proyecto (tambien el de jar:jar tras compilar) tenga clase principal y
+                         version. El JAR de entrega lo produce el ciclo package: compila, empaqueta y
+                         shade lo sustituye por el fat JAR con las dependencias. -->
+                    <skipIfEmpty>true</skipIfEmpty>
+                    <archive>
+                        <manifest>
+                            <mainClass>com.runnersz.Launcher</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
                 <version>3.6.0</version>
                 <executions>
@@ -224,6 +244,13 @@
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                                 <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>com.runnersz.Launcher</mainClass>
+                                    <!-- El transformer reescribe el manifiesto entero: sin estas entradas la
+                                         aplicacion arrancaba con la version «desarrollo» en vez de la del pom. -->
+                                    <manifestEntries>
+                                        <Implementation-Title>${project.name}</Implementation-Title>
+                                        <Implementation-Version>${project.version}</Implementation-Version>
+                                        <Implementation-Vendor>${project.groupId}</Implementation-Vendor>
+                                    </manifestEntries>
                                 </transformer>
                             </transformers>
                         </configuration>
