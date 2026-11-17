@@ -202,9 +202,33 @@
                         <manifest>
                             <mainClass>com.runnersz.Launcher</mainClass>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <!-- El JAR plano de jar:jar tambien tiene que arrancar: se le anade el Class-Path
+                                 a las dependencias que copy-dependencies deja en target/lib, con rutas
+                                 relativas al propio JAR. El fat JAR de shade trae todo dentro y no lo usa. -->
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>dependencias-junto-al-jar</id>
+                        <!-- Antes de jar:jar (y en cualquier build) las dependencias quedan en target/lib, de
+                             modo que el JAR que empaqueta jar:jar ya es ejecutable con java -jar sin haber
+                             arrancado antes la aplicacion. -->
+                        <phase>process-resources</phase>
+                        <goals><goal>copy-dependencies</goal></goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <includeScope>runtime</includeScope>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -250,6 +274,9 @@
                                         <Implementation-Title>${project.name}</Implementation-Title>
                                         <Implementation-Version>${project.version}</Implementation-Version>
                                         <Implementation-Vendor>${project.groupId}</Implementation-Vendor>
+                                        <!-- El fat JAR lleva las dependencias dentro: se quita el Class-Path
+                                             que el JAR plano usa para encontrar target/lib. -->
+                                        <Class-Path></Class-Path>
                                     </manifestEntries>
                                 </transformer>
                             </transformers>

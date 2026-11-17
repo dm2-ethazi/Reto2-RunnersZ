@@ -73,10 +73,13 @@ java -jar target/runnersz-desktop.jar   # Windows o Linux (Debian/Ubuntu)
 
 El `pom.xml` genera **un solo artefacto** con los nativos de los dos sistemas: JavaFX los elige en
 tiempo de ejecución. `maven-jar-plugin` declara el manifiesto (`Main-Class: com.runnersz.Launcher` y
-`Implementation-Version` del pom) con `skipIfEmpty`, y `maven-shade-plugin`, en la fase `package`,
-añade las dependencias. El JAR sale completo desde un árbol limpio: no hace falta haber arrancado la
-aplicación antes, y `mvn jar:jar` suelto no compila ni deja un JAR vacío (solo `package`/`verify`
-producen el artefacto). Comprobación de que lleva los de ambos:
+`Implementation-Version` del pom) con `skipIfEmpty` y `Class-Path` a `target/lib`, donde
+`maven-dependency-plugin` copia las dependencias en `process-resources`; `maven-shade-plugin`, en la
+fase `package`, mete además todas las dependencias en un único fichero. El JAR sale completo desde
+un árbol limpio, sin haber arrancado la aplicación: `mvn clean package` genera el fat JAR y
+`mvn compile jar:jar` un JAR ejecutable que arranca con las dependencias de `target/lib`. `mvn jar:jar`
+suelto no compila (Maven no ejecuta fases al invocar un goal) y, ya que no habría contenido, no crea
+un JAR vacío. Comprobación de que lleva los de ambos:
 
 ```bash
 unzip -l target/runnersz-desktop.jar | grep -c '\.dll$'   # 54

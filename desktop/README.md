@@ -23,10 +23,15 @@ java -jar target/runnersz-desktop.jar         # Windows o Linux (Debian/Ubuntu)
 
 El JAR de entrega lo produce el ciclo `package`: compila las fuentes, empaqueta `target/classes` y
 `shade` sustituye ese artefacto por el fat JAR con las dependencias y el `Main-Class`. Por eso sale
-completo desde un árbol limpio, **sin necesidad de haber ejecutado antes la aplicación**. El goal
-suelto `mvn jar:jar` no compila nada —solo empaqueta lo que ya haya en `target/classes`— y con
-`skipIfEmpty` el plugin ya no deja un JAR vacío en su lugar: para obtener el artefacto hay que usar
-`./mvnw clean package` (o `./mvnw clean verify`, que además pasa las pruebas y la cobertura).
+completo desde un árbol limpio, **sin necesidad de haber ejecutado antes la aplicación**
+(`./mvnw clean package` o `./mvnw clean verify`, que además pasa las pruebas y la cobertura).
+
+El goal suelto `mvn jar:jar` **no compila nada**: Maven ejecuta ese goal y ninguna fase, así que
+empaqueta lo que ya exista en `target/classes`. Para que ese JAR también arranque sin haber lanzado
+la aplicación, el `pom.xml` copia las dependencias a `target/lib` en `process-resources` y las
+declara en el `Class-Path` del manifiesto: `./mvnw compile jar:jar` deja un
+`target/runnersz-desktop.jar` ejecutable con `java -jar`. Sobre un árbol limpio, `jar:jar` no genera
+un JAR vacío (`skipIfEmpty`): el artefacto completo sale del ciclo `package`.
 
 ### Exportación: un solo fat JAR para Windows y Linux
 
